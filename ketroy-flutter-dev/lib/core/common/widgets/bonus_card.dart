@@ -4,6 +4,88 @@ import 'package:ketroy_app/features/profile/domain/entities/discount_entity.dart
 import 'package:ketroy_app/features/profile/presentation/pages/qr_scanner_sheet.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 
+/// Анимированный счётчик для бонусов с эффектом "перебегания"
+class AnimatedBonusCounter extends StatefulWidget {
+  final int value;
+  final TextStyle? style;
+  final Duration duration;
+
+  const AnimatedBonusCounter({
+    super.key,
+    required this.value,
+    this.style,
+    this.duration = const Duration(milliseconds: 800),
+  });
+
+  @override
+  State<AnimatedBonusCounter> createState() => _AnimatedBonusCounterState();
+}
+
+class _AnimatedBonusCounterState extends State<AnimatedBonusCounter>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  int _previousValue = 0;
+  int _currentValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentValue = widget.value;
+    _previousValue = widget.value;
+    
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
+    
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void didUpdateWidget(AnimatedBonusCounter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _previousValue = oldWidget.value;
+      _currentValue = widget.value;
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        // Интерполируем значение для плавного счётчика
+        final displayValue = (_previousValue + 
+            ((_currentValue - _previousValue) * _animation.value)).round();
+        
+        // Добавляем небольшой эффект масштаба при изменении
+        final scale = _controller.isAnimating 
+            ? 1.0 + (0.1 * (1 - (_animation.value - 0.5).abs() * 2))
+            : 1.0;
+            
+        return Transform.scale(
+          scale: scale,
+          child: Text(
+            displayValue.toString(),
+            style: widget.style,
+          ),
+        );
+      },
+    );
+  }
+}
+
 class BonusCardWidget extends StatefulWidget {
   const BonusCardWidget({
     super.key,
@@ -110,7 +192,7 @@ class _BonusCardWidgetState extends State<BonusCardWidget> {
             ),
           ),
         ),
-        // Бонусы
+        // Бонусы с анимированным счётчиком
         Positioned(
           left: 30.w,
           bottom: 30.h,
@@ -125,9 +207,18 @@ class _BonusCardWidgetState extends State<BonusCardWidget> {
                   color: Colors.white,
                 ),
               ),
-              Text(
-                '${widget.bonus} ${l10n.tg}',
-                style: TextStyle(fontSize: 17.sp, color: Colors.white),
+              Row(
+                children: [
+                  AnimatedBonusCounter(
+                    value: int.tryParse(widget.bonus) ?? 0,
+                    style: TextStyle(fontSize: 17.sp, color: Colors.white),
+                    duration: const Duration(milliseconds: 1200),
+                  ),
+                  Text(
+                    ' ${l10n.tg}',
+                    style: TextStyle(fontSize: 17.sp, color: Colors.white),
+                  ),
+                ],
               ),
             ],
           ),

@@ -29,6 +29,21 @@ class NewGiftEvent {
   }) : timestamp = timestamp ?? DateTime.now();
 }
 
+/// Событие обновления бонусов для авторефреша UI
+class BonusUpdateEvent {
+  final int? amount;
+  final String operation; // 'add' или 'write-off'
+  final bool withDelay;
+  final DateTime timestamp;
+
+  BonusUpdateEvent({
+    this.amount,
+    this.operation = 'add',
+    this.withDelay = false,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
+}
+
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
@@ -81,8 +96,14 @@ class NotificationServices {
   // Stream для событий новых подарков
   final _newGiftController = StreamController<NewGiftEvent>.broadcast();
   
+  // Stream для событий обновления бонусов
+  final _bonusUpdateController = StreamController<BonusUpdateEvent>.broadcast();
+  
   /// Stream для подписки на события новых подарков
   Stream<NewGiftEvent> get onNewGift => _newGiftController.stream;
+  
+  /// Stream для подписки на события обновления бонусов
+  Stream<BonusUpdateEvent> get onBonusUpdate => _bonusUpdateController.stream;
 
   String? get fcmToken => _fcmToken;
   int get badgeCount => _badgeCount;
@@ -93,6 +114,16 @@ class NotificationServices {
     _newGiftController.add(NewGiftEvent(
       giftName: giftName,
       giftImage: giftImage,
+    ));
+  }
+  
+  /// Уведомить об обновлении бонусов
+  void notifyBonusUpdate({int? amount, String operation = 'add', bool withDelay = false}) {
+    debugPrint('💰 Broadcasting bonus update event: $operation $amount');
+    _bonusUpdateController.add(BonusUpdateEvent(
+      amount: amount,
+      operation: operation,
+      withDelay: withDelay,
     ));
   }
 
@@ -338,8 +369,8 @@ class NotificationServices {
         // ✅ Увеличиваем badge для foreground уведомлений
         incrementBadge();
 
-        // ✅ Проверяем тип уведомления и уведомляем о новом подарке
-        _checkAndNotifyGiftEvent(message);
+        // ✅ Проверяем тип уведомления и уведомляем о событиях (бонусы, подарки)
+        _checkAndNotifyEvents(message);
 
         if (Platform.isAndroid) {
           showNotification(message);
@@ -469,13 +500,45 @@ class NotificationServices {
     });
   }
 
-  /// Проверяет тип уведомления и транслирует событие о новом подарке
-  void _checkAndNotifyGiftEvent(RemoteMessage message) {
+  /// Проверяет тип уведомления и транслирует соответствующее событие
+  void _checkAndNotifyEvents(RemoteMessage message) {
     try {
       final data = message.data;
       final type = data['type'] as String?;
       
-      // Проверяем типы уведомлений, связанных с подарками
+      // ============================================
+      // БОНУСЫ
+      // ============================================
+      if (type == 'bonus') {
+        debugPrint('💰 Bonus notification detected, broadcasting event');
+        final amountStr = data['amount']?.toString();
+        final amount = amountStr != null ? int.tryParse(amountStr) : null;
+        final operation = data['operation'] as String? ?? 'add';
+        final withDelay = data['withDelay'] == true || data['withDelay'] == 'true';
+        
+        notifyBonusUpdate(
+          amount: amount,
+          operation: operation,
+          withDelay: withDelay,
+        );
+      }
+      
+      // Также проверяем по ключевым словам для бонусов
+      final title = message.notification?.title?.toLowerCase() ?? '';
+      final body = message.notification?.body?.toLowerCase() ?? '';
+      
+      if (title.contains('бонус') || 
+          title.contains('bonus') ||
+          title.contains('баллов') ||
+          title.contains('начислен') ||
+          title.contains('списан')) {
+        debugPrint('💰 Bonus keyword detected in notification, broadcasting event');
+        notifyBonusUpdate();
+      }
+      
+      // ============================================
+      // ПОДАРКИ
+      // ============================================
       if (type == 'gift' || 
           type == 'new_gift' || 
           type == 'gift_received' ||
@@ -491,10 +554,6 @@ class NotificationServices {
         );
       }
       
-      // Также проверяем по ключевым словам в заголовке/теле
-      final title = message.notification?.title?.toLowerCase() ?? '';
-      final body = message.notification?.body?.toLowerCase() ?? '';
-      
       if (title.contains('подарок') || 
           title.contains('gift') ||
           body.contains('подарок') ||
@@ -505,7 +564,7 @@ class NotificationServices {
         );
       }
     } catch (e) {
-      debugPrint('⚠️ Error checking gift event: $e');
+      debugPrint('⚠️ Error checking notification events: $e');
     }
   }
 

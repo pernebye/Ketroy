@@ -17,6 +17,9 @@ class BonusBloc extends Bloc<BonusEvent, BonusState> {
 
   void _getBonusesFetch(
       GetBonussesFetch event, Emitter<BonusState> emit) async {
+    // Всегда показываем loading для принудительного обновления UI
+    emit(state.copyWith(status: BonusStatus.loading));
+    
     try {
       final res = await _getBonuses(NoParams(), null);
       res.fold(
@@ -28,7 +31,7 @@ class BonusBloc extends Bloc<BonusEvent, BonusState> {
     } catch (e) {
       emit(state.copyWith(
         status: BonusStatus.failure,
-        message: 'Failed to load categories: ${e.toString()}',
+        message: 'Failed to load bonuses: ${e.toString()}',
       ));
     }
   }

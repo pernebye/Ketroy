@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ import 'package:ketroy_app/features/shop/presentation/bloc/shop_bloc.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bloc.dart';
 import 'package:ketroy_app/features/partners/presentation/pages/partners_page.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/services/notification_services.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool? fromGift;
@@ -45,6 +47,9 @@ class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
   bool account = true;
   final sharedService = serviceLocator<SharedPreferencesService>();
+  
+  // Подписка на события обновления бонусов
+  StreamSubscription<BonusUpdateEvent>? _bonusUpdateSubscription;
 
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
@@ -61,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage>
   void initState() {
     super.initState();
     _initializeProfile();
+    _setupBonusUpdateListener();
 
     _headerAnimController = AnimationController(
       vsync: this,
@@ -94,9 +100,21 @@ class _ProfilePageState extends State<ProfilePage>
           context, SlideOverPageRoute(page: const MyGifts()));
     }
   }
+  
+  /// Подписка на события обновления бонусов из push-уведомлений
+  void _setupBonusUpdateListener() {
+    _bonusUpdateSubscription = NotificationServices.instance.onBonusUpdate.listen((event) {
+      debugPrint('💰 Received bonus update event: ${event.operation} ${event.amount}');
+      if (mounted) {
+        // Обновляем данные о бонусах
+        context.read<ProfileBloc>().add(GetDiscountFetch());
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _bonusUpdateSubscription?.cancel();
     _headerAnimController.dispose();
     _menuAnimController.dispose();
     super.dispose();
