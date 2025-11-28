@@ -2,12 +2,10 @@
 
 namespace App\Providers;
 
-use App\Events\BonusUpdated;
 use App\Events\GiftCertificateCreated;
 use App\Events\NewsPublished;
 use App\Events\UserInteractionEvent;
 use App\Listeners\LogUserInteraction;
-use App\Listeners\SendBonusNotification;
 use App\Listeners\SendGiftCertificateNotification;
 use App\Listeners\SendNewsNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -28,9 +26,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         UserInteractionEvent::class => [
             LogUserInteraction::class,
-        ],
-        BonusUpdated::class => [
-            SendBonusNotification::class
         ],
         GiftCertificateCreated::class => [
             SendGiftCertificateNotification::class
