@@ -118,7 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Профиль пользователя
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user/update', [UserController::class, 'updateUser']);
-    Route::put('/user/avatar', [UserController::class, 'setAvatarImageForUser']);
+    Route::post('/user/avatar', [UserController::class, 'setAvatarImageForUser']);
     Route::post('/user/update-subscription', [UserController::class, 'updateSubscription']);
     Route::delete('/user', [AuthController::class, 'deleteUser']);
     Route::post('/logout', [AuthController::class, 'logout']);

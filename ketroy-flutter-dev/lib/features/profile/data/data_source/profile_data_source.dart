@@ -69,9 +69,10 @@ class ProfileDataSourceImpl implements ProfileDataSource {
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(filePath, filename: 'avatar.jpg'),
       });
-      final response = await DioClient.instance.putFormData(
+      final response = await DioClient.instance.postFormData(
         uploadAvatarUrl,
         data: formData,
+        tokenNeed: true,
       );
       return response['avatar_image'] ?? '';
     } on DioException catch (e) {
