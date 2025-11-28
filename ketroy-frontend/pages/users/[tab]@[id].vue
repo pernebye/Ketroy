@@ -262,18 +262,25 @@
                   draggable="false"
                 />
                 <img 
+                  v-else-if="user.avatar_image" 
+                  :src="user.avatar_image" 
+                  alt="User avatar"
+                  class="user-profile__avatar-img"
+                  draggable="false"
+                />
+                <img 
                   v-else-if="user.image && user.image.path" 
                   :src="fileUrlValidator(user.image.path)" 
                   alt="User image"
                   class="user-profile__avatar-img"
                   draggable="false"
                 />
-                <v-btn 
+                <div 
                   v-else 
-                  icon="mdi-camera-enhance-outline" 
-                  class="user-profile__avatar-placeholder"
-                  @click="imageInput.click()"
-                />
+                  class="user-profile__avatar-initials"
+                >
+                  {{ getInitials(user) }}
+                </div>
                 <button class="user-profile__avatar-edit" @click="image = []; user.image = undefined;">
                   <Icon name="mdi:pencil" />
                 </button>
@@ -911,6 +918,16 @@ const changeRole = async () => {
     adminLoading.value = false;
   }
 };
+
+// Получение инициалов пользователя
+const getInitials = (u: Api.User.Self | null) => {
+  if (!u) return '?';
+  const name = u.name || u.first_name || '';
+  const surname = u.surname || u.last_name || '';
+  const firstInitial = name.charAt(0).toUpperCase();
+  const secondInitial = surname.charAt(0).toUpperCase();
+  return firstInitial + secondInitial || firstInitial || '?';
+};
 </script>
 
 <style scoped>
@@ -1266,6 +1283,22 @@ const changeRole = async () => {
   border-radius: 50% !important;
   background-color: var(--color-bg-tertiary) !important;
   color: var(--color-text-muted) !important;
+}
+
+.user-profile__avatar-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-secondary) 100%);
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  border: 4px solid var(--color-bg-card);
+  box-shadow: 0 4px 12px var(--color-shadow);
+  text-transform: uppercase;
 }
 
 .user-profile__avatar-edit {

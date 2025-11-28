@@ -505,6 +505,29 @@ declare global {
         prizes: Api.Prizes.Self[];
         created_at: string;
         phone_number: string;
+        // Поля из бэкенда Ketroy
+        name?: string;
+        surname?: string;
+        phone?: string;
+        birthdate?: string;
+        avatar_image?: string | null;
+        height?: string;
+        clothing_size?: string;
+        shoe_size?: string;
+        bonus_amount?: number;
+        discount?: number;
+        referrer_id?: number;
+        referrer?: string;
+        gifts_count?: number;
+        purchases_sum?: number;
+        purchases_count?: number;
+        referrals_count?: number;
+        loyalty_level?: {
+          name: string;
+          icon: string;
+          color: string;
+        } | null;
+        last_activity?: string;
       };
 
       export type New = {

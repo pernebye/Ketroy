@@ -18,7 +18,7 @@ class AppConfig {
   // ТЕКУЩЕЕ ОКРУЖЕНИЕ
   // ============================================
   // ⚠️ PRODUCTION MODE - для релиза в App Store / Google Play
-  static const Environment current = Environment.production;
+  static const Environment current = Environment.development;
 
   // ============================================
   // API ENDPOINTS
@@ -29,7 +29,7 @@ class AppConfig {
         // Для эмулятора Android используйте 10.0.2.2 вместо localhost
         // Для iOS симулятора используйте localhost или 127.0.0.1
         // Для реального устройства используйте IP вашего компьютера
-        return 'http://10.0.2.2:8000/api'; // Android Emulator
+        return 'https://ketroy.ngrok.app/api'; // Android Emulator
       // return 'http://localhost:8000/api'; // iOS Simulator
       // return 'http://192.168.1.100:8000/api'; // Real device (your PC IP)
       case Environment.production:

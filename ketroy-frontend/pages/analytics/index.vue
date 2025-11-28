@@ -215,7 +215,7 @@ const analyticsTypeTitles: Record<string, string> = {
 };
 
 const contentTypeLabels: Record<string, string> = {
-  post: 'постам',
+  post: 'новостей',
   story: 'сторис',
   banner: 'баннерам',
 };

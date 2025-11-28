@@ -384,6 +384,22 @@ body {
   color: var(--color-accent) !important;
 }
 
+/* Переключатели (Switch) - стили для светлой темы */
+.v-switch .v-switch__track {
+  background-color: rgba(120, 120, 128, 0.32) !important;
+  opacity: 1 !important;
+}
+.v-switch .v-selection-control--dirty .v-switch__track {
+  background-color: #34C759 !important;
+}
+.v-switch .v-switch__thumb {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+.dark .v-switch .v-switch__track {
+  background-color: rgba(120, 120, 128, 0.5) !important;
+}
+
 /* Табы */
 .v-tabs {
   background-color: transparent !important;

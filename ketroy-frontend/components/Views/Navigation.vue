@@ -50,7 +50,7 @@ const isCurrentNav = (item: Types.Nav.AdmItem) => {
 
 <style scoped>
 .admin-nav {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;

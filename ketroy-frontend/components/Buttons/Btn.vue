@@ -11,13 +11,13 @@
   padding: 10px 14px;
   border-radius: 8px;
   background-color: var(--color-accent) !important;
-  color: #1a1a1a !important;
+  color: #FFFFFF !important;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .admin-btn .v-btn__content,
 .admin-btn .v-icon {
-  color: #1a1a1a !important;
+  color: #FFFFFF !important;
 }
 
 .admin-btn:hover {
