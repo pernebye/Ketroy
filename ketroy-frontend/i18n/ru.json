@@ -1,0 +1,122 @@
+{
+  "admin": {
+    "adds": {
+      "advertisings": "Видеоролики",
+      "banners": "Баннеры",
+      "offers": "Оффер",
+      "prizes": "Подарки",
+      "discounts": "Акции",
+      "gamification": "Геймификация",
+      "giftIssuance": "Выдача"
+    },
+    "analytics": {
+      "ageActivity": "Статистика возрастов пользователей",
+      "gameActivity": "Активность игр",
+      "sectionActivity": "Активность секции",
+      "visits": "Посещаемость приложении"
+    },
+    "content": {
+      "entertainments": "Развлечение",
+      "hospitality-venues": "Гостиницы и рестораны",
+      "musics": "Музыка",
+      "partners": "Партнеры",
+      "banners": "Баннеры",
+      "histories": "Истории",
+      "news": "Новости",
+      "shops": "Магазин",
+      "bonuses": "Бонусная программа",
+      "reviews": "Отзывы"
+    },
+    "nav": {
+      "adds": "Управление акциями",
+      "admin": "Админ",
+      "analytics": "Аналитика",
+      "content": "Управление контентом",
+      "stories": "Истории",
+      "reviews": "Отзывы",
+      "users": "Пользователи",
+      "cities": "Управление городами",
+      "categories": "Управление категориями",
+      "actuals": "Управление актуальными",
+      "qr": "QR-code",
+      "pushNotifications": "Push-уведомления"
+    },
+    "pushNotifications": {
+      "title": "Push-уведомления",
+      "create": "Создать уведомление",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "duplicate": "Дублировать",
+      "send": "Отправить",
+      "cancel": "Отменить",
+      "sendNow": "Отправить сейчас",
+      "schedule": "Запланировать",
+      "notificationTitle": "Заголовок",
+      "notificationBody": "Текст уведомления",
+      "scheduledAt": "Дата и время отправки",
+      "targeting": "Таргетинг",
+      "targetCities": "Города",
+      "targetClothingSizes": "Размеры одежды",
+      "targetShoeSizes": "Размеры обуви",
+      "recipients": "Получатели",
+      "status": "Статус",
+      "statuses": {
+        "draft": "Черновик",
+        "scheduled": "Запланировано",
+        "sending": "Отправляется",
+        "sent": "Отправлено",
+        "failed": "Ошибка",
+        "cancelled": "Отменено"
+      },
+      "stats": {
+        "total": "Всего",
+        "draft": "Черновики",
+        "scheduled": "Запланировано",
+        "sent": "Отправлено",
+        "failed": "Ошибки"
+      },
+      "allUsers": "Все пользователи",
+      "noTargeting": "Без таргетинга",
+      "confirmDelete": "Удалить это уведомление?",
+      "confirmSend": "Отправить это уведомление сейчас?",
+      "confirmCancel": "Отменить это уведомление?",
+      "sendImmediately": "Отправить сразу",
+      "empty": "Нет созданных уведомлений",
+      "preview": "Предпросмотр получателей"
+    },
+    "users": {
+      "admins": "Админы",
+      "users": "Пользователи",
+      "winners": "Выигрывшие"
+    },
+    "cities": {
+      "cities": "Города"
+    },
+    "categories": {
+      "categories": "Категории",
+      "category": "Категория"
+    },
+    "actuals": {
+      "actuals": "Актуальные",
+      "actual": "Актуальное"
+    }
+  },
+  "error": {
+    "notCorrectOtp": "Неверный код подтверждения",
+    "notFoundUser": "Пользователь с таким номером телефона не найден",
+    "userExists": "Пользователь с таким номером телефона уже существует"
+  },
+  "labels": {
+    "login": "Вход",
+    "register": "Регистрация",
+    "search": "Поиск"
+  },
+  "rules": {
+    "age": "Выберите корректный возраст",
+    "email": "Введите корректную почту",
+    "requiredFile": "Необходимо загрузить",
+    "requiredText": "Заполните поле",
+    "maxLength255": "Максимальная длина 255 символов",
+    "minLength8": "Мин. 8 символов"
+  }
+}

@@ -1,0 +1,208 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+
+class AppButton extends StatefulWidget {
+  const AppButton({
+    super.key,
+    required this.title,
+    required this.onPressed,
+    this.width,
+    this.height,
+    this.borderColor,
+    this.textColor,
+    this.backgroundColor,
+    this.enabled = true,
+    this.icon,
+    this.needBold = false,
+  });
+  final String title;
+  final VoidCallback? onPressed;
+  final double? width;
+  final double? height;
+  final Color? borderColor;
+  final Color? textColor;
+  final Color? backgroundColor;
+  final bool enabled;
+  final IconData? icon;
+  final bool needBold;
+
+  @override
+  State<AppButton> createState() => _AppButtonState();
+}
+
+class _AppButtonState extends State<AppButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.enabled && widget.onPressed != null) {
+      setState(() {
+        _isPressed = true;
+      });
+      _animationController.forward();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _handleTapEnd();
+  }
+
+  void _handleTapCancel() {
+    _handleTapEnd();
+  }
+
+  void _handleTapEnd() {
+    if (_isPressed) {
+      setState(() {
+        _isPressed = false;
+      });
+      _animationController.reverse();
+
+      if (widget.enabled && widget.onPressed != null) {
+        widget.onPressed!();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: GestureDetector(
+            onTapDown: _handleTapDown,
+            onTapUp: _handleTapUp,
+            onTapCancel: _handleTapCancel,
+            child: Container(
+              width: widget.width,
+              height: widget.height,
+              padding:
+                  EdgeInsets.symmetric(vertical: 19.5.h, horizontal: 36.5.w),
+              decoration: BoxDecoration(
+                  color: widget.backgroundColor ?? Colors.white,
+                  borderRadius: BorderRadius.circular(13.r),
+                  border: widget.borderColor != null
+                      ? Border.all(color: widget.borderColor!)
+                      : null),
+              child: _buildContent(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent() {
+    final textColor = widget.backgroundColor == Colors.white
+        ? Colors.black
+        : widget.textColor ?? Colors.white;
+
+    if (widget.icon != null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            widget.icon,
+            color: textColor,
+            size: 20.sp,
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            widget.title,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 15.sp,
+              fontWeight: widget.needBold ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Text(
+      widget.title,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 15.sp,
+        fontWeight: widget.needBold ? FontWeight.w700 : FontWeight.w400,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+}
+
+// ============================================================================
+// LIQUID GLASS BUTTON (Apple Style)
+// Использует библиотеку liquid_glass_renderer для аутентичного эффекта
+// ============================================================================
+
+class GlassMorphism extends StatelessWidget {
+  const GlassMorphism({
+    super.key,
+    this.borderRadius = 16.0,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    this.margin = const EdgeInsets.all(0.0),
+    this.height,
+    this.width,
+    required this.child,
+    this.onPressed,
+  });
+
+  final double borderRadius;
+  final EdgeInsets padding;
+  final EdgeInsets margin;
+  final Widget child;
+  final double? width;
+  final double? height;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        margin: margin,
+        width: width,
+        constraints: BoxConstraints(
+          minHeight: height ?? 53.h,
+        ),
+        child: LiquidGlass.withOwnLayer(
+          shape: LiquidRoundedSuperellipse(borderRadius: borderRadius.r),
+          child: Padding(
+            padding: padding,
+            child: Center(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+}

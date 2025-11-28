@@ -1,0 +1,18 @@
+{
+  "cities": [
+    {
+      "id": 1,
+      "name": "New York",
+      "country": "United States",
+      "population": 8419600,
+      "icon": "mdi:city"
+    },
+    {
+      "id": 2,
+      "name": "Paris",
+      "country": "France",
+      "population": 2141000,
+      "icon": "mdi:city"
+    }
+  ]
+}

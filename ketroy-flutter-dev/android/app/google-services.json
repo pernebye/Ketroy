@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "993449151112",
+    "project_id": "ketroy-shop",
+    "storage_bucket": "ketroy-shop.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993449151112:android:686783668fa081e0582d3d",
+        "android_client_info": {
+          "package_name": "com.example.ketroyApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvG_UnlhYyU-cYglGoolwNGgAcVKscYM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993449151112:android:02fdb68e9200744e582d3d",
+        "android_client_info": {
+          "package_name": "com.ketroy.ketroyApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvG_UnlhYyU-cYglGoolwNGgAcVKscYM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

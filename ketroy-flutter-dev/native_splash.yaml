@@ -1,0 +1,27 @@
+flutter_native_splash: 
+  ios: true
+  web: false
+
+  color: "#3A4510"
+  image: "images/ketroy-splash-logo.png"
+  
+  # ВАЖНО: Добавляем индикатор загрузки
+  android_loading_indicator: "fade"  # или "circle", "progressBar"
+  ios_loading_indicator: "fade"      # или "activity", "progressBar"
+  
+  # Позиционирование логотипа и загрузки
+  image_position: "center"           # позиция логотипа
+  loading_position: "bottom"         # позиция индикатора загрузки
+  
+  # Дополнительные настройки
+  fullscreen: true
+  android_gravity: "fill"
+  ios_content_mode: "scaleAspectFit"
+  
+  # Настройки индикатора загрузки
+  android_loading_color: "#FFFFFF"   # цвет индикатора для Android
+  ios_loading_color: "#FFFFFF"       # цвет индикатора для iOS
+  
+  # Размер и отступы
+  image_size: 200                    # размер логотипа в пикселях
+  loading_margin: 50                 # отступ индикатора от низа экрана

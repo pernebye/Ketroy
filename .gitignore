@@ -1,0 +1,65 @@
+# IDE / Editor
+/.cursor
+.idea/
+.vscode/
+*.iml
+
+# Database
+*.sql
+*.sqlite
+*.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+storage/logs/
+
+# Laravel Backend
+ketroy_back_new/vendor/
+ketroy_back_new/node_modules/
+ketroy_back_new/storage/logs/
+ketroy_back_new/storage/framework/cache/
+ketroy_back_new/storage/framework/sessions/
+ketroy_back_new/storage/framework/views/
+ketroy_back_new/bootstrap/cache/
+ketroy_back_new/.env
+ketroy_back_new/public/storage
+
+# Nuxt Frontend
+ketroy-frontend/node_modules/
+ketroy-frontend/.nuxt/
+ketroy-frontend/.output/
+ketroy-frontend/dist/
+ketroy-frontend/.env
+
+# Flutter App
+ketroy-flutter-dev/build/
+ketroy-flutter-dev/.dart_tool/
+ketroy-flutter-dev/.pub-cache/
+ketroy-flutter-dev/android/keystore.properties
+ketroy-flutter-dev/android/local.properties
+ketroy-flutter-dev/android/*.jks
+ketroy-flutter-dev/ios/Pods/
+ketroy-flutter-dev/ios/.symlinks/
+ketroy-flutter-dev/ios/build/
+ketroy-flutter-dev/service-account.json
+ketroy-flutter-dev/*.log
+
+# Keystore / Secrets
+*.jks
+*.keystore
+keystore.properties
+service-account.json
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.temp
+nul

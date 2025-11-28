@@ -1,0 +1,4330 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API документация Ketroy",
+        "description": "Документация API для управления администраторами.",
+        "version": "1.0"
+    },
+    "paths": {
+        "/actuals": {
+            "get": {
+                "tags": [
+                    "Actuals"
+                ],
+                "summary": "Получить все актуальные группы",
+                "operationId": "99c68213d298358d4b5bea105c051f3e",
+                "responses": {
+                    "200": {
+                        "description": "Список актуальных групп",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Акции"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при чтении файла"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Actuals"
+                ],
+                "summary": "Создать новые актуальные группы",
+                "operationId": "bc5e63687a19b6c44b33cce6ff3c44a4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Акции"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Файл с актуальными успешно сохранён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Файл с актуальными успешно сохранён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в запросе"
+                    }
+                }
+            }
+        },
+        "/admin/register": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Регистрация администратора",
+                "description": "Создание новой учетной записи администратора.",
+                "operationId": "0603d6b9af40d2a70a2694cde6ecca0d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "surname",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Регистрация успешна",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Регистрация успешна."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "generated_token"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@example.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка валидации."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/login": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Вход администратора",
+                "description": "Авторизация администратора с выдачей токена.",
+                "operationId": "6e9fa1e6623769561167fc73fb39451e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Авторизация успешна",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Авторизация успешна."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "generated_token"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@example.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учетные данные",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Неверные учетные данные"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/logout": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Выход администратора",
+                "description": "Выход администратора из системы с удалением токенов.",
+                "operationId": "be5acf48746a8be5203223ec84a10b89",
+                "responses": {
+                    "200": {
+                        "description": "Успешный выход",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Успешный выход"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/assign-marketer-role": {
+            "post": {
+                "tags": [
+                    "User Management"
+                ],
+                "summary": "Назначение роли маркетолога пользователю",
+                "description": "Позволяет назначить роль маркетолога для пользователя по его идентификатору.",
+                "operationId": "f68da8d18ba8b103883bc266e189a557",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "description": "ID пользователя, которому назначается роль маркетолога",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 123
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Пользователь успешно обновлен, перенаправление на список пользователей",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User role assigned successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос или параметры",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid user ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/event-statistics": {
+            "get": {
+                "tags": [
+                    "Analytics"
+                ],
+                "summary": "Получение статистики по событиям",
+                "description": "Получение статистики по событиям в заданном периоде.",
+                "operationId": "4110461c085cc4028f61fa93ca4ae973",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Тип события для статистики (например, 'login', 'purchase')",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "login"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Дата начала периода (по умолчанию - 1 месяц назад)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-11-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Дата конца периода (по умолчанию - сегодня)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-12-01"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статистика по событиям успешно получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Event statistics fetched successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/promo-code-usage": {
+            "get": {
+                "tags": [
+                    "Analytics"
+                ],
+                "summary": "Получение статистики использования промокодов",
+                "description": "Получение статистики по использованию промокодов за заданный период.",
+                "operationId": "a87bafc7d47c9d873baf03e1b00f421a",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Дата начала периода (по умолчанию - 1 месяц назад)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-11-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Дата конца периода (по умолчанию - сегодня)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2024-12-01"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статистика использования промокодов успешно получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Promo code usage fetched successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Регистрация нового пользователя",
+                "description": "Создание новой учетной записи пользователя",
+                "operationId": "0903f2e0df1a8857bee538fc055417f0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "surname",
+                                    "phone",
+                                    "country_code"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Иван"
+                                    },
+                                    "device_token": {
+                                        "type": "string",
+                                        "example": "740f4707 bebcf74f 9b7c25d4 8e335894 5f6aa01d a5ddb387 462c7eaf 61bb78ad"
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "example": "Иванов"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "79001234567"
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "example": "+7"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Пользователь успешно зарегистрирован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully!"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/send-verification-code": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Отправка кода подтверждения",
+                "description": "Отправляет код подтверждения на указанный номер телефона",
+                "operationId": "6e5dd31f67d325b4d331c39532efe535",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "country_code"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "79001234567"
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "example": "+7"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Код подтверждения отправлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Код подтверждения отправлен."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            }
+        },
+        "/verify-code": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Подтверждение кода для авторизации",
+                "description": "Проверка кода подтверждения и авторизация пользователя",
+                "operationId": "36e8526061d7fbb6685ffbde9fa9e581",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "verification_code"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "79001234567"
+                                    },
+                                    "verification_code": {
+                                        "type": "string",
+                                        "example": "12345"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Авторизация успешна",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "your-auth-token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Код истек или неверный"
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Выход пользователя",
+                "description": "Удаление токена авторизации пользователя",
+                "operationId": "68a6108af04af5e3bc1ea68a6c6f1299",
+                "responses": {
+                    "200": {
+                        "description": "Выход успешен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/user": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Получение информации о текущем пользователе",
+                "description": "Возвращает информацию о текущем пользователе, который авторизован",
+                "operationId": "99e9c2c91427f6bf63c2f0ef765a768f",
+                "responses": {
+                    "200": {
+                        "description": "Информация о пользователе",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Иван"
+                                        },
+                                        "surname": {
+                                            "type": "string",
+                                            "example": "Иванов"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "example": "79001234567"
+                                        },
+                                        "country_code": {
+                                            "type": "string",
+                                            "example": "+7"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/banners": {
+            "get": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Получение списка активных баннеров",
+                "description": "Возвращает список активных баннеров, доступных для указанного города, если задан.",
+                "operationId": "514c45c8ab2300edd36f3db4721b389d",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Фильтр баннеров по городу",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Москва"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список баннеров"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Создание нового баннера",
+                "description": "Создает новый баннер с указанием всех обязательных данных.",
+                "operationId": "c50ea0ab925987255c44e954ea5f794a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Рекламный баннер"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Описание баннера"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Москва"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ],
+                                        "example": "image"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-12-31"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Баннер успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Баннер успешно создан"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/banners/{id}": {
+            "get": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Получение информации о баннере",
+                "description": "Возвращает данные баннера по его идентификатору.",
+                "operationId": "dbe4d951ba7f12a7f40065e840e2f4ab",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID баннера",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные баннера"
+                    },
+                    "404": {
+                        "description": "Баннер не найден"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Обновление баннера",
+                "description": "Обновляет данные существующего баннера.",
+                "operationId": "f4346fddf9b6a0f28e7f72e7df360081",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID баннера",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Обновленный баннер"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Обновленное описание"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Москва"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ],
+                                        "example": "image"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-12-31"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Баннер успешно изменен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Баннер успешно изменен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Баннер не найден"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Удаление баннера",
+                "description": "Удаляет баннер по его идентификатору.",
+                "operationId": "7ffa907193ebc661e8623c862a8fd394",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID баннера",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Баннер успешно удален"
+                    },
+                    "404": {
+                        "description": "Баннер не найден"
+                    }
+                }
+            }
+        },
+        "/admin/banners": {
+            "get": {
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Получение списка баннеров с пагинацией",
+                "operationId": "555889e9ea00632072ea6352db5f6422",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Фильтр по городу",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Количество баннеров на странице (по умолчанию 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы (по умолчанию 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Banner"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 50
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": 5
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка запроса"
+                    }
+                }
+            }
+        },
+        "/bonus-card": {
+            "get": {
+                "tags": [
+                    "User Management"
+                ],
+                "summary": "Получение бонусных данных пользователя",
+                "description": "Позволяет получить бонусные данные пользователя на основе его номера телефона.",
+                "operationId": "aba5c28614b0e903bd2c967d4e1d2b75",
+                "responses": {
+                    "200": {
+                        "description": "Бонусные данные успешно получены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                },
+                                "example": {
+                                    "bonus_points": 150
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/static-discount-qrcode": {
+            "get": {
+                "tags": [
+                    "Discounts"
+                ],
+                "summary": "Генерация QR-кода для скидки",
+                "description": "Генерирует QR-код, который можно использовать для получения скидки. QR-код содержит ссылку на страницу скидки.",
+                "operationId": "086af1fe7403b05f380ef2b179ac47d3",
+                "responses": {
+                    "200": {
+                        "description": "QR-код для скидки успешно сгенерирован",
+                        "content": {
+                            "image/svg+xml": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scan-discount": {
+            "post": {
+                "tags": [
+                    "Discounts"
+                ],
+                "summary": "Активация скидки с помощью токена",
+                "description": "Генерирует временный токен для активации скидки для пользователя. Токен действителен 10 минут.",
+                "operationId": "bee5b634a3302df05f17fd91bd1496f8",
+                "responses": {
+                    "200": {
+                        "description": "Скидка успешно активирована",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "discount": {
+                                            "type": "number",
+                                            "example": 20
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Скидка активирована!"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "5e884898da28047151d0e56f8dc1f74e3b2f16b2"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 10
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/verify-discount": {
+            "post": {
+                "tags": [
+                    "Discounts"
+                ],
+                "summary": "Проверка действительности токена скидки",
+                "description": "Проверяет, действителен ли токен скидки, и активирует персональную скидку для пользователя, если токен действителен.",
+                "operationId": "01b0c05efcfacd82c8b7abe7953a090e",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "Токен скидки, полученный при активации скидки.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "5e884898da28047151d0e56f8dc1f74e3b2f16b2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Персональная скидка успешно активирована",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "discount": {
+                                            "type": "number",
+                                            "example": 20
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Персональная скидка активирована"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bonus-programs": {
+            "get": {
+                "tags": [
+                    "Bonus Programs"
+                ],
+                "summary": "Получение всех бонусных программ",
+                "operationId": "26e37ac199af87f7a47d5695de1b244d",
+                "responses": {
+                    "200": {
+                        "description": "Список бонусных программ"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Bonus Programs"
+                ],
+                "summary": "Создание бонусной программы",
+                "operationId": "70d5fc16ec253e56380546dc0e16dcf5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Весенняя акция"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Скидки до 50%"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "example": "image.jpg"
+                                    },
+                                    "published_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-04-01 12:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Бонусная программа создана"
+                    }
+                }
+            }
+        },
+        "/api/bonus-programs/{id}": {
+            "get": {
+                "tags": [
+                    "Bonus Programs"
+                ],
+                "summary": "Получение одной бонусной программы",
+                "operationId": "9ff0f08ab829aa446f4155759ec71caf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бонусная программа найдена"
+                    },
+                    "404": {
+                        "description": "Бонусная программа не найдена"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Bonus Programs"
+                ],
+                "summary": "Обновление бонусной программы",
+                "operationId": "2c51929cd8c16ed2848be78de18486c4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "image": {
+                                        "type": "string"
+                                    },
+                                    "published_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Обновлено"
+                    },
+                    "404": {
+                        "description": "Не найдено"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Bonus Programs"
+                ],
+                "summary": "Удаление бонусной программы",
+                "operationId": "47afaa21261ab9a3299f7a43f5e0cb72",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Удалено"
+                    },
+                    "404": {
+                        "description": "Не найдено"
+                    }
+                }
+            }
+        },
+        "/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Получение списка категорий",
+                "description": "Возвращает список категорий, которые хранятся в файле categories.json.",
+                "operationId": "ccdda622fc3a681727dc266235461959",
+                "responses": {
+                    "200": {
+                        "description": "Список категорий",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Категория 1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Файл с категориями не найден"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Сохранение категорий",
+                "description": "Сохраняет список категорий в файл categories.json.",
+                "operationId": "bb02f0320882db37f99574196577e446",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Категория 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Категории успешно сохранены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Файл с городами успешно сохранён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных"
+                    }
+                }
+            }
+        },
+        "/cities": {
+            "get": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Получение списка городов",
+                "description": "Возвращает список городов, которые хранятся в файле cities.json.",
+                "operationId": "6c450a43d3a7ad6c5740b33397769d14",
+                "responses": {
+                    "200": {
+                        "description": "Список городов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Город 1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Файл с городами не найден"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Сохранение городов",
+                "description": "Сохраняет список городов в файл cities.json.",
+                "operationId": "863932768a96ed74c473d3b18f6da60e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Город 1"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "example": "+77056789123"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Города успешно сохранены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Файл с городами успешно сохранён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных"
+                    }
+                }
+            }
+        },
+        "/countries": {
+            "get": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Получение списка стран",
+                "description": "Возвращает список стран, которые хранятся в файле countries.json.",
+                "operationId": "44042ed84da01c70ce052bb1b814734e",
+                "responses": {
+                    "200": {
+                        "description": "Список стран",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Страна 1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Файл со странами не найден"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Сохранение стран",
+                "description": "Сохраняет список стран в файл countries.json.",
+                "operationId": "a0415a40316de0fb9e3015dd1c0508a0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Страна 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Страны успешно сохранены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Файл с городами успешно сохранён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в данных"
+                    }
+                }
+            }
+        },
+        "/gifts/purchase": {
+            "post": {
+                "tags": [
+                    "Purchases"
+                ],
+                "summary": "Покупка подарочного сертификата",
+                "description": "Обрабатывает покупку подарочного сертификата, создает сертификат в 1С и транзакцию для пользователя.",
+                "operationId": "9c73da6c42272cc68b9b66b10c40d192",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phone",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "79001234567"
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 200
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Подарочный сертификат успешно куплен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gift certificate purchased successfully"
+                                        },
+                                        "certificate": {
+                                            "type": "object",
+                                            "example": {
+                                                "certificate_code": "abc123xyz",
+                                                "amount": 200,
+                                                "phone": "79001234567"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/news": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Получение списка новостей",
+                "description": "Возвращает список активных новостей с возможностью фильтрации по параметрам.",
+                "operationId": "21b84dbdd75fd20b9c9ddb9b9e68f0a1",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Город для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Категория для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "height",
+                        "in": "query",
+                        "description": "Рост для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "clothing_size",
+                        "in": "query",
+                        "description": "Размер одежды для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "shoe_size",
+                        "in": "query",
+                        "description": "Размер обуви для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список новостей",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_path": {
+                                                        "type": "string"
+                                                    },
+                                                    "is_active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "expired_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "category": {
+                                                        "type": "string"
+                                                    },
+                                                    "height": {
+                                                        "type": "integer"
+                                                    },
+                                                    "clothing_size": {
+                                                        "type": "integer"
+                                                    },
+                                                    "shoe_size": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Создание новости",
+                "description": "Создает новую новость.",
+                "operationId": "d6a12c2e3b4ea9ab588ba9b1cb14748f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "is_active",
+                                    "name",
+                                    "category",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "height": {
+                                        "type": "integer"
+                                    },
+                                    "clothing_size": {
+                                        "type": "integer"
+                                    },
+                                    "shoe_size": {
+                                        "type": "integer"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ]
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "file_path": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Новость успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Новость успешно создана"
+                                        },
+                                        "news": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "file_path": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "expired_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "category": {
+                                                    "type": "string"
+                                                },
+                                                "height": {
+                                                    "type": "integer"
+                                                },
+                                                "clothing_size": {
+                                                    "type": "integer"
+                                                },
+                                                "shoe_size": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/news/{id}": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Получение новости",
+                "description": "Возвращает новость по указанному идентификатору.",
+                "operationId": "eb815321a4dd395639d4aeef25d9a45c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID новости",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Детали новости",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "file_path": {
+                                            "type": "string"
+                                        },
+                                        "is_active": {
+                                            "type": "boolean"
+                                        },
+                                        "expired_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "height": {
+                                            "type": "integer"
+                                        },
+                                        "clothing_size": {
+                                            "type": "integer"
+                                        },
+                                        "shoe_size": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Новость не найдена"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Обновление новости",
+                "description": "Обновляет существующую новость.",
+                "operationId": "25ea273290c6cb379ab85e08ff4fadfc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID новости",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "is_active",
+                                    "name",
+                                    "category",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "height": {
+                                        "type": "integer"
+                                    },
+                                    "clothing_size": {
+                                        "type": "integer"
+                                    },
+                                    "shoe_size": {
+                                        "type": "integer"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ]
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "file_path": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Новость успешно обновлена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Новость успешно изменена"
+                                        },
+                                        "news": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "file_path": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "expired_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "category": {
+                                                    "type": "string"
+                                                },
+                                                "height": {
+                                                    "type": "integer"
+                                                },
+                                                "clothing_size": {
+                                                    "type": "integer"
+                                                },
+                                                "shoe_size": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Новость не найдена"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Удаление новости",
+                "description": "Удаляет новость по указанному идентификатору.",
+                "operationId": "bbe79a918bfbb58bc46ed74b43e9b986",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID новости",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Новость успешно удалена"
+                    },
+                    "404": {
+                        "description": "Новость не найдена"
+                    }
+                }
+            }
+        },
+        "/admin/news": {
+            "get": {
+                "tags": [
+                    "News"
+                ],
+                "summary": "Получение списка новостей",
+                "description": "Возвращает список активных новостей с возможностью фильтрации по параметрам.",
+                "operationId": "6c0622719d09a9cedebb4cf757350e8f",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Город для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Категория для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "height",
+                        "in": "query",
+                        "description": "Рост для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "clothing_size",
+                        "in": "query",
+                        "description": "Размер одежды для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "shoe_size",
+                        "in": "query",
+                        "description": "Размер обуви для фильтрации новостей",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список новостей",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_path": {
+                                                        "type": "string"
+                                                    },
+                                                    "is_active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "expired_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "category": {
+                                                        "type": "string"
+                                                    },
+                                                    "height": {
+                                                        "type": "integer"
+                                                    },
+                                                    "clothing_size": {
+                                                        "type": "integer"
+                                                    },
+                                                    "shoe_size": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Получение всех push-уведомлений пользователя",
+                "operationId": "0f031f66cd8c52bf73e89fb2d050ad83",
+                "responses": {
+                    "200": {
+                        "description": "Список уведомлений",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "body": {
+                                                "type": "string"
+                                            },
+                                            "is_read": {
+                                                "type": "boolean"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{id}": {
+            "delete": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Удаление push-уведомления по ID",
+                "operationId": "ccdcc730b2088097dd94128f24960dbf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID уведомления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Уведомление удалено"
+                    },
+                    "404": {
+                        "description": "Уведомление не найдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{id}/read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Отметить уведомление как прочитанное",
+                "operationId": "e8ec77e64be528452b6b9ee62d832d70",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID уведомления",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Уведомление обновлено"
+                    },
+                    "404": {
+                        "description": "Уведомление не найдено"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/promo-codes/apply": {
+            "post": {
+                "tags": [
+                    "PromoCodes"
+                ],
+                "summary": "Применение промокода",
+                "description": "Пользователь может применить промокод для получения скидки и бонусов для реферера.",
+                "operationId": "d2b8d7720b336fbc1d8076afb86663ef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "promo_code"
+                                ],
+                                "properties": {
+                                    "promo_code": {
+                                        "type": "string",
+                                        "example": "SUMMER2024"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Промокод успешно применён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Промокод успешно применён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка применения промокода (например, промокод уже использован или не существует)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Вы уже использовали промокод"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/promotions": {
+            "get": {
+                "tags": [
+                    "Акции"
+                ],
+                "summary": "Получение списка активных акций",
+                "description": "Возвращает список всех акций, которые не архивированы.",
+                "operationId": "dab78470f1f4b1a132c672aa0e89963b",
+                "responses": {
+                    "200": {
+                        "description": "Список акций",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "accumulation"
+                                            },
+                                            "settings": {
+                                                "type": "object",
+                                                "example": {
+                                                    "min_amount": 100000,
+                                                    "max_amount": 300000
+                                                }
+                                            },
+                                            "start_date": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2024-07-01"
+                                            },
+                                            "end_date": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2024-07-31"
+                                            },
+                                            "is_archived": {
+                                                "type": "boolean",
+                                                "example": false
+                                            },
+                                            "gifts": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "gift_name": {
+                                                            "type": "string",
+                                                            "example": "Галстук"
+                                                        },
+                                                        "image": {
+                                                            "description": "Base64-изображение подарка",
+                                                            "type": "string",
+                                                            "example": "data:image/jpeg;base64,..."
+                                                        },
+                                                        "min_amount": {
+                                                            "type": "integer",
+                                                            "example": 100000
+                                                        },
+                                                        "max_amount": {
+                                                            "type": "integer",
+                                                            "example": 300000
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Акции"
+                ],
+                "summary": "Создание новой акции",
+                "description": "Создаёт новую акцию и добавляет к ней подарки.",
+                "operationId": "b24206fd7d73febdfee9a28cb3297bed",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "accumulation",
+                                            "friend_discount",
+                                            "date_based"
+                                        ],
+                                        "example": "accumulation"
+                                    },
+                                    "settings": {
+                                        "type": "object",
+                                        "example": {
+                                            "min_amount": 100000,
+                                            "max_amount": 300000
+                                        }
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-07-01"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-07-31"
+                                    },
+                                    "gifts": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "gift_name": {
+                                                    "type": "string",
+                                                    "example": "Галстук"
+                                                },
+                                                "image": {
+                                                    "description": "Base64-изображение подарка",
+                                                    "type": "string",
+                                                    "example": "data:image/jpeg;base64,..."
+                                                },
+                                                "min_amount": {
+                                                    "type": "integer",
+                                                    "example": 100000
+                                                },
+                                                "max_amount": {
+                                                    "type": "integer",
+                                                    "example": 300000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Акция успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Акция успешно создана"
+                                        },
+                                        "promotion": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "accumulation"
+                                                },
+                                                "settings": {
+                                                    "type": "object",
+                                                    "example": {
+                                                        "min_amount": 100000,
+                                                        "max_amount": 300000
+                                                    }
+                                                },
+                                                "start_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-07-01"
+                                                },
+                                                "end_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-07-31"
+                                                },
+                                                "is_archived": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "gifts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "gift_name": {
+                                                                "type": "string",
+                                                                "example": "Галстук"
+                                                            },
+                                                            "image": {
+                                                                "description": "Base64-изображение подарка",
+                                                                "type": "string",
+                                                                "example": "data:image/jpeg;base64,..."
+                                                            },
+                                                            "min_amount": {
+                                                                "type": "integer",
+                                                                "example": 100000
+                                                            },
+                                                            "max_amount": {
+                                                                "type": "integer",
+                                                                "example": 300000
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/api/admin/promotions/{promotion}": {
+            "post": {
+                "tags": [
+                    "Акции"
+                ],
+                "summary": "Обновление акции",
+                "description": "Обновляет параметры акции и её подарки.",
+                "operationId": "23c2ee620d4bb12749b91d327017e947",
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "description": "ID акции",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "accumulation",
+                                            "friend_discount",
+                                            "date_based"
+                                        ],
+                                        "example": "accumulation"
+                                    },
+                                    "settings": {
+                                        "type": "object",
+                                        "example": {
+                                            "min_amount": 100000,
+                                            "max_amount": 300000
+                                        }
+                                    },
+                                    "gifts": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "gift_name": {
+                                                    "type": "string",
+                                                    "example": "Галстук"
+                                                },
+                                                "image": {
+                                                    "description": "Base64-изображение подарка",
+                                                    "type": "string",
+                                                    "example": "data:image/jpeg;base64,..."
+                                                },
+                                                "min_amount": {
+                                                    "type": "integer",
+                                                    "example": 100000
+                                                },
+                                                "max_amount": {
+                                                    "type": "integer",
+                                                    "example": 300000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Акция обновлена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Акция успешно обновлена"
+                                        },
+                                        "promotion": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "accumulation"
+                                                },
+                                                "settings": {
+                                                    "type": "object",
+                                                    "example": {
+                                                        "min_amount": 100000,
+                                                        "max_amount": 300000
+                                                    }
+                                                },
+                                                "start_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-07-01"
+                                                },
+                                                "end_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-07-31"
+                                                },
+                                                "is_archived": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "gifts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "gift_name": {
+                                                                "type": "string",
+                                                                "example": "Галстук"
+                                                            },
+                                                            "image": {
+                                                                "description": "Base64-изображение подарка",
+                                                                "type": "string",
+                                                                "example": "data:image/jpeg;base64,..."
+                                                            },
+                                                            "min_amount": {
+                                                                "type": "integer",
+                                                                "example": 100000
+                                                            },
+                                                            "max_amount": {
+                                                                "type": "integer",
+                                                                "example": 300000
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Акция не найдена"
+                    }
+                }
+            }
+        },
+        "/api/admin/promotions/{promotion}/archive": {
+            "post": {
+                "tags": [
+                    "Акции"
+                ],
+                "summary": "Архивация акции",
+                "description": "Помечает акцию как архивную.",
+                "operationId": "556d4cf9988dbef63d97b58b71affa67",
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "description": "ID акции",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Акция архивирована",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Акция архивирована"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Акция не найдена"
+                    }
+                }
+            }
+        },
+        "/shops": {
+            "get": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Получение списка магазинов",
+                "description": "Возвращает список всех магазинов.",
+                "operationId": "16f2967ba4e0c66824be1862e3ca3438",
+                "responses": {
+                    "200": {
+                        "description": "Список магазинов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "two_gis_address": {
+                                                "type": "string"
+                                            },
+                                            "address": {
+                                                "type": "string"
+                                            },
+                                            "opening_hours": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Создание магазина",
+                "description": "Создает новый магазин.",
+                "operationId": "bf1ecbd2dd07c06d915c0a5480a6c4d3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "opening_hours"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "two_gis_address": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "opening_hours": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Магазин успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Магазин успешно создан"
+                                        },
+                                        "shop": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "two_gis_address": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "opening_hours": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/shops/{id}": {
+            "get": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Получение магазина",
+                "description": "Возвращает магазин по указанному идентификатору.",
+                "operationId": "722d75f836f7cfe561d0033a8a14986a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID магазина",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Детали магазина",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "two_gis_address": {
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        },
+                                        "opening_hours": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Магазин не найден"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Обновление магазина",
+                "description": "Обновляет существующий магазин.",
+                "operationId": "5fdfbbcc6843c5b90dc7f7820dde3061",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID магазина",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "opening_hours"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "two_gis_address": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "opening_hours": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Магазин успешно обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Магазин успешно обновлён"
+                                        },
+                                        "shop": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "two_gis_address": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "opening_hours": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Магазин не найден"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Удаление магазина",
+                "description": "Удаляет магазин по указанному идентификатору.",
+                "operationId": "708ed70ac0a9ab3e4b97025b4cf4e9f3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID магазина",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Магазин успешно удален"
+                    },
+                    "404": {
+                        "description": "Магазин не найден"
+                    }
+                }
+            }
+        },
+        "/reviews": {
+            "get": {
+                "tags": [
+                    "ShopReviews"
+                ],
+                "summary": "Получение всех отзывов о магазинах",
+                "description": "Возвращает список всех отзывов о магазинах.",
+                "operationId": "912c8a812e1c72243382ea458b80fbb7",
+                "responses": {
+                    "200": {
+                        "description": "Список отзывов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "shop_id": {
+                                                "type": "integer"
+                                            },
+                                            "user_id": {
+                                                "type": "integer"
+                                            },
+                                            "review": {
+                                                "type": "string"
+                                            },
+                                            "shop": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "user": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "ShopReviews"
+                ],
+                "summary": "Добавление отзыва о магазине",
+                "description": "Создает новый отзыв о магазине.",
+                "operationId": "eb0f98143b2f487adea14c9ef2c9f9b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "shop_id",
+                                    "user_id",
+                                    "review"
+                                ],
+                                "properties": {
+                                    "shop_id": {
+                                        "type": "integer"
+                                    },
+                                    "user_id": {
+                                        "type": "integer"
+                                    },
+                                    "review": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Отзыв успешно добавлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Отзыв успешно добавлен!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/reviews/{id}": {
+            "delete": {
+                "tags": [
+                    "ShopReviews"
+                ],
+                "summary": "Удаление отзыва",
+                "description": "Удаляет отзыв по указанному идентификатору.",
+                "operationId": "53c9ca5ade108f0e2bbcb2b8c01bc364",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID отзыва",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Отзыв успешно удалён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Отзыв успешно удалён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Отзыв не найден"
+                    }
+                }
+            }
+        },
+        "/stories": {
+            "get": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Получение активных историй",
+                "description": "Возвращает список активных историй с возможностью фильтрации по городу и актуальной группе.",
+                "operationId": "7949a42f8c79835f4471975ca03ac58f",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Город для фильтрации",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "actual_group",
+                        "in": "query",
+                        "description": "Актуальная группа для фильтрации",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список активных историй",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "actual_group": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_path": {
+                                                        "type": "string"
+                                                    },
+                                                    "is_active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "expired_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "last_page": {
+                                            "type": "integer"
+                                        },
+                                        "per_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Создание новой истории",
+                "description": "Создает новую историю.",
+                "operationId": "9bd3f80317a4d0b0d7a4f0de3e8108a3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "actual_group",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "actual_group": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ]
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "file_path": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Сторис успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Сторис успешно создан"
+                                        },
+                                        "story": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "actual_group": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "file_path": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "expired_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            }
+        },
+        "/stories/{id}": {
+            "get": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Получение истории по ID",
+                "description": "Возвращает историю по указанному ID.",
+                "operationId": "95cf070c8a24baffeecd687798704d23",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID истории",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "История найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "actual_group": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "file_path": {
+                                            "type": "string"
+                                        },
+                                        "is_active": {
+                                            "type": "boolean"
+                                        },
+                                        "expired_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "История не найдена"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Обновление истории",
+                "description": "Обновляет историю по указанному ID.",
+                "operationId": "68ac5a91b2487609883cbf69415f145c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID истории",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "city",
+                                    "actual_group",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "actual_group": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ]
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    },
+                                    "expired_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "file_path": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Сторис успешно изменён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Сторис успешно изменён"
+                                        },
+                                        "story": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "city": {
+                                                    "type": "string"
+                                                },
+                                                "actual_group": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "file_path": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "expired_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "История не найдена"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Удаление истории",
+                "description": "Удаляет историю по указанному ID.",
+                "operationId": "8b90aeafa01a9fe103d496d4cb25a673",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID истории",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сторис успешно удалён",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Сторис успешно удалён"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "История не найдена"
+                    }
+                }
+            }
+        },
+        "/admin/stories": {
+            "get": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Получение активных историй",
+                "description": "Возвращает список активных историй с возможностью фильтрации по городу и актуальной группе.",
+                "operationId": "1c3b638ac31bcc9de79f71d0881351f3",
+                "parameters": [
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Город для фильтрации",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "actual_group",
+                        "in": "query",
+                        "description": "Актуальная группа для фильтрации",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список активных историй",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "city": {
+                                                        "type": "string"
+                                                    },
+                                                    "actual_group": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "file_path": {
+                                                        "type": "string"
+                                                    },
+                                                    "is_active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "expired_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "last_page": {
+                                            "type": "integer"
+                                        },
+                                        "per_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users-with-gifts": {
+            "get": {
+                "tags": [
+                    "Admin • Users"
+                ],
+                "summary": "Получение списка пользователей и количества их подарков",
+                "description": "Позволяет фильтровать пользователей по имени и фамилии, городу или номеру телефона, возвращает количество подарков на каждого пользователя",
+                "operationId": "d2b6b672060050f3ed462812939ee40a",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Поиск по имени и фамилии (в формате 'Имя Фамилия')",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "description": "Фильтр по городу",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Фильтр по номеру телефона (с кодом страны)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "+77011234567"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список пользователей с количеством подарков",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Иван"
+                                                    },
+                                                    "surname": {
+                                                        "type": "string",
+                                                        "example": "Иванов"
+                                                    },
+                                                    "phone": {
+                                                        "type": "string",
+                                                        "example": "7011234567"
+                                                    },
+                                                    "city": {
+                                                        "type": "string",
+                                                        "example": "Алматы"
+                                                    },
+                                                    "gifts_count": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 10
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/gifts": {
+            "get": {
+                "tags": [
+                    "Admin • Users"
+                ],
+                "summary": "Детальная информация о пользователе и его подарках",
+                "description": "Возвращает информацию о пользователе и список его подарков с изображениями",
+                "operationId": "301eb3d3d647158926f5aad25a8d5efd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID пользователя",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные пользователя и его подарки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Иван"
+                                                },
+                                                "surname": {
+                                                    "type": "string",
+                                                    "example": "Иванов"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "gifts": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Галстук"
+                                                    },
+                                                    "image": {
+                                                        "type": "string",
+                                                        "example": "https://s3.aws.com/ketroy/gifts/image.jpg"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Banner": {
+                "title": "Banner",
+                "description": "Баннер для отображения в приложении",
+                "required": [
+                    "id",
+                    "title",
+                    "image",
+                    "city"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Супер акция"
+                    },
+                    "image": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "https://example.com/banner.jpg"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Almaty"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Actuals",
+            "description": "Actuals"
+        },
+        {
+            "name": "Admin",
+            "description": "Admin"
+        },
+        {
+            "name": "User Management",
+            "description": "User Management"
+        },
+        {
+            "name": "Analytics",
+            "description": "Analytics"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Banners",
+            "description": "Banners"
+        },
+        {
+            "name": "Discounts",
+            "description": "Discounts"
+        },
+        {
+            "name": "Bonus Programs",
+            "description": "Bonus Programs"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories"
+        },
+        {
+            "name": "Cities",
+            "description": "Cities"
+        },
+        {
+            "name": "Countries",
+            "description": "Countries"
+        },
+        {
+            "name": "Purchases",
+            "description": "Purchases"
+        },
+        {
+            "name": "News",
+            "description": "News"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifications"
+        },
+        {
+            "name": "PromoCodes",
+            "description": "PromoCodes"
+        },
+        {
+            "name": "Акции",
+            "description": "Акции"
+        },
+        {
+            "name": "Shops",
+            "description": "Shops"
+        },
+        {
+            "name": "ShopReviews",
+            "description": "ShopReviews"
+        },
+        {
+            "name": "Stories",
+            "description": "Stories"
+        },
+        {
+            "name": "Admin • Users",
+            "description": "Admin • Users"
+        }
+    ]
+}

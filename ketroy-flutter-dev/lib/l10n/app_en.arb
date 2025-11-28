@@ -1,0 +1,354 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Ketroy",
+  
+  "profile": "Profile",
+  "account": "Account",
+  "bonuses": "Bonuses",
+  "user": "User",
+  "welcome": "Welcome",
+  "loginForFullAccess": "Log in for full access to all features",
+  
+  "profileSettings": "Profile Settings",
+  "shops": "Stores",
+  "myGifts": "My Gifts",
+  "bonusProgram": "Bonus Program",
+  "shareDiscount": "Share Discount with Friend",
+  "notificationSettings": "Notification Settings",
+  
+  "settings": "Settings",
+  "language": "Language",
+  "languageSettings": "Language Settings",
+  "systemLanguage": "System Language",
+  "selectLanguage": "Select Language",
+  "russian": "Русский",
+  "kazakh": "Қазақша",
+  "english": "English",
+  "turkish": "Türkçe",
+  
+  "notifications": "Notifications",
+  "pushNotifications": "Push Notifications",
+  "managePushNotifications": "Manage push notifications",
+  "allNotifications": "All Notifications",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "notificationCategories": "Notification Categories",
+  "newsAndPromotions": "News & Promotions",
+  "newsDescription": "New collections, discounts, events",
+  "gifts": "Gifts",
+  "giftsDescription": "New gifts and promo codes",
+  "discounts": "Discounts",
+  "discountsDescription": "Personal discounts and offers",
+  "bonusNotifications": "Bonuses",
+  "bonusDescription": "Bonus accrual and redemption",
+  "systemNotifications": "System",
+  "systemDescription": "Important app notifications",
+  "notificationSettingsHint": "You can always change notification settings in your device's system settings",
+  
+  "authRequired": "Authorization Required",
+  "authRequiredMessage": "To access information about yourself, discounts, gifts and other bonuses — you need to register!",
+  "authRequiredQr": "To scan QR code and receive bonuses, you need to log in.",
+  "authRequiredNotifications": "To view notifications, you need to log in.",
+  "loginToAccount": "Log In",
+  "cancel": "Cancel",
+  
+  "startUsing": "How would you like to\nstart using the app?",
+  "register": "Register",
+  "browseAsGuest": "Browse as Guest",
+  
+  "welcomeBack": "Welcome Back!",
+  "joinPrivilegeClub": "Join the Privilege Club",
+  "enterPrivateClub": "Enter Private Club",
+  "noAccount": "Don't have an account?",
+  "signUp": "Sign Up",
+  "enterPhoneNumber": "Enter phone number",
+  "phoneNumberTooShort": "Phone number is too short",
+  "accountNotFound": "Account not found. Please register.",
+  "codeSendError": "Code sending error",
+  
+  "unknownError": "Unknown error",
+  "dataLoadError": "Data loading error",
+  "retry": "Retry",
+  
+  "showcase": "Showcase",
+  "ai": "AI",
+  "giftsTab": "Gifts",
+  
+  "logoutFromAccount": "Log Out",
+  "deleteAccount": "Delete Account",
+  "logoutConfirm": "Log out from account?",
+  "deleteAccountConfirm": "Delete account?",
+  "deleteAccountWarning": "By deleting your account, you lose access to all personal data, including bonuses and special offers. Re-registration will remain available at any time.",
+  "yes": "Yes",
+  "no": "No",
+  "delete": "Delete",
+  
+  "personalData": "Personal Data",
+  "surname": "Surname",
+  "name": "Name",
+  "birthDate": "Date of Birth",
+  "selectDate": "Select date",
+  "city": "City",
+  "selectCity": "Select city",
+  "sizes": "Sizes",
+  "height": "Height",
+  "clothingSize": "Clothing Size",
+  "shoeSize": "Shoe Size",
+  "saveChanges": "Save Changes",
+  "done": "Done",
+  
+  "allCities": "All Cities",
+  "ketroyStoreNetwork": "KETROY Store Network",
+  "moreDetails": "More Details",
+  "noShopsFound": "No stores found",
+  "noShopsInCity": "There are no KETROY stores\nin the selected city yet",
+  
+  "yourSavedGifts": "Your saved gifts",
+  "noGiftsYet": "You don't have any gifts yet",
+  "saveGiftsHint": "Save gifts from the showcase\nto activate them in store",
+  "giftActivated": "Gift Activated!",
+  "dontCloseWindow": "Don't close this window until you receive your gift in the store.",
+  "activatedGift": "Activated Gift",
+  
+  "earnAndSave": "Earn and Save",
+  "newItems": "NEW",
+  "bonusProgramTitle": "Bonus Program",
+  "earnBonusesWithPurchase": "Earn bonuses with every purchase",
+  "upTo": "Up to 10%",
+  "cashback": "Cashback",
+  "forPurchases": "For purchases",
+  "vipStatus": "VIP",
+  "status": "Status",
+  
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December",
+  
+  "writeReview": "Write Review",
+  "shareYourExperience": "Share your experience about the store",
+  "selectShop": "Select Store",
+  "rateShop": "Rate the Store",
+  "tapStarsToRate": "Tap the stars to rate",
+  "ratingVeryBad": "Very bad 😞",
+  "ratingBad": "Bad 😕",
+  "ratingNormal": "Normal 😐",
+  "ratingGood": "Good 😊",
+  "ratingExcellent": "Excellent! 🤩",
+  "reviewHint": "Tell us about your store visit experience...",
+  "sendReview": "Send Review",
+  "reviewSentSuccess": "Review sent successfully!",
+  "reviewSentError": "Error sending review",
+  
+  "discount": "discount",
+  "scanQr": "Scan QR",
+  "tg": "KZT",
+  "requiredField": "Required field",
+  
+  "serverError": "Server error",
+  "tokenExpired": "Token expired. Please log in again.",
+  
+  "menu": "Menu",
+  "mainMenu": "Main Menu",
+  "forPartners": "For Partners",
+  "weInSocials": "Social Media",
+  
+  "appInitError": "App initialization error",
+  "closeApp": "Close App",
+  
+  "expired": "Expired",
+  "critical": "Critical",
+  "expiringSoon": "Expiring soon",
+  "active": "Active",
+  
+  "activeGifts": "Active Gifts",
+  "savedGifts": "Saved Gifts",
+  "noSavedGifts": "You have no saved gifts",
+  "giftsWillAppear": "Gifts will appear here after receiving",
+  "noActiveGifts": "No active gifts",
+  "activateGiftToSee": "Activate a gift to see it here",
+  "updating": "Updating...",
+  "update": "Update",
+  "updateError": "Update error",
+  
+  "youActivatedGift": "You activated a gift",
+  "giftIsNearby": "The gift is near! Don't close this window until you receive it.",
+  "activatedGiftNumber": "Activated gift #{id}",
+  "@activatedGiftNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "congratulations": "Congratulations!",
+  "giftActivatedLabel": "Gift activated",
+  "activate": "Activate",
+  "activateGiftQuestion": "Activate gift?",
+  "activateGiftWarning": "Activate the gift only at the checkout and pick it up within 10 minutes. If you want to pick up the gift later, save it in the \"My Gifts\" section",
+  "back": "Back",
+  
+  "virtualAssistant": "Virtual Assistant",
+  "aiGreeting": "Hi! 👋 I'm KETROY AI — your personal clothing care assistant.",
+  "aiInstructions": "Take a photo of the clothing label — and I'll decode all the symbols and give recommendations for washing, drying, and ironing! 📸",
+  "analysisResult": "Analysis result",
+  "analyzing": "Analyzing...",
+  "pointCameraAtLabel": "Point the camera at the label to scan",
+  "processing": "Processing...",
+  "scanLabel": "Scan label",
+  "photoError": "Error taking photo",
+  "errorOccurred": "An error occurred",
+  "aiAuthRequired": "To use the AI assistant, you need to log in!",
+  
+  "sendCodeAgain": "Send code again",
+  "photoLoadError": "Error loading photo",
+  "imageSentForAnalysis": "Image successfully sent for analysis!",
+  "sendError": "An error occurred while sending",
+  "retake": "Retake",
+  "send": "Send",
+  "error": "Error",
+  "allNotificationsMarkedRead": "All notifications marked as read",
+  
+  "yourPromocode": "Your promo code",
+  "shareAndGetBonuses": "Share and get bonuses",
+  "promocodeCopied": "Promo code copied",
+  "sharePromoDescription": "Share the promo code with a friend and get 2% from their first three purchases.",
+  "share": "Share",
+  "friendPromocode": "Friend's promo code",
+  "enterAndGetDiscount": "Enter and get 10% discount",
+  "enterFriendPromocode": "Enter friend's promo code",
+  "friendPromoDescription": "Get a personal 10% discount and participate in the rewards program.",
+  "apply": "Apply",
+  "promocodeApplied": "Promo code applied!",
+  "promocodeAppliedDescription": "You now have a personal 10% discount on purchases at KETROY stores.",
+  "great": "Great",
+  "promocodeNotFound": "Promo code not found",
+  "promocodeNotFoundDescription": "Check the entry or ask your friend to send the promo code again.",
+  "enterAgain": "Enter again",
+  "giveDiscount": "Give discount",
+  "shareWithFriends": "Share with friends",
+  "joinKetroy": "🎁 Join Ketroy Shop!\nGet 20% discount when registering with this link:\n{link}\n\n📱 Download the app and start saving!",
+  "@joinKetroy": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "ketroyInvitation": "Ketroy Shop Invitation",
+  
+  "systemLanguageHint": "Select \"System Language\" to automatically use your device's language",
+
+  "pendingGiftsTitle": "{count, plural, =1{You have {count} gift waiting for selection!} other{You have {count} gifts waiting for selection!}}",
+  "@pendingGiftsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingGiftsSubtitle": "Pick up your gift at the store",
+  "scanQrToGetGift": "Scan QR to receive",
+  
+  "usAlready": "We already have",
+  "users": "users",
+  "contactUs": "Contact us",
+  "partnershipDescription": "If you have any suggestions for cooperation, partnership or questions about advertising in our mobile app — write to us on WhatsApp!",
+  "writeToWhatsApp": "Write to WhatsApp",
+  "partnershipBenefits": "What we offer",
+  "benefitAds": "Advertising in mobile app",
+  "benefitPromo": "Joint promotions and giveaways",
+  "benefitBusiness": "B2B cooperation",
+  
+  "currentPromotions": "Current promotions",
+  "noActivePromotions": "No active promotions",
+  "checkBackLater": "Check back later",
+  
+  "news": "News",
+  "all": "All",
+  "readMore": "Read more",
+  "noNewsFound": "No news found",
+  "viewedAllNews": "You've viewed all news",
+  "loadingNews": "Loading...",
+  "loadError": "Loading error",
+  "refreshError": "Error refreshing data",
+  
+  "notificationsTitle": "Notifications",
+  "filterUnread": "Unread",
+  "filterDebit": "Debit",
+  "filterGifts": "Gifts",
+  "filterDiscounts": "Discounts",
+  "filterNews": "News",
+  "filterSystem": "System",
+  "noUnreadNotifications": "No unread notifications",
+  "noDebitNotifications": "No debit notifications",
+  "noGiftNotifications": "No gift notifications",
+  "noDiscountNotifications": "No discount notifications",
+  "noNewsNotifications": "No news",
+  "noSystemNotifications": "No system notifications",
+  "markAllAsRead": "Mark all as read",
+  
+  "giftStatusPending": "Pending selection",
+  "giftStatusSelected": "Selected",
+  "giftStatusActivated": "Activated",
+  "giftStatusIssued": "Issued",
+  "giftStatusReceived": "Received",
+  "getAtStore": "Get at store",
+  "selectGiftNow": "Select your gift now!",
+  "giftNumber": "Gift {number}",
+  "@giftNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "variantsCount": "{count} variants",
+  "@variantsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectButton": "Select",
+  "loadingGifts": "Loading gifts...",
+  "failedToLoad": "Failed to load",
+  "checkInternet": "Check your internet connection",
+  "newGiftBanner": "New gift!",
+  "listUpdated": "List updated",
+  
+  "profileSettingsTitle": "Profile Settings",
+  "sectionPersonalData": "Personal Data",
+  "sectionSizes": "Sizes",
+  "fieldSurname": "Surname",
+  "fieldName": "Name",
+  "fieldBirthDate": "Date of Birth",
+  "fieldCity": "City",
+  "fieldHeight": "Height",
+  "fieldClothingSize": "Clothing Size",
+  "fieldShoeSize": "Shoe Size",
+  "selectDatePlaceholder": "Select date",
+  "selectCityPlaceholder": "Select city",
+  "saveButton": "Save Changes",
+  "cancelButton": "Cancel",
+  "doneButton": "Done",
+  "userPlaceholder": "User",
+  
+  "chooseOneGift": "Choose one of the gifts",
+  "activateButton": "Activate",
+  "saveGiftButton": "Save",
+  "readyButton": "Done",
+  "myGiftsButton": "My Gifts",
+  "activateGiftInstructions": "Activate the gift only at the checkout and pick it up within 10 minutes. If you want to pick up the gift later, save it in the \"My Gifts\" section"
+}
+

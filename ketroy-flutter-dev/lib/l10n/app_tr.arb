@@ -1,0 +1,354 @@
+{
+  "@@locale": "tr",
+  
+  "appTitle": "Ketroy",
+  
+  "profile": "Profil",
+  "account": "Hesap",
+  "bonuses": "Bonuslar",
+  "user": "Kullanıcı",
+  "welcome": "Hoş geldiniz",
+  "loginForFullAccess": "Tüm özelliklere erişmek için giriş yapın",
+  
+  "profileSettings": "Profil Ayarları",
+  "shops": "Mağazalar",
+  "myGifts": "Hediyelerim",
+  "bonusProgram": "Bonus Programı",
+  "shareDiscount": "Arkadaşına İndirim Hediye Et",
+  "notificationSettings": "Bildirim Ayarları",
+  
+  "settings": "Ayarlar",
+  "language": "Dil",
+  "languageSettings": "Dil Ayarları",
+  "systemLanguage": "Sistem Dili",
+  "selectLanguage": "Dil Seçin",
+  "russian": "Русский",
+  "kazakh": "Қазақша",
+  "english": "English",
+  "turkish": "Türkçe",
+  
+  "notifications": "Bildirimler",
+  "pushNotifications": "Push Bildirimleri",
+  "managePushNotifications": "Push bildirimlerini yönet",
+  "allNotifications": "Tüm Bildirimler",
+  "enabled": "Açık",
+  "disabled": "Kapalı",
+  "notificationCategories": "Bildirim Kategorileri",
+  "newsAndPromotions": "Haberler ve Kampanyalar",
+  "newsDescription": "Yeni koleksiyonlar, indirimler, etkinlikler",
+  "gifts": "Hediyeler",
+  "giftsDescription": "Yeni hediyeler ve promosyon kodları",
+  "discounts": "İndirimler",
+  "discountsDescription": "Kişisel indirimler ve teklifler",
+  "bonusNotifications": "Bonuslar",
+  "bonusDescription": "Bonus biriktirme ve harcama",
+  "systemNotifications": "Sistem",
+  "systemDescription": "Uygulamadan önemli bildirimler",
+  "notificationSettingsHint": "Cihazınızın sistem ayarlarında bildirim ayarlarını her zaman değiştirebilirsiniz",
+  
+  "authRequired": "Yetkilendirme Gerekli",
+  "authRequiredMessage": "Kendiniz, indirimler, hediyeler ve diğer bonuslar hakkında bilgi almak için kayıt olmanız gerekiyor!",
+  "authRequiredQr": "QR kodu taramak ve bonus almak için giriş yapmanız gerekiyor.",
+  "authRequiredNotifications": "Bildirimleri görüntülemek için giriş yapmanız gerekiyor.",
+  "loginToAccount": "Giriş Yap",
+  "cancel": "İptal",
+  
+  "startUsing": "Uygulamayı kullanmaya\nnereden başlamak istersiniz?",
+  "register": "Kayıt Ol",
+  "browseAsGuest": "Misafir Olarak Gez",
+  
+  "welcomeBack": "Tekrar Hoş Geldiniz!",
+  "joinPrivilegeClub": "Ayrıcalık Kulübüne Katıl",
+  "enterPrivateClub": "Özel Kulübe Giriş",
+  "noAccount": "Hesabınız yok mu?",
+  "signUp": "Kayıt Ol",
+  "enterPhoneNumber": "Telefon numarasını girin",
+  "phoneNumberTooShort": "Telefon numarası çok kısa",
+  "accountNotFound": "Hesap bulunamadı. Lütfen kayıt olun.",
+  "codeSendError": "Kod gönderme hatası",
+  
+  "unknownError": "Bilinmeyen hata",
+  "dataLoadError": "Veri yükleme hatası",
+  "retry": "Tekrar Dene",
+  
+  "showcase": "Vitrin",
+  "ai": "AI",
+  "giftsTab": "Hediyeler",
+  
+  "logoutFromAccount": "Çıkış Yap",
+  "deleteAccount": "Hesabı Sil",
+  "logoutConfirm": "Hesaptan çıkış yapılsın mı?",
+  "deleteAccountConfirm": "Hesap silinsin mi?",
+  "deleteAccountWarning": "Hesabınızı silerek bonuslar ve özel teklifler dahil tüm kişisel verilerinize erişimi kaybedersiniz. Yeniden kayıt her zaman mümkün olacaktır.",
+  "yes": "Evet",
+  "no": "Hayır",
+  "delete": "Sil",
+  
+  "personalData": "Kişisel Veriler",
+  "surname": "Soyadı",
+  "name": "Adı",
+  "birthDate": "Doğum Tarihi",
+  "selectDate": "Tarih seçin",
+  "city": "Şehir",
+  "selectCity": "Şehir seçin",
+  "sizes": "Bedenler",
+  "height": "Boy",
+  "clothingSize": "Giysi Bedeni",
+  "shoeSize": "Ayakkabı Numarası",
+  "saveChanges": "Değişiklikleri Kaydet",
+  "done": "Tamam",
+  
+  "allCities": "Tüm Şehirler",
+  "ketroyStoreNetwork": "KETROY Mağaza Ağı",
+  "moreDetails": "Detaylar",
+  "noShopsFound": "Mağaza bulunamadı",
+  "noShopsInCity": "Seçilen şehirde henüz\nKETROY mağazası yok",
+  
+  "yourSavedGifts": "Kayıtlı hediyeleriniz",
+  "noGiftsYet": "Henüz hediyeniz yok",
+  "saveGiftsHint": "Mağazada aktive etmek için\nvitrinden hediye kaydedin",
+  "giftActivated": "Hediye Aktive Edildi!",
+  "dontCloseWindow": "Mağazada hediyenizi alana kadar bu pencereyi kapatmayın.",
+  "activatedGift": "Aktive Edilmiş Hediye",
+  
+  "earnAndSave": "Biriktir ve Tasarruf Et",
+  "newItems": "YENİ",
+  "bonusProgramTitle": "Bonus Programı",
+  "earnBonusesWithPurchase": "Her alışverişte bonus kazanın",
+  "upTo": "%10'a kadar",
+  "cashback": "Cashback",
+  "forPurchases": "Alışverişler için",
+  "vipStatus": "VIP",
+  "status": "Statü",
+  
+  "january": "Ocak",
+  "february": "Şubat",
+  "march": "Mart",
+  "april": "Nisan",
+  "may": "Mayıs",
+  "june": "Haziran",
+  "july": "Temmuz",
+  "august": "Ağustos",
+  "september": "Eylül",
+  "october": "Ekim",
+  "november": "Kasım",
+  "december": "Aralık",
+  
+  "writeReview": "Yorum Yaz",
+  "shareYourExperience": "Mağaza hakkındaki deneyiminizi paylaşın",
+  "selectShop": "Mağaza Seçin",
+  "rateShop": "Mağazayı Değerlendirin",
+  "tapStarsToRate": "Değerlendirmek için yıldızlara dokunun",
+  "ratingVeryBad": "Çok kötü 😞",
+  "ratingBad": "Kötü 😕",
+  "ratingNormal": "Normal 😐",
+  "ratingGood": "İyi 😊",
+  "ratingExcellent": "Mükemmel! 🤩",
+  "reviewHint": "Mağaza ziyaretiniz hakkında bize anlatın...",
+  "sendReview": "Yorumu Gönder",
+  "reviewSentSuccess": "Yorum başarıyla gönderildi!",
+  "reviewSentError": "Yorum gönderme hatası",
+  
+  "discount": "indirim",
+  "scanQr": "QR Tara",
+  "tg": "TG",
+  "requiredField": "Zorunlu alan",
+  
+  "serverError": "Sunucu hatası",
+  "tokenExpired": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+  
+  "menu": "Menü",
+  "mainMenu": "Ana Menü",
+  "forPartners": "Ortaklar İçin",
+  "weInSocials": "Sosyal Medya",
+  
+  "appInitError": "Uygulama başlatma hatası",
+  "closeApp": "Uygulamayı Kapat",
+  
+  "expired": "Süresi Doldu",
+  "critical": "Kritik",
+  "expiringSoon": "Yakında sona erecek",
+  "active": "Aktif",
+  
+  "activeGifts": "Aktif Hediyeler",
+  "savedGifts": "Kaydedilen Hediyeler",
+  "noSavedGifts": "Kaydedilmiş hediyeniz yok",
+  "giftsWillAppear": "Hediyeler aldıktan sonra burada görünecek",
+  "noActiveGifts": "Aktif hediye yok",
+  "activateGiftToSee": "Burada görmek için bir hediye aktive edin",
+  "updating": "Güncelleniyor...",
+  "update": "Güncelle",
+  "updateError": "Güncelleme hatası",
+  
+  "youActivatedGift": "Hediyeyi aktive ettiniz",
+  "giftIsNearby": "Hediye yakında! Hediyeyi alana kadar bu pencereyi kapatmayın.",
+  "activatedGiftNumber": "Aktive edilmiş hediye #{id}",
+  "@activatedGiftNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "congratulations": "Tebrikler!",
+  "giftActivatedLabel": "Hediye aktive edildi",
+  "activate": "Aktive et",
+  "activateGiftQuestion": "Hediye aktive edilsin mi?",
+  "activateGiftWarning": "Hediyeyi sadece kasada aktive edin ve 10 dakika içinde alın. Hediyeyi daha sonra almak istiyorsanız, \"Hediyelerim\" bölümüne kaydedin",
+  "back": "Geri",
+  
+  "virtualAssistant": "Sanal Asistan",
+  "aiGreeting": "Merhaba! 👋 Ben KETROY AI — kişisel giysi bakım asistanınız.",
+  "aiInstructions": "Giysi etiketini fotoğraflayın — tüm sembolleri çözeceğim ve yıkama, kurutma ve ütüleme önerileri sunacağım! 📸",
+  "analysisResult": "Analiz sonucu",
+  "analyzing": "Analiz ediliyor...",
+  "pointCameraAtLabel": "Taramak için kamerayı etikete doğrultun",
+  "processing": "İşleniyor...",
+  "scanLabel": "Etiketi tara",
+  "photoError": "Fotoğraf çekme hatası",
+  "errorOccurred": "Bir hata oluştu",
+  "aiAuthRequired": "AI asistanını kullanmak için giriş yapmanız gerekiyor!",
+  
+  "sendCodeAgain": "Kodu tekrar gönder",
+  "photoLoadError": "Fotoğraf yükleme hatası",
+  "imageSentForAnalysis": "Görüntü başarıyla analiz için gönderildi!",
+  "sendError": "Gönderme sırasında bir hata oluştu",
+  "retake": "Tekrar çek",
+  "send": "Gönder",
+  "error": "Hata",
+  "allNotificationsMarkedRead": "Tüm bildirimler okundu olarak işaretlendi",
+  
+  "yourPromocode": "Promosyon kodunuz",
+  "shareAndGetBonuses": "Paylaşın ve bonus kazanın",
+  "promocodeCopied": "Promosyon kodu kopyalandı",
+  "sharePromoDescription": "Arkadaşınızla promosyon kodunu paylaşın ve ilk üç alışverişinden %2 kazanın.",
+  "share": "Paylaş",
+  "friendPromocode": "Arkadaşın promosyon kodu",
+  "enterAndGetDiscount": "Girin ve %10 indirim kazanın",
+  "enterFriendPromocode": "Arkadaşın promosyon kodunu girin",
+  "friendPromoDescription": "Kişisel %10 indirim alın ve ödül programına katılın.",
+  "apply": "Uygula",
+  "promocodeApplied": "Promosyon kodu uygulandı!",
+  "promocodeAppliedDescription": "Artık KETROY mağazalarında kişisel %10 indiriminiz var.",
+  "great": "Harika",
+  "promocodeNotFound": "Promosyon kodu bulunamadı",
+  "promocodeNotFoundDescription": "Girişi kontrol edin veya arkadaşınızdan kodu tekrar göndermesini isteyin.",
+  "enterAgain": "Tekrar gir",
+  "giveDiscount": "İndirim hediye et",
+  "shareWithFriends": "Arkadaşlarınla paylaş",
+  "joinKetroy": "🎁 Ketroy Shop'a katılın!\nBu linkle kayıt olduğunuzda %20 indirim kazanın:\n{link}\n\n📱 Uygulamayı indirin ve tasarruf etmeye başlayın!",
+  "@joinKetroy": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "ketroyInvitation": "Ketroy Shop Daveti",
+  
+  "systemLanguageHint": "Cihazınızın dilini otomatik olarak kullanmak için \"Sistem Dili\"ni seçin",
+
+  "pendingGiftsTitle": "{count, plural, =1{{count} hediyeniz seçim bekliyor!} other{{count} hediyeniz seçim bekliyor!}}",
+  "@pendingGiftsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingGiftsSubtitle": "Hediyenizi mağazadan alın",
+  "scanQrToGetGift": "Almak için QR tarayın",
+  
+  "usAlready": "Bizi zaten",
+  "users": "kullanıcı",
+  "contactUs": "Bize ulaşın",
+  "partnershipDescription": "İşbirliği, ortaklık önerileriniz veya mobil uygulamamızdaki reklamlarla ilgili sorularınız varsa — bize WhatsApp'tan yazın!",
+  "writeToWhatsApp": "WhatsApp'a yaz",
+  "partnershipBenefits": "Neler sunuyoruz",
+  "benefitAds": "Mobil uygulamada reklam",
+  "benefitPromo": "Ortak kampanyalar ve çekilişler",
+  "benefitBusiness": "B2B işbirliği",
+  
+  "currentPromotions": "Güncel kampanyalar",
+  "noActivePromotions": "Aktif kampanya yok",
+  "checkBackLater": "Daha sonra tekrar kontrol edin",
+  
+  "news": "Haberler",
+  "all": "Tümü",
+  "readMore": "Devamını oku",
+  "noNewsFound": "Haber bulunamadı",
+  "viewedAllNews": "Tüm haberleri görüntülediniz",
+  "loadingNews": "Yükleniyor...",
+  "loadError": "Yükleme hatası",
+  "refreshError": "Veri yenileme hatası",
+  
+  "notificationsTitle": "Bildirimler",
+  "filterUnread": "Okunmamış",
+  "filterDebit": "Harcama",
+  "filterGifts": "Hediyeler",
+  "filterDiscounts": "İndirimler",
+  "filterNews": "Haberler",
+  "filterSystem": "Sistem",
+  "noUnreadNotifications": "Okunmamış bildirim yok",
+  "noDebitNotifications": "Harcama bildirimi yok",
+  "noGiftNotifications": "Hediye bildirimi yok",
+  "noDiscountNotifications": "İndirim bildirimi yok",
+  "noNewsNotifications": "Haber yok",
+  "noSystemNotifications": "Sistem bildirimi yok",
+  "markAllAsRead": "Tümünü okundu işaretle",
+  
+  "giftStatusPending": "Seçim bekliyor",
+  "giftStatusSelected": "Seçildi",
+  "giftStatusActivated": "Aktive edildi",
+  "giftStatusIssued": "Verildi",
+  "giftStatusReceived": "Alındı",
+  "getAtStore": "Mağazadan al",
+  "selectGiftNow": "Hediyenizi şimdi seçin!",
+  "giftNumber": "Hediye {number}",
+  "@giftNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "variantsCount": "{count} seçenek",
+  "@variantsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectButton": "Seç",
+  "loadingGifts": "Hediyeler yükleniyor...",
+  "failedToLoad": "Yüklenemedi",
+  "checkInternet": "İnternet bağlantınızı kontrol edin",
+  "newGiftBanner": "Yeni hediye!",
+  "listUpdated": "Liste güncellendi",
+  
+  "profileSettingsTitle": "Profil Ayarları",
+  "sectionPersonalData": "Kişisel Veriler",
+  "sectionSizes": "Bedenler",
+  "fieldSurname": "Soyadı",
+  "fieldName": "Adı",
+  "fieldBirthDate": "Doğum Tarihi",
+  "fieldCity": "Şehir",
+  "fieldHeight": "Boy",
+  "fieldClothingSize": "Giysi Bedeni",
+  "fieldShoeSize": "Ayakkabı Numarası",
+  "selectDatePlaceholder": "Tarih seçin",
+  "selectCityPlaceholder": "Şehir seçin",
+  "saveButton": "Değişiklikleri Kaydet",
+  "cancelButton": "İptal",
+  "doneButton": "Tamam",
+  "userPlaceholder": "Kullanıcı",
+  
+  "chooseOneGift": "Hediyelerden birini seçin",
+  "activateButton": "Aktive et",
+  "saveGiftButton": "Kaydet",
+  "readyButton": "Tamam",
+  "myGiftsButton": "Hediyelerim",
+  "activateGiftInstructions": "Hediyeyi sadece kasada aktive edin ve 10 dakika içinde alın. Hediyeyi daha sonra almak istiyorsanız, \"Hediyelerim\" bölümüne kaydedin"
+}
+
