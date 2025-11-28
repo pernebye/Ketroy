@@ -49,7 +49,7 @@
 		<false/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>api.ketroy.kz</key>
+			<key>api.ketroy-shop.kz</key>
 			<dict>
 				<key>NSIncludesSubdomains</key>
 				<true/>

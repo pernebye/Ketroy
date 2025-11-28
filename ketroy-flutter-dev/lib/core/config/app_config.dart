@@ -33,7 +33,7 @@ class AppConfig {
       // return 'http://localhost:8000/api'; // iOS Simulator
       // return 'http://192.168.1.100:8000/api'; // Real device (your PC IP)
       case Environment.production:
-        return 'https://api.ketroy.kz/api';
+        return 'https://api.ketroy-shop.kz/api';
     }
   }
 
