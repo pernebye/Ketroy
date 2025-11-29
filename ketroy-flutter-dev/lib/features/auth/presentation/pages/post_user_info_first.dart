@@ -13,6 +13,7 @@ import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/post_users_info_page.dart';
 import 'package:ketroy_app/features/profile/presentation/pages/profile_detail_page.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 
@@ -148,7 +149,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(
-                            'Отмена',
+                            AppLocalizations.of(context)!.cancel,
                             style: TextStyle(
                               color: Colors.red,
                               fontSize: 16.sp,
@@ -158,7 +159,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                         Column(
                           children: [
                             Text(
-                              'Дата рождения',
+                              AppLocalizations.of(context)!.birthDate,
                               style: TextStyle(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
@@ -177,7 +178,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                             Navigator.pop(context);
                           },
                           child: Text(
-                            'Готово',
+                            AppLocalizations.of(context)!.done,
                             style: TextStyle(
                               color: Colors.blue,
                               fontSize: 16.sp,
@@ -297,7 +298,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
 
   void _handleSave() {
     if (!_isFormValid()) {
-      showSnackBar(context, 'Пожалуйста, заполните все поля');
+      showSnackBar(context, AppLocalizations.of(context)!.requiredField);
       return;
     }
     Navigator.push(
@@ -352,7 +353,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                                   SizedBox(height: 60.h),
                                   // Заголовок
                                   Text(
-                                    'Еще немного',
+                                    AppLocalizations.of(context)!.almostDone,
                                     style: AppTheme.authTitleTextStyle,
                                     textAlign: TextAlign.center,
                                   ),
@@ -360,7 +361,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                                   SizedBox(height: 10.h),
 
                                   Text(
-                                    'Пожалуйста, предоставьте актуальные данные, чтобы мы подобрали для вас идеальный стиль.',
+                                    AppLocalizations.of(context)!.provideDataHint,
                                     style: AppTheme.regularText.copyWith(
                                       color: AppPallete.halfOpacity,
                                       letterSpacing: 0.5,
@@ -384,7 +385,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                                                   ? DateFormat('dd.MM.yyyy')
                                                       .format(DateTime.parse(
                                                           birthDate!))
-                                                  : 'Дата рождения',
+                                                  : AppLocalizations.of(context)!.birthDate,
                                               style: birthDate != null
                                                   ? UnifiedInputField.textStyle
                                                   : UnifiedInputField.hintStyle,
@@ -404,7 +405,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                                             cityValue = value;
                                           });
                                         },
-                                        hintTitle: 'Выберите город',
+                                        hintTitle: AppLocalizations.of(context)!.selectCity,
                                       ),
 
                                       SizedBox(height: 14.h),
@@ -415,7 +416,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
                                         child: GlassMorphism(
                                           onPressed: _handleSave,
                                           child: Text(
-                                            'Продолжить',
+                                            AppLocalizations.of(context)!.proceed,
                                             style: TextStyle(
                                               fontSize: 17.sp,
                                               color: Colors.white,

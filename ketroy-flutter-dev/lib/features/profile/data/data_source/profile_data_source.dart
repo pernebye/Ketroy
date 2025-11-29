@@ -115,7 +115,11 @@ class ProfileDataSourceImpl implements ProfileDataSource {
             .replaceAll('://localhost:', '://10.0.2.2:')
             .replaceAll('://127.0.0.1:', '://10.0.2.2:');
       }
-      final response = await DioClient.instance.get(url);
+      
+      // Убедимся, что используется HTTPS (критично для сохранения заголовков при редиректе)
+      url = url.replaceFirst(RegExp(r'^http://'), 'https://');
+      
+      final response = await DioClient.instance.get(url, needToken: true);
       return ScanModel.fromjson(response);
     } on DioException catch (e) {
       var error = DioExceptionService.fromDioError(e);

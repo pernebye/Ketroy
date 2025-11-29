@@ -13,9 +13,9 @@ class AiRepositoryImpl implements AiRepository {
   AiRepositoryImpl({required this.aiDataSource});
 
   @override
-  Future<Either<Failure, AiEntity>> getAiResponse(File imageFile) async {
+  Future<Either<Failure, AiEntity>> getAiResponse(File imageFile, {String? languageCode}) async {
     return await _getAiResponse(
-        () async => await aiDataSource.getAiResponseData(imageFile: imageFile));
+        () async => await aiDataSource.getAiResponseData(imageFile: imageFile, languageCode: languageCode));
   }
 
   Future<Either<Failure, AiEntity>> _getAiResponse(

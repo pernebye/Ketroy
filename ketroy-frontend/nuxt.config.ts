@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     preference: 'light', // Светлая тема по умолчанию
     fallback: 'light',
     classSuffix: '',
+    storageKey: 'nuxt-color-mode-preference', // Явно указываем ключ для localStorage
   },
 
   modules: [

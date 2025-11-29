@@ -10,6 +10,7 @@ import 'package:ketroy_app/core/common/widgets/menu_bottom_sheet_picker.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/main.dart' show globalDeepLinkManager, navigatorKey;
 import 'package:ketroy_app/services/shared_preferences_service.dart';
@@ -80,7 +81,7 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
 
   void _handleSave() {
     if (!_isFormValid()) {
-      showSnackBar(context, 'Пожалуйста, заполните все поля');
+      showSnackBar(context, AppLocalizations.of(context)!.requiredField);
       return;
     }
 
@@ -133,7 +134,7 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
                 (route) => false,
               );
             } else if (state.isSignUpWithDataFailure) {
-              showSnackBar(context, state.message ?? "");
+              showSnackBar(context, state.message ?? AppLocalizations.of(context)!.unknownError);
             }
           },
           builder: (context, state) {
@@ -159,7 +160,7 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
                               children: [
                                 // Заголовок
                                 Text(
-                                  'Почти все!',
+                                  AppLocalizations.of(context)!.almostDone,
                                   style: AppTheme.authTitleTextStyle,
                                   textAlign: TextAlign.center,
                                 ),
@@ -167,7 +168,7 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
                                 SizedBox(height: 10.h),
 
                                 Text(
-                                  'Пожалуйста, предоставьте актуальные данные, чтобы мы могли подобрать для вас оптимальный вариант одежды.',
+                                  AppLocalizations.of(context)!.provideDataHint,
                                   style: AppTheme.regularText.copyWith(
                                     color: AppPallete.halfOpacity,
                                     letterSpacing: 0.5,

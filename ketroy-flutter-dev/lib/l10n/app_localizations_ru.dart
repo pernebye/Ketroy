@@ -534,8 +534,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get analyzing => 'Анализирую...';
 
   @override
-  String get pointCameraAtLabel =>
-      'Наведите камеру на этикетку для сканирования';
+  String get typeMessage => 'Напишите сообщение...';
+
+  @override
+  String get takePhoto => 'Сделать фото';
+
+  @override
+  String get chooseFromGallery => 'Выбрать из галереи';
+
+  @override
+  String get pointCameraAtLabel => 'Наведите камеру на этикетку одежды';
 
   @override
   String get processing => 'Обработка...';
@@ -886,4 +894,239 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get activateGiftInstructions =>
       'Активируйте подарок только у кассы и заберите его в течение 10 минут. Если вы хотите забрать подарок позже, сохраните его в разделе «Мои подарки»';
+
+  @override
+  String get timeNow => 'Сейчас';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'минут назад',
+      few: 'минуты назад',
+      one: 'минуту назад',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'часов назад',
+      few: 'часа назад',
+      one: 'час назад',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeYesterday => 'Вчера';
+
+  @override
+  String timeWeekday(String day) {
+    return '$day';
+  }
+
+  @override
+  String timeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'недель назад',
+      few: 'недели назад',
+      one: 'неделю назад',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeMonthsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'месяцев назад',
+      few: 'месяца назад',
+      one: 'месяц назад',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'лет назад',
+      few: 'года назад',
+      one: 'год назад',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekdayMonday => 'Понедельник';
+
+  @override
+  String get weekdayTuesday => 'Вторник';
+
+  @override
+  String get weekdayWednesday => 'Среду';
+
+  @override
+  String get weekdayThursday => 'Четверг';
+
+  @override
+  String get weekdayFriday => 'Пятницу';
+
+  @override
+  String get weekdaySaturday => 'Субботу';
+
+  @override
+  String get weekdaySunday => 'Воскресенье';
+
+  @override
+  String get sending => 'Отправка кода';
+
+  @override
+  String get agreementStart =>
+      'Нажав \"ЗАРЕГИСТРИРОВАТЬСЯ\", вы соглашаетесь c';
+
+  @override
+  String get termsOfUse => 'Условиями использования';
+
+  @override
+  String get and => 'и';
+
+  @override
+  String get privacyPolicy => 'Политикой конфиденциальности';
+
+  @override
+  String get haveAccount => 'Уже есть аккаунт?';
+
+  @override
+  String get accountFound => 'Аккаунт найден! Введите код для входа.';
+
+  @override
+  String get enterCode => 'Введите код';
+
+  @override
+  String get smsSent =>
+      'Мы отправили SMS с кодом активации на ваш номер телефона';
+
+  @override
+  String get proceed => 'Продолжить';
+
+  @override
+  String get wrongCode => 'Неверный код';
+
+  @override
+  String get through => 'через';
+
+  @override
+  String get userNotFound =>
+      'Пользователь не найден. Пожалуйста, зарегистрируйтесь.';
+
+  @override
+  String get almostDone => 'Еще немного';
+
+  @override
+  String get provideDataHint =>
+      'Пожалуйста, предоставьте актуальные данные, чтобы мы подобрали для вас идеальный стиль.';
+
+  @override
+  String get scanGiftAtCheckout => 'Отсканируйте QR-код у кассы';
+
+  @override
+  String get qrCodeAtCheckout => 'QR-код находится у кассы';
+
+  @override
+  String get scanQrAtStore => 'Отсканируйте QR-код в магазине';
+
+  @override
+  String get qrCodeForGift => 'QR-код для получения подарка';
+
+  @override
+  String get qrCodeScannedSuccess => 'QR-код успешно отсканирован!';
+
+  @override
+  String get pointCameraAtQr => 'Наведите камеру на QR-код';
+
+  @override
+  String get qrCodeInStore => 'QR-код в магазине KETROY';
+
+  @override
+  String get giftReceivedSuccess => 'Подарок успешно получен! 🎁';
+
+  @override
+  String get giftDataError => 'Ошибка данных подарка. Попробуйте ещё раз.';
+
+  @override
+  String get giftActivationError => 'Ошибка при активации подарков';
+
+  @override
+  String get activatingGift => 'Активация подарка';
+
+  @override
+  String get checkingGifts => 'Проверяем подарки...';
+
+  @override
+  String get flashOff => 'Выкл';
+
+  @override
+  String get flashOn => 'Вспышка';
+
+  @override
+  String get giftConfirmationError => 'Ошибка подтверждения';
+
+  @override
+  String get giftConfirmationFailed => 'Ошибка при подтверждении выдачи';
+
+  @override
+  String get noInternetConnection => 'Нет подключения к интернету';
+
+  @override
+  String get giftNotFound => 'Подарок не найден в каталоге, либо был удален';
+
+  @override
+  String get giftNotYours => 'Подарок не принадлежит вам';
+
+  @override
+  String get giftAlreadyIssued => 'Подарок уже был выдан или не готов к выдаче';
+
+  @override
+  String get showEmployeeMessage => 'Покажите это сообщение сотруднику';
+
+  @override
+  String get excellent => 'Отлично!';
+
+  @override
+  String get receivingGift => 'Получение подарка';
+
+  @override
+  String get yourGift => 'Ваш подарок:';
+
+  @override
+  String get confirmingIssue => 'Подтверждаем выдачу...';
+
+  @override
+  String get selectGiftInstruction =>
+      'Нажмите на любой подарок,\nчтобы узнать что внутри!';
+
+  @override
+  String get photographClothingLabel => 'Сфотографируйте ярлык одежды';
+
+  @override
+  String get washingSymbols => 'Символы стирки, глажки и сушки';
+
+  @override
+  String get analyzingLabel => 'Анализирую этикетку...';
+
+  @override
+  String get aiProcessingImage => 'AI обрабатывает изображение';
+
+  @override
+  String get analyzeThisLabel => 'Проанализируй эту этикетку';
 }

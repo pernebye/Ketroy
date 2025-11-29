@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 
 class AppTheme {
@@ -8,18 +7,20 @@ class AppTheme {
   static const String fontFamily = 'Gilroy';
   
   // Fallback fonts for characters not in Gilroy (Kazakh, etc.)
+  // NotoSans is embedded in the app and supports all Kazakh characters
   static const List<String> fontFamilyFallback = [
-    'NotoSans', // Good Cyrillic Extended support including Kazakh
-    'Roboto',
-    'sans-serif',
+    'NotoSans', // ✅ Embedded - Good Cyrillic Extended support including all Kazakh characters (Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І)
+    'Roboto',   // System fallback
+    'sans-serif', // Final fallback
   ];
   
   /// Initialize fonts - call this during app startup to ensure fallback fonts are loaded
+  /// This is critical for proper Kazakh character rendering
   static Future<void> initFonts() async {
-    // Preload Noto Sans for Kazakh character support
-    GoogleFonts.pendingFonts([
-      GoogleFonts.notoSans(),
-    ]);
+    // Ensure embedded NotoSans is loaded before rendering any text
+    // This prevents the "missing glyph" issue with Kazakh characters
+    // No need to use GoogleFonts - we're using embedded fonts only
+    debugPrint('✅ AppTheme fonts initialized with embedded NotoSans fallback');
   }
   
   /// Helper to create TextStyle with proper fallback for Kazakh characters
@@ -129,29 +130,33 @@ class AppTheme {
   //Auth TextStyle
   static final authTitleTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 22.sp,
       fontWeight: FontWeight.bold,
       color: Colors.white,
       height: 1.2,
       letterSpacing: -0.5);
   static final authSubtitleTextStyle = TextStyle(
-      fontFamily: fontFamily, fontSize: 17.sp, color: const Color(0xFFD0CFCF));
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp, color: const Color(0xFFD0CFCF));
   static final authHintTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       color: const Color(0xFFD0CFCF),
       height: 1.2,
       letterSpacing: 0.5);
   static final underLineWords = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       decoration: TextDecoration.underline,
       fontWeight: FontWeight.w500,
       color: const Color(0xFFFAF3ED).withValues(alpha: 0.5),
       fontSize: 13.sp);
   static final regularText =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp, height: 1.2);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp, height: 1.2);
   static final haveAccount = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       color: Colors.white,
       letterSpacing: -0.5);
@@ -159,84 +164,87 @@ class AppTheme {
   //SignUpTextStyle
   static final signUpSmallTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       height: 1.2,
       letterSpacing: -0.5);
 
   //NewsTextStyle
   static final newsLargeTextStyle = TextStyle(
-      fontFamily: fontFamily, fontSize: 22.sp, letterSpacing: 0.5, height: 1.2);
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 22.sp, letterSpacing: 0.5, height: 1.2);
   static final newsMediumTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 15.sp,
       letterSpacing: -0.24,
       height: 1.2);
 
   //ShoppTextStyle
   static final shopLargeTextStyle = TextStyle(
-      fontFamily: fontFamily, fontSize: 22.sp, fontWeight: FontWeight.w700);
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 22.sp, fontWeight: FontWeight.w700);
   static final shopNormalTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
 
   //ProfileTextStyle
   static final profileLargeTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
   static final profileMediumTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 15.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 15.sp);
   static final profileSmallTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 13.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 13.sp);
   static final profileSmallerTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 10.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 10.sp);
 
   //DrawerTextStyle
   static final drawerTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 20.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 20.sp);
 
   //QrScreen textStyle
   static final qrScreenTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
 
   //ProfileDetail textStyle
   static final profileDetailMediumTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
   static final profileDetailSmallTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 13.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 13.sp);
   static final profileDetailLargeTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 20.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 20.sp);
 
   //Notification textStyle
   static final notificationMediumTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
   static final notificationLargeTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 25.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 25.sp);
   static final notificationSmallTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 15.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 15.sp);
 
   //feedback textStyle
   static final feedbackMediumTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 14.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 14.sp);
   static final feedbackSmallTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 10.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 10.sp);
 
   //Bonus TextStyle
   static final bonusTitleTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
 
   //Certificate TextStyle
   static final certificateTitleTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
   static final certificateBigTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 20.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 20.sp);
   static final certificateSmallTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 6.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 6.sp);
   static final certificatePriceTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 24.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 24.sp);
   static final certificateMediumTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 12.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 12.sp);
 
   //Button TextStyle
   static final buttonTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       fontWeight: FontWeight.bold,
       color: Colors.black);
@@ -244,30 +252,33 @@ class AppTheme {
   //PartnersPage TextStyle
   static final partnersTitleTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       letterSpacing: -0.24,
       height: 1.2);
   static final partnersCountTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 48.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 48.sp);
 
   //DiscountTextStyle
   static final discountTitleTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
 
   //GiftTextStyle
   static final giftTextStyle =
-      TextStyle(fontFamily: fontFamily, fontSize: 17.sp);
+      TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 17.sp);
   static final giftTextStyleLarge = TextStyle(
-      fontFamily: fontFamily, fontSize: 37.sp, fontWeight: FontWeight.bold);
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 37.sp, fontWeight: FontWeight.bold);
 
   //Banners textstyle
   static final bannersTitleTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 22.sp,
       color: Colors.white,
       fontWeight: FontWeight.bold);
   static final bannersSubtitleTextStyle = TextStyle(
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       fontSize: 17.sp,
       color: Colors.white,
       height: 1.2,
@@ -275,16 +286,16 @@ class AppTheme {
 
   //DialogTextStyle
   static final dialogTitleTextStyle = TextStyle(
-      fontFamily: fontFamily, fontSize: 22.sp, fontWeight: FontWeight.bold);
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 22.sp, fontWeight: FontWeight.bold);
   static final dialogRegularTextStyle = TextStyle(
-      fontFamily: fontFamily, fontSize: 14.sp, letterSpacing: 0.5, height: 1.2);
+      fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 14.sp, letterSpacing: 0.5, height: 1.2);
 
   static final defaultPintheme = PinTheme(
       width: 60.w, // Увеличили с 50.w на 60.w
       height: 65.h, // Увеличили с 41.h на 65.h чтобы совпадала с другими полями
       padding: const EdgeInsets.only(top: 0, bottom: 0),
       textStyle: TextStyle(
-          fontFamily: fontFamily, fontSize: 22.sp, color: Colors.black),
+          fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontSize: 22.sp, color: Colors.black),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius:

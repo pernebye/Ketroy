@@ -80,6 +80,7 @@ const String notificationUrl = '/notifications';
 // AI ENDPOINTS
 // ============================================
 const String clothingAnalyze = '/clothing-analyzer/analyze';
+const String clothingChat = '/clothing-analyzer/chat';
 
 // ============================================
 // ANALYTICS ENDPOINTS

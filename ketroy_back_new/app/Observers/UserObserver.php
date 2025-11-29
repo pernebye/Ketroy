@@ -2,13 +2,9 @@
 
 namespace App\Observers;
 
-use App\Jobs\SendBonusPushJob;
 use App\Models\User;
 use App\Models\PromoCode;
-use App\Services\ChottuLinkService;
 use App\Services\OneCApiService;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class UserObserver
 {
@@ -32,31 +28,15 @@ class UserObserver
 
     /**
      * Handle the User "updated" event.
+     * 
+     * ВАЖНО: Push-уведомления о бонусах теперь отправляются напрямую из TransactionController,
+     * а не через отслеживание изменения bonus_amount.
+     * Поле bonus_amount в БД больше не является источником правды — 1С единственный источник.
      */
     public function updated(User $user): void
     {
-        if ($user->wasChanged('bonus_amount')) {
-            $diff = $user->bonus_amount - $user->getOriginal('bonus_amount');
-            
-            // Получаем withDelay из кэша (устанавливается в TransactionController)
-            $withDelay = Cache::pull('bonus_with_delay_' . $user->id, false);
-            
-            Log::info('[UserObserver] bonus_amount changed', [
-                'user_id' => $user->id,
-                'old' => $user->getOriginal('bonus_amount'),
-                'new' => $user->bonus_amount,
-                'diff' => $diff,
-                'withDelay' => $withDelay,
-            ]);
-
-            if ($diff > 0) {
-                // Начисление бонусов
-                SendBonusPushJob::dispatch($diff, $user->id, 'add', $withDelay);
-            } elseif ($diff < 0) {
-                // Списание бонусов
-                SendBonusPushJob::dispatch(abs($diff), $user->id, 'write-off', false);
-            }
-        }
+        // Логика отправки push-уведомлений о бонусах перенесена в TransactionController
+        // для устранения дублирования и корректной работы с параметром withDelay
     }
 
     /**

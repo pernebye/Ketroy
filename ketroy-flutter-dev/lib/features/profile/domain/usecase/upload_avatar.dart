@@ -20,3 +20,4 @@ class UploadAvatarParams {
   UploadAvatarParams({required this.filePath});
 }
 
+

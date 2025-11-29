@@ -573,15 +573,15 @@ class UserController extends Controller
             ], 500);
         }
 
-        // НЕ обновляем локально! Баланс обновится через webhook от 1С
-        // Это предотвращает двойное начисление и двойные push-уведомления
-        $user->refresh(); // Получаем актуальные данные
+        // Получаем актуальный баланс из 1С (единственный источник правды)
+        $oneCData = $this->oneCApi->getClientInfo($phone);
+        $actualBonus = $oneCData['bonusAmount'] ?? ($user->bonus_amount + $request->amount);
 
         $delayMessage = $withDelay ? ' (доступны через 14 дней)' : ' (доступны сразу)';
         
         return response()->json([
             'message' => 'Бонусы успешно начислены' . $delayMessage,
-            'bonus_amount' => $user->bonus_amount + $request->amount, // Показываем ожидаемый баланс
+            'bonus_amount' => $actualBonus, // Актуальный баланс из 1С
             'withDelay' => $withDelay
         ]);
     }
@@ -630,12 +630,13 @@ class UserController extends Controller
             ], 500);
         }
 
-        // НЕ обновляем локально! Баланс обновится через webhook от 1С
-        $user->refresh();
+        // Получаем актуальный баланс из 1С (единственный источник правды)
+        $oneCData = $this->oneCApi->getClientInfo($phone);
+        $actualBonus = $oneCData['bonusAmount'] ?? max(0, $user->bonus_amount - $request->amount);
 
         return response()->json([
             'message' => 'Бонусы успешно списаны',
-            'bonus_amount' => max(0, $user->bonus_amount - $request->amount) // Показываем ожидаемый баланс
+            'bonus_amount' => $actualBonus // Актуальный баланс из 1С
         ]);
     }
 

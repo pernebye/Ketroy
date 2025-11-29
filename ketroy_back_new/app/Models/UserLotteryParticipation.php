@@ -36,3 +36,4 @@ class UserLotteryParticipation extends Model
     }
 }
 
+

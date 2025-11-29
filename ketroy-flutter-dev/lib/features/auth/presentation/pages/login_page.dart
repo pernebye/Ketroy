@@ -12,6 +12,7 @@ import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/sms_page.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class LoginPage extends StatefulWidget {
@@ -57,12 +58,12 @@ class _LoginPageState extends State<LoginPage> {
     phoneNumberFormat = controller.text.replaceAll(RegExp(r'\D'), '');
 
     if (phoneNumberFormat.isEmpty) {
-      showSnackBar(context, 'Введите номер телефона');
+      showSnackBar(context, AppLocalizations.of(context)!.enterPhoneNumber);
       return;
     }
 
     if (phoneNumberFormat.length < 10) {
-      showSnackBar(context, 'Номер телефона слишком короткий');
+      showSnackBar(context, AppLocalizations.of(context)!.phoneNumberTooShort);
       return;
     }
 
@@ -98,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
               setState(() {
                 pressed = false;
               });
-              showSnackBar(context, state.message ?? 'Ошибка отправки кода');
+              showSnackBar(context, state.message ?? AppLocalizations.of(context)!.codeSendError);
             } else if (state.isVerifySuccess && pressed) {
               pressed = false;
               final selectedCode = itemsSkud.firstWhere(
@@ -110,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
               if (state.userExists == false) {
                 // Пользователь не найден - перенаправляем на регистрацию
                 showSnackBar(context,
-                    'Аккаунт не найден. Пожалуйста, зарегистрируйтесь.');
+                    AppLocalizations.of(context)!.accountNotFound);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -172,14 +173,14 @@ class _LoginPageState extends State<LoginPage> {
                             child: Column(
                               children: [
                                 Text(
-                                  'Добро пожаловать!',
+                                  AppLocalizations.of(context)!.welcomeBack,
                                   style: AppTheme.authTitleTextStyle,
                                 ),
                                 SizedBox(
                                   height: 10.h,
                                 ),
                                 Text(
-                                  'Войти в клуб привилегий',
+                                  AppLocalizations.of(context)!.joinPrivilegeClub,
                                   style: AppTheme.authSubtitleTextStyle,
                                 ),
                                 SizedBox(
@@ -240,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                                       child: GlassMorphism(
                                         child: Text(
                                           textAlign: TextAlign.center,
-                                          'Войти в закрытый клуб',
+                                          AppLocalizations.of(context)!.enterPrivateClub,
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 17.sp,
@@ -265,7 +266,7 @@ class _LoginPageState extends State<LoginPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      'У вас нет аккаунта?',
+                                      AppLocalizations.of(context)!.noAccount,
                                       style: AppTheme.haveAccount,
                                     ),
                                     Expanded(
@@ -285,7 +286,7 @@ class _LoginPageState extends State<LoginPage> {
                                                             codes: itemsSkud)));
                                           },
                                           child: Text(
-                                            ' Зарегистроваться',
+                                            ' ${AppLocalizations.of(context)!.signUp}',
                                             style: AppTheme.haveAccount
                                                 .copyWith(
                                                     fontWeight:

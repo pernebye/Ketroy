@@ -3,3 +3,4 @@ declare module 'quill-image-resize-vue' {
   export default ImageResize;
 }
 
+

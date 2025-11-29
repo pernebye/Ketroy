@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/my_gifts/data/data_source/gift_data_source.dart';
 import 'package:ketroy_app/features/my_gifts/domain/entities/gifts_entities.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 /// Показать QR-сканер для подтверждения выдачи подарка
@@ -112,7 +113,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
         // Ошибка выдачи - позволяем повторить сканирование
         HapticFeedback.lightImpact();
         _resetScanner();
-        showSnackBar(context, result.message.isNotEmpty ? result.message : 'Ошибка подтверждения');
+        showSnackBar(context, result.message.isNotEmpty ? result.message : AppLocalizations.of(context)!.giftConfirmationError);
       }
     } catch (e) {
       debugPrint('❌ Issuance error: $e');
@@ -121,13 +122,15 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
         _resetScanner();
         
         // Более информативное сообщение об ошибке
-        String errorMessage = 'Ошибка при подтверждении выдачи';
+        String errorMessage = AppLocalizations.of(context)!.giftConfirmationFailed;
         if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
-          errorMessage = 'Нет подключения к интернету';
+          errorMessage = AppLocalizations.of(context)!.noInternetConnection;
+        } else if (e.toString().contains('404')) {
+          errorMessage = AppLocalizations.of(context)!.giftNotFound;
         } else if (e.toString().contains('403')) {
-          errorMessage = 'Подарок не принадлежит вам';
+          errorMessage = AppLocalizations.of(context)!.giftNotYours;
         } else if (e.toString().contains('400')) {
-          errorMessage = 'Подарок уже был выдан или не готов к выдаче';
+          errorMessage = AppLocalizations.of(context)!.giftAlreadyIssued;
         }
         
         showSnackBar(context, errorMessage);
@@ -240,7 +243,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
               ),
               SizedBox(height: 8.h),
               Text(
-                'Покажите это сообщение сотруднику',
+                AppLocalizations.of(context)!.showEmployeeMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.sp,
@@ -272,7 +275,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
                   ),
                   child: Center(
                     child: Text(
-                      'Отлично!',
+                      AppLocalizations.of(context)!.excellent,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -356,7 +359,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Получение подарка',
+                  AppLocalizations.of(context)!.receivingGift,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
@@ -365,7 +368,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Отсканируйте QR-код у кассы',
+                  AppLocalizations.of(context)!.scanGiftAtCheckout,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -442,7 +445,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ваш подарок:',
+                  AppLocalizations.of(context)!.yourGift,
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -527,7 +530,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
                       ),
                       SizedBox(height: 16.h),
                       Text(
-                        'Подтверждаем выдачу...',
+                        AppLocalizations.of(context)!.confirmingIssue,
                         style: TextStyle(
                           fontSize: 15.sp,
                           color: Colors.white,
@@ -561,7 +564,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        'QR-код находится у кассы',
+                        AppLocalizations.of(context)!.qrCodeAtCheckout,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -586,7 +589,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
         children: [
           _buildActionButton(
             icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-            label: flashOn ? 'Выкл' : 'Вспышка',
+            label: flashOn ? AppLocalizations.of(context)!.flashOff : AppLocalizations.of(context)!.flashOn,
             isActive: flashOn,
             onTap: _toggleFlash,
           ),

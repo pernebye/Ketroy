@@ -531,8 +531,16 @@ class AppLocalizationsKk extends AppLocalizations {
   String get analyzing => 'Талдау...';
 
   @override
-  String get pointCameraAtLabel =>
-      'Сканерлеу үшін камераны этикеткаға бағыттаңыз';
+  String get typeMessage => 'Хабарлама жазыңыз...';
+
+  @override
+  String get takePhoto => 'Суретке түсіру';
+
+  @override
+  String get chooseFromGallery => 'Галереядан таңдау';
+
+  @override
+  String get pointCameraAtLabel => 'Камераны киім бәліне көрсетіңіз';
 
   @override
   String get processing => 'Өңдеу...';
@@ -881,4 +889,234 @@ class AppLocalizationsKk extends AppLocalizations {
   @override
   String get activateGiftInstructions =>
       'Сыйлықты тек кассада белсендіріп, оны 10 минут ішінде алыңыз. Сыйлықты кейінірек алғыңыз келсе, оны «Менің сыйлықтарым» бөлімінде сақтаңыз';
+
+  @override
+  String get timeNow => 'Қазір';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# минут бұрын',
+      one: 'бір минут бұрын',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# сағат бұрын',
+      one: 'бір сағат бұрын',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeYesterday => 'Кеше';
+
+  @override
+  String timeWeekday(String day) {
+    return '$day';
+  }
+
+  @override
+  String timeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# апта бұрын',
+      one: 'бір апта бұрын',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeMonthsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# ай бұрын',
+      one: 'бір ай бұрын',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# жыл бұрын',
+      one: 'бір жыл бұрын',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekdayMonday => 'Дүйсенбі';
+
+  @override
+  String get weekdayTuesday => 'Сейсенбі';
+
+  @override
+  String get weekdayWednesday => 'Сәрсенбі';
+
+  @override
+  String get weekdayThursday => 'Төрт күні';
+
+  @override
+  String get weekdayFriday => 'Пятница';
+
+  @override
+  String get weekdaySaturday => 'Сенбі';
+
+  @override
+  String get weekdaySunday => 'Жексенбі';
+
+  @override
+  String get sending => 'Кодты жіберу';
+
+  @override
+  String get agreementStart => '\"ТІРКЕЛУ\" басып, сіз келісесіз';
+
+  @override
+  String get termsOfUse => 'Пайдалану шарттарымен';
+
+  @override
+  String get and => 'және';
+
+  @override
+  String get privacyPolicy => 'Құпиялылық саясатына';
+
+  @override
+  String get haveAccount => 'Үже тіркелгіңіз бар ма?';
+
+  @override
+  String get accountFound => 'Тіркелгі табылды! Кірмек үшін кодты енгізіңіз.';
+
+  @override
+  String get enterCode => 'Кодты енгізіңіз';
+
+  @override
+  String get smsSent =>
+      'Біз сіздің телефон нөміріңізге активтеу кодын SMS-ке жіберді';
+
+  @override
+  String get proceed => 'Жалғастыру';
+
+  @override
+  String get wrongCode => 'Қате код';
+
+  @override
+  String get through => 'ішінде';
+
+  @override
+  String get userNotFound => 'Пайдаланушы табылмады. Өтінемін, тіркеліңіз.';
+
+  @override
+  String get almostDone => 'Дәл қазір';
+
+  @override
+  String get provideDataHint =>
+      'Өтінемін, сіз үшін ең жақсы стильді таңдау үшін ақтуал деректеріңіз берініз.';
+
+  @override
+  String get scanGiftAtCheckout => 'Кассада QR-кодты сканерлеңіз';
+
+  @override
+  String get qrCodeAtCheckout => 'QR-код кассада орналасқан';
+
+  @override
+  String get scanQrAtStore => 'Дүкенде QR-кодты сканерлеңіз';
+
+  @override
+  String get qrCodeForGift => 'Сыйлық алу үшін QR-код';
+
+  @override
+  String get qrCodeScannedSuccess => 'QR-код сәтті сканерленді!';
+
+  @override
+  String get pointCameraAtQr => 'Камераны QR-кодқа көрсетіңіз';
+
+  @override
+  String get qrCodeInStore => 'KETROY дүкенінде QR-код';
+
+  @override
+  String get giftReceivedSuccess => 'Сыйлық сәтті алынды! 🎁';
+
+  @override
+  String get giftDataError =>
+      'Сыйлық деректері қатесі. Қайтадан көңіл бөліңіз.';
+
+  @override
+  String get giftActivationError => 'Сыйлықтарды белсендіру қатесі';
+
+  @override
+  String get activatingGift => 'Сыйлықты белсендіру';
+
+  @override
+  String get checkingGifts => 'Сыйлықтарды тексеру...';
+
+  @override
+  String get flashOff => 'Өшіру';
+
+  @override
+  String get flashOn => 'Флэш';
+
+  @override
+  String get giftConfirmationError => 'Растау қатесі';
+
+  @override
+  String get giftConfirmationFailed => 'Сыйлық өндіктеуді растау қатесі';
+
+  @override
+  String get noInternetConnection => 'Интернет байланысы жоқ';
+
+  @override
+  String get giftNotFound => 'Сыйлық каталогында табылмады немесе өшірілді';
+
+  @override
+  String get giftNotYours => 'Сыйлық сізге қарамайды';
+
+  @override
+  String get giftAlreadyIssued =>
+      'Сыйлық әлдеқашан берілген немесе өндіктеуге дайын емес';
+
+  @override
+  String get showEmployeeMessage => 'Бұл хабарламаны қызметкерге көрсетіңіз';
+
+  @override
+  String get excellent => 'Керемет!';
+
+  @override
+  String get receivingGift => 'Сыйлықты қабылдау';
+
+  @override
+  String get yourGift => 'Сіздің сыйлығыңыз:';
+
+  @override
+  String get confirmingIssue => 'Өндіктеуді растау...';
+
+  @override
+  String get selectGiftInstruction =>
+      'Кез келген сыйлықты басыңыз,\nішінде не болғанын білу үшін!';
+
+  @override
+  String get photographClothingLabel => 'Киім бәлінің суретін түсіңіз';
+
+  @override
+  String get washingSymbols => 'Жуу, есіктеу және кептіру белгілері';
+
+  @override
+  String get analyzingLabel => 'Бәлі талдау...';
+
+  @override
+  String get aiProcessingImage => 'AI суретті өңдейді';
+
+  @override
+  String get analyzeThisLabel => 'Бұл бәлі талдаңыз';
 }

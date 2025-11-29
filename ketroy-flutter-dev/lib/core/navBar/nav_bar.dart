@@ -505,6 +505,11 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
       return; // Не переключаемся на вкладку
     }
 
+    // ✅ Показываем навбар при переключении табов (если он был скрыт)
+    if (!_isNavBarVisible) {
+      setNavBarVisibility(true);
+    }
+
     // Запускаем анимацию исчезновения текущей страницы
     await _pageTransitionController.reverse();
 
@@ -561,6 +566,17 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
         items[tabIndex].navKey.currentState?.popUntil((route) => route.isFirst);
       }
       _onTabChanged(tabIndex);
+    }
+  }
+
+  // === Управление видимостью навбара ===
+  bool _isNavBarVisible = true;
+  
+  void setNavBarVisibility(bool visible) {
+    if (mounted && _isNavBarVisible != visible) {
+      setState(() {
+        _isNavBarVisible = visible;
+      });
     }
   }
 
@@ -745,28 +761,34 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
                           child: _buildLiquidGlassNotificationButton(),
                         ),
 
-                      // === NavBar снизу ===
-                      Positioned(
+                      // === NavBar снизу (с анимацией скрытия) ===
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
                         left: 0,
                         right: 0,
-                        bottom: 0,
-                        child: NavBar(
-                          pageIndex: selectedTab,
-                          onTap: (index) {
-                            if (index == selectedTab) {
-                              items[index]
-                                  .navKey
-                                  .currentState
-                                  ?.popUntil((route) {
-                                return route.isFirst;
-                              });
-                            } else {
-                              _onTabChanged(index);
-                            }
-                          },
-                          onQrTap: _openQrScanner,
-                          activeGiftsCount: _activeGiftsCount,
-                          contentKey: _contentBoundaryKey,
+                        bottom: _isNavBarVisible ? 0 : -100,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: _isNavBarVisible ? 1.0 : 0.0,
+                          child: NavBar(
+                            pageIndex: selectedTab,
+                            onTap: (index) {
+                              if (index == selectedTab) {
+                                items[index]
+                                    .navKey
+                                    .currentState
+                                    ?.popUntil((route) {
+                                  return route.isFirst;
+                                });
+                              } else {
+                                _onTabChanged(index);
+                              }
+                            },
+                            onQrTap: _openQrScanner,
+                            activeGiftsCount: _activeGiftsCount,
+                            contentKey: _contentBoundaryKey,
+                          ),
                         ),
                       ),
                     ],

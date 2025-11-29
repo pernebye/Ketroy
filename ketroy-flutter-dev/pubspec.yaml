@@ -91,13 +91,12 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/ios-light.png"
   image_path_ios: "assets/icons/ios-light.png"
-  image_path_android: "assets/icons/ios-dark.png"
+  image_path_android: "assets/icons/android/android/mipmap-xxxhdpi/ic_launcher.png"
   remove_alpha_ios: true
-  # Android adaptive icon settings
-  adaptive_icon_foreground: "assets/icons/ios-dark.png"
-  adaptive_icon_background: "#2D3830"
+  # Android adaptive icon settings - white background
+  adaptive_icon_foreground: "assets/icons/android/android/mipmap-xxxhdpi/ic_launcher.png"
+  adaptive_icon_background: "#FFFFFF"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -127,7 +126,13 @@ flutter:
         - asset: assets/fonts/Gilroy-Bold.ttf
           weight: 700
     # Noto Sans - fallback font for Kazakh characters (Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І)
+    # This font has complete support for all Cyrillic Extended characters
     - family: NotoSans
       fonts:
         - asset: assets/fonts/NotoSans-Regular.ttf
           weight: 400
+        # Note: For Medium and Bold, using Regular as fallback since those weights may not be available
+        - asset: assets/fonts/NotoSans-Regular.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSans-Regular.ttf
+          weight: 700

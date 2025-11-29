@@ -4,6 +4,8 @@ import { Toast, ToastOptions } from './toast';
 import { ApiClass } from '~/api/api';
 import type { JwtPayload } from 'jwt-decode';
 
+export { useNewsPublishNotification } from './useNewsPublishNotification';
+
 export const api = new ApiClass();
 export const t = i18n.t;
 

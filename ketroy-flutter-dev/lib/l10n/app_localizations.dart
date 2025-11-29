@@ -1122,10 +1122,28 @@ abstract class AppLocalizations {
   /// **'Анализирую...'**
   String get analyzing;
 
+  /// No description provided for @typeMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напишите сообщение...'**
+  String get typeMessage;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать фото'**
+  String get takePhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать из галереи'**
+  String get chooseFromGallery;
+
   /// No description provided for @pointCameraAtLabel.
   ///
   /// In ru, this message translates to:
-  /// **'Наведите камеру на этикетку для сканирования'**
+  /// **'Наведите камеру на этикетку одежды'**
   String get pointCameraAtLabel;
 
   /// No description provided for @processing.
@@ -1775,6 +1793,372 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Активируйте подарок только у кассы и заберите его в течение 10 минут. Если вы хотите забрать подарок позже, сохраните его в разделе «Мои подарки»'**
   String get activateGiftInstructions;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сейчас'**
+  String get timeNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{минуту назад} few{минуты назад} other{минут назад}}'**
+  String timeMinutesAgo(int count);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{час назад} few{часа назад} other{часов назад}}'**
+  String timeHoursAgo(int count);
+
+  /// No description provided for @timeYesterday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вчера'**
+  String get timeYesterday;
+
+  /// No description provided for @timeWeekday.
+  ///
+  /// In ru, this message translates to:
+  /// **'{day}'**
+  String timeWeekday(String day);
+
+  /// No description provided for @timeWeeksAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{неделю назад} few{недели назад} other{недель назад}}'**
+  String timeWeeksAgo(int count);
+
+  /// No description provided for @timeMonthsAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{месяц назад} few{месяца назад} other{месяцев назад}}'**
+  String timeMonthsAgo(int count);
+
+  /// No description provided for @timeYearsAgo.
+  ///
+  /// In ru, this message translates to:
+  /// **'{count, plural, one{год назад} few{года назад} other{лет назад}}'**
+  String timeYearsAgo(int count);
+
+  /// No description provided for @weekdayMonday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Понедельник'**
+  String get weekdayMonday;
+
+  /// No description provided for @weekdayTuesday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вторник'**
+  String get weekdayTuesday;
+
+  /// No description provided for @weekdayWednesday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Среду'**
+  String get weekdayWednesday;
+
+  /// No description provided for @weekdayThursday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Четверг'**
+  String get weekdayThursday;
+
+  /// No description provided for @weekdayFriday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пятницу'**
+  String get weekdayFriday;
+
+  /// No description provided for @weekdaySaturday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Субботу'**
+  String get weekdaySaturday;
+
+  /// No description provided for @weekdaySunday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Воскресенье'**
+  String get weekdaySunday;
+
+  /// No description provided for @sending.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправка кода'**
+  String get sending;
+
+  /// No description provided for @agreementStart.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажав \"ЗАРЕГИСТРИРОВАТЬСЯ\", вы соглашаетесь c'**
+  String get agreementStart;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In ru, this message translates to:
+  /// **'Условиями использования'**
+  String get termsOfUse;
+
+  /// No description provided for @and.
+  ///
+  /// In ru, this message translates to:
+  /// **'и'**
+  String get and;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In ru, this message translates to:
+  /// **'Политикой конфиденциальности'**
+  String get privacyPolicy;
+
+  /// No description provided for @haveAccount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уже есть аккаунт?'**
+  String get haveAccount;
+
+  /// No description provided for @accountFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Аккаунт найден! Введите код для входа.'**
+  String get accountFound;
+
+  /// No description provided for @enterCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Введите код'**
+  String get enterCode;
+
+  /// No description provided for @smsSent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мы отправили SMS с кодом активации на ваш номер телефона'**
+  String get smsSent;
+
+  /// No description provided for @proceed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get proceed;
+
+  /// No description provided for @wrongCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Неверный код'**
+  String get wrongCode;
+
+  /// No description provided for @through.
+  ///
+  /// In ru, this message translates to:
+  /// **'через'**
+  String get through;
+
+  /// No description provided for @userNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пользователь не найден. Пожалуйста, зарегистрируйтесь.'**
+  String get userNotFound;
+
+  /// No description provided for @almostDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Еще немного'**
+  String get almostDone;
+
+  /// No description provided for @provideDataHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пожалуйста, предоставьте актуальные данные, чтобы мы подобрали для вас идеальный стиль.'**
+  String get provideDataHint;
+
+  /// No description provided for @scanGiftAtCheckout.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсканируйте QR-код у кассы'**
+  String get scanGiftAtCheckout;
+
+  /// No description provided for @qrCodeAtCheckout.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код находится у кассы'**
+  String get qrCodeAtCheckout;
+
+  /// No description provided for @scanQrAtStore.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отсканируйте QR-код в магазине'**
+  String get scanQrAtStore;
+
+  /// No description provided for @qrCodeForGift.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код для получения подарка'**
+  String get qrCodeForGift;
+
+  /// No description provided for @qrCodeScannedSuccess.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код успешно отсканирован!'**
+  String get qrCodeScannedSuccess;
+
+  /// No description provided for @pointCameraAtQr.
+  ///
+  /// In ru, this message translates to:
+  /// **'Наведите камеру на QR-код'**
+  String get pointCameraAtQr;
+
+  /// No description provided for @qrCodeInStore.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код в магазине KETROY'**
+  String get qrCodeInStore;
+
+  /// No description provided for @giftReceivedSuccess.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подарок успешно получен! 🎁'**
+  String get giftReceivedSuccess;
+
+  /// No description provided for @giftDataError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка данных подарка. Попробуйте ещё раз.'**
+  String get giftDataError;
+
+  /// No description provided for @giftActivationError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка при активации подарков'**
+  String get giftActivationError;
+
+  /// No description provided for @activatingGift.
+  ///
+  /// In ru, this message translates to:
+  /// **'Активация подарка'**
+  String get activatingGift;
+
+  /// No description provided for @checkingGifts.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверяем подарки...'**
+  String get checkingGifts;
+
+  /// No description provided for @flashOff.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выкл'**
+  String get flashOff;
+
+  /// No description provided for @flashOn.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вспышка'**
+  String get flashOn;
+
+  /// No description provided for @giftConfirmationError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка подтверждения'**
+  String get giftConfirmationError;
+
+  /// No description provided for @giftConfirmationFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ошибка при подтверждении выдачи'**
+  String get giftConfirmationFailed;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет подключения к интернету'**
+  String get noInternetConnection;
+
+  /// No description provided for @giftNotFound.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подарок не найден в каталоге, либо был удален'**
+  String get giftNotFound;
+
+  /// No description provided for @giftNotYours.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подарок не принадлежит вам'**
+  String get giftNotYours;
+
+  /// No description provided for @giftAlreadyIssued.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подарок уже был выдан или не готов к выдаче'**
+  String get giftAlreadyIssued;
+
+  /// No description provided for @showEmployeeMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Покажите это сообщение сотруднику'**
+  String get showEmployeeMessage;
+
+  /// No description provided for @excellent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отлично!'**
+  String get excellent;
+
+  /// No description provided for @receivingGift.
+  ///
+  /// In ru, this message translates to:
+  /// **'Получение подарка'**
+  String get receivingGift;
+
+  /// No description provided for @yourGift.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш подарок:'**
+  String get yourGift;
+
+  /// No description provided for @confirmingIssue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Подтверждаем выдачу...'**
+  String get confirmingIssue;
+
+  /// No description provided for @selectGiftInstruction.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на любой подарок,\nчтобы узнать что внутри!'**
+  String get selectGiftInstruction;
+
+  /// No description provided for @photographClothingLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сфотографируйте ярлык одежды'**
+  String get photographClothingLabel;
+
+  /// No description provided for @washingSymbols.
+  ///
+  /// In ru, this message translates to:
+  /// **'Символы стирки, глажки и сушки'**
+  String get washingSymbols;
+
+  /// No description provided for @analyzingLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Анализирую этикетку...'**
+  String get analyzingLabel;
+
+  /// No description provided for @aiProcessingImage.
+  ///
+  /// In ru, this message translates to:
+  /// **'AI обрабатывает изображение'**
+  String get aiProcessingImage;
+
+  /// No description provided for @analyzeThisLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проанализируй эту этикетку'**
+  String get analyzeThisLabel;
 }
 
 class _AppLocalizationsDelegate

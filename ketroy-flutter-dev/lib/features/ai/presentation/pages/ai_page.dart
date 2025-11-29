@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ketroy_app/core/common/widgets/auth_required_dialog.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
+import 'package:ketroy_app/features/ai/data/models/chat_message_model.dart';
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
 import 'package:ketroy_app/features/ai/presentation/pages/label_scanner_sheet.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
@@ -22,8 +25,13 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
   late AnimationController _waveController;
   late AnimationController _pulseController;
   late AnimationController _messageController;
+  late AnimationController _transitionController;
   late List<Animation<double>> _messageAnimations;
+  
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
@@ -50,7 +58,11 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 800),
     );
 
-    // Анимации для сообщений
+    _transitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
     _messageAnimations = List.generate(3, (index) {
       return Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
@@ -72,7 +84,10 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     _waveController.dispose();
     _pulseController.dispose();
     _messageController.dispose();
+    _transitionController.dispose();
     _scrollController.dispose();
+    _textController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -85,8 +100,128 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
         .replaceAll('###', '')
         .replaceAll('##', '')
         .replaceAll('#', '')
-        .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _sendMessage() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    context.read<AiBloc>().add(SendChatMessage(
+          message: text,
+          languageCode: l10n.localeName,
+        ));
+
+    _textController.clear();
+    _scrollToBottom();
+  }
+
+  Future<void> _pickAndSendImage() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: _accentGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.camera_alt, color: _primaryGreen),
+                ),
+                title: Text(l10n.takePhoto),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _captureImage(ImageSource.camera);
+                },
+              ),
+              SizedBox(height: 8.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: _accentGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.photo_library, color: _primaryGreen),
+                ),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _captureImage(ImageSource.gallery);
+                },
+              ),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureImage(ImageSource source) async {
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (photo != null) {
+        final l10n = AppLocalizations.of(context)!;
+        context.read<AiBloc>().add(SendChatImage(
+              imageFile: File(photo.path),
+              languageCode: l10n.localeName,
+              message: l10n.analyzeThisLabel,
+            ));
+        _scrollToBottom();
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    }
+  }
+
+  void _goToMainScreen() {
+    // Сначала показываем навбар
+    NavScreen.globalKey.currentState?.setNavBarVisibility(true);
+    // Очищаем состояние чата
+    context.read<AiBloc>().add(CloseChat());
+    // Переходим на главный экран (витрину)
+    NavScreen.globalKey.currentState?.switchToTab(0);
   }
 
   Widget _buildLoginDialog(BuildContext context, AppLocalizations l10n) {
@@ -94,7 +229,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
       title: l10n.authRequired,
       message: l10n.aiAuthRequired,
       onCancel: () {
-        // Переходим на главную вкладку при нажатии "Отмена"
         NavScreen.globalKey.currentState?.switchToTab(0);
       },
     );
@@ -107,14 +241,11 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _cardBg,
-        // ValueListenableBuilder слушает изменения состояния авторизации
-        // и пересоздаёт FutureBuilder при каждом login/logout
+        resizeToAvoidBottomInset: true,
         body: ValueListenableBuilder<int>(
           valueListenable: UserDataManager.authStateNotifier,
           builder: (context, authVersion, _) {
             return FutureBuilder<bool>(
-              // Уникальный ключ заставляет FutureBuilder пересоздаваться
-              // при изменении authVersion
               key: ValueKey('auth_check_$authVersion'),
               future: UserDataManager.isUserLoggedIn(),
               builder: (context, snapshot) {
@@ -129,57 +260,47 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                 }
 
                 return BlocConsumer<AiBloc, AiState>(
-              listener: (context, state) {
-                if (state.isFailure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message ?? l10n.errorOccurred),
-                      backgroundColor: Colors.red.shade700,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                }
-                if (state.analyzeResult != null) {
-                  // Прокрутка к новому сообщению
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeOut,
+                  listener: (context, state) {
+                    if (state.isFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message ?? l10n.errorOccurred),
+                          backgroundColor: Colors.red.shade700,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       );
                     }
-                  });
-                }
-              },
-              builder: (context, state) {
-                return Stack(
-                  children: [
-                    // Фоновый градиент
-                    _buildBackground(),
-
-                    // Основной контент
-                    SafeArea(
-                      bottom: false,
-                      child: Column(
-                        children: [
-                          // Кастомный Header
-                          _buildHeader(l10n),
-
-                          // Чат область
-                          Expanded(
-                            child: _buildChatArea(state, l10n),
-                          ),
-
-                          // Нижняя панель с кнопкой
-                          _buildBottomPanel(state, l10n),
-                        ],
-                      ),
-                    ),
-                  ],
+                    if (state.chatMessages.isNotEmpty) {
+                      _scrollToBottom();
+                    }
+                    
+                    // Управление видимостью навбара при изменении состояния чата
+                    NavScreen.globalKey.currentState?.setNavBarVisibility(!state.isChatActive);
+                    
+                    // Анимация перехода к чату
+                    if (state.isChatActive && _transitionController.value == 0) {
+                      _transitionController.forward();
+                    }
+                    
+                    // Сброс анимации при закрытии чата
+                    if (!state.isChatActive && _transitionController.value > 0) {
+                      _transitionController.reset();
+                    }
+                  },
+                  builder: (context, state) {
+                    return Stack(
+                      children: [
+                        _buildBackground(),
+                        SafeArea(
+                          bottom: false,
+                          child: state.isChatActive
+                              ? _buildChatMode(state, l10n)
+                              : _buildInitialMode(state, l10n),
+                        ),
+                      ],
                     );
                   },
                 );
@@ -188,6 +309,36 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           },
         ),
       ),
+    );
+  }
+
+  /// Начальный режим - сканирование этикетки
+  Widget _buildInitialMode(AiState state, AppLocalizations l10n) {
+    return Column(
+      children: [
+        _buildHeader(l10n),
+        Expanded(child: _buildInitialChatArea(state, l10n)),
+        _buildBottomPanel(state, l10n),
+      ],
+    );
+  }
+
+  /// Режим чата - после анализа
+  Widget _buildChatMode(AiState state, AppLocalizations l10n) {
+    return AnimatedBuilder(
+      animation: _transitionController,
+      builder: (context, child) {
+        return Column(
+          children: [
+            // Компактный хедер с кнопкой назад
+            _buildChatHeader(l10n),
+            // Список сообщений
+            Expanded(child: _buildChatMessages(state, l10n)),
+            // Поле ввода
+            _buildChatInput(state, l10n),
+          ],
+        );
+      },
     );
   }
 
@@ -215,7 +366,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
         children: [
           Row(
             children: [
-              // AI Аватар с пульсацией
               AnimatedBuilder(
                 animation: _pulseController,
                 builder: (context, child) {
@@ -230,11 +380,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            _accentGreen,
-                            _lightGreen,
-                            _primaryGreen,
-                          ],
+                          colors: [_accentGreen, _lightGreen, _primaryGreen],
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -260,8 +406,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                 },
               ),
               SizedBox(width: 16.w),
-
-              // Текст
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,8 +452,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
               ),
             ],
           ),
-
-          // Волнистая линия-разделитель
           SizedBox(height: 20.h),
           AnimatedBuilder(
             animation: _waveController,
@@ -328,7 +470,410 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildChatArea(AiState state, AppLocalizations l10n) {
+  /// Компактный хедер для режима чата
+  Widget _buildChatHeader(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(8.w, 8.h, 20.w, 12.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_darkBg, _primaryGreen],
+        ),
+      ),
+      child: Row(
+        children: [
+          // Кнопка назад
+          IconButton(
+            onPressed: _goToMainScreen,
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 22.w,
+            ),
+          ),
+          // AI аватар
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_accentGreen, _lightGreen],
+              ),
+            ),
+            child: Center(
+              child: Text(
+                'AI',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'KETROY AI',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 6.w,
+                      height: 6.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _accentGreen,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      l10n.virtualAssistant,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Кнопка нового чата
+          IconButton(
+            onPressed: () {
+              context.read<AiBloc>().add(ClearChat());
+            },
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: Colors.white70,
+              size: 22.w,
+            ),
+            tooltip: 'Новый чат',
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Список сообщений чата
+  Widget _buildChatMessages(AiState state, AppLocalizations l10n) {
+    return Container(
+      color: _cardBg,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
+        itemCount: state.chatMessages.length,
+        itemBuilder: (context, index) {
+          final message = state.chatMessages[index];
+          return Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: _buildChatBubble(message, l10n),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Пузырь сообщения
+  Widget _buildChatBubble(ChatMessage message, AppLocalizations l10n) {
+    final isUser = message.role == MessageRole.user;
+
+    if (message.isLoading) {
+      return _buildTypingIndicator(l10n);
+    }
+
+    return Row(
+      mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isUser) ...[
+          _buildAiAvatar(),
+          SizedBox(width: 8.w),
+        ],
+        Flexible(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 280.w),
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: isUser ? _primaryGreen : Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(isUser ? 18.r : 4.r),
+                topRight: Radius.circular(isUser ? 4.r : 18.r),
+                bottomLeft: Radius.circular(18.r),
+                bottomRight: Radius.circular(18.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Если есть изображение
+                if (message.imageFile != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Image.file(
+                      message.imageFile!,
+                      width: 200.w,
+                      height: 150.h,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  if (message.content.isNotEmpty) SizedBox(height: 8.h),
+                ],
+                // Текст сообщения
+                if (message.content.isNotEmpty)
+                  Text(
+                    cleanAnalysisText(message.content),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: isUser ? Colors.white : Colors.black87,
+                      height: 1.5,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (isUser) ...[
+          SizedBox(width: 8.w),
+          _buildUserAvatar(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAiAvatar() {
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [_lightGreen, _primaryGreen],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          'AI',
+          style: TextStyle(
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserAvatar() {
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _accentGreen.withValues(alpha: 0.2),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.person,
+          size: 18.w,
+          color: _primaryGreen,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator(AppLocalizations l10n) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildAiAvatar(),
+        SizedBox(width: 8.w),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(4.r),
+              topRight: Radius.circular(18.r),
+              bottomLeft: Radius.circular(18.r),
+              bottomRight: Radius.circular(18.r),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDot(0),
+              SizedBox(width: 4.w),
+              _buildDot(1),
+              SizedBox(width: 4.w),
+              _buildDot(2),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDot(int index) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final delay = index * 0.2;
+        final animValue = ((_pulseController.value + delay) % 1.0);
+        final scale = 0.6 + (math.sin(animValue * math.pi) * 0.4);
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            width: 8.w,
+            height: 8.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _primaryGreen.withValues(alpha: 0.6),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Поле ввода сообщения
+  Widget _buildChatInput(AiState state, AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 12.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            // Кнопка камеры
+            GestureDetector(
+              onTap: state.isSendingMessage ? null : _pickAndSendImage,
+              child: Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: _accentGreen.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.camera_alt_rounded,
+                  color: state.isSendingMessage ? Colors.grey : _primaryGreen,
+                  size: 22.w,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            // Поле ввода
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: _cardBg,
+                  borderRadius: BorderRadius.circular(24.r),
+                ),
+                child: TextField(
+                  controller: _textController,
+                  focusNode: _focusNode,
+                  enabled: !state.isSendingMessage,
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLines: 4,
+                  minLines: 1,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    color: Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: l10n.typeMessage,
+                    hintStyle: TextStyle(
+                      fontSize: 15.sp,
+                      color: Colors.grey.shade500,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  onSubmitted: (_) => _sendMessage(),
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            // Кнопка отправки
+            GestureDetector(
+              onTap: state.isSendingMessage ? null : _sendMessage,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: state.isSendingMessage
+                        ? [Colors.grey.shade400, Colors.grey.shade500]
+                        : [_lightGreen, _primaryGreen],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: state.isSendingMessage
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: _primaryGreen.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                ),
+                child: Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                  size: 20.w,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInitialChatArea(AiState state, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: _cardBg,
@@ -346,30 +891,15 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           controller: _scrollController,
           padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 16.h),
           children: [
-            // Приветственные сообщения
             _buildAnimatedMessage(
               index: 0,
-              child: _buildAiMessage(
-                l10n.aiGreeting,
-                isFirst: true,
-              ),
+              child: _buildAiMessage(l10n.aiGreeting, isFirst: true),
             ),
             SizedBox(height: 12.h),
             _buildAnimatedMessage(
               index: 1,
-              child: _buildAiMessage(
-                l10n.aiInstructions,
-              ),
+              child: _buildAiMessage(l10n.aiInstructions),
             ),
-
-            // Результат анализа
-            if (state.analyzeResult != null) ...[
-              SizedBox(height: 16.h),
-              _buildAnalysisResult(
-                  cleanAnalysisText(state.analyzeResult!.analysis), l10n),
-            ],
-
-            // Индикатор загрузки
             if (state.isLoading) ...[
               SizedBox(height: 16.h),
               _buildLoadingMessage(l10n),
@@ -380,8 +910,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildAnimatedMessage(
-      {required int index, required Widget child}) {
+  Widget _buildAnimatedMessage({required int index, required Widget child}) {
     if (index >= _messageAnimations.length) {
       return child;
     }
@@ -404,7 +933,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Аватар AI
         Container(
           width: 40.w,
           height: 40.w,
@@ -413,10 +941,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                _lightGreen,
-                _primaryGreen,
-              ],
+              colors: [_lightGreen, _primaryGreen],
             ),
             boxShadow: [
               BoxShadow(
@@ -439,8 +964,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           ),
         ),
         SizedBox(width: 12.w),
-
-        // Bubble сообщения
         Expanded(
           child: Container(
             padding: EdgeInsets.all(16.w),
@@ -471,129 +994,8 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
             ),
           ),
         ),
-        SizedBox(width: 40.w), // Отступ справа для баланса
+        SizedBox(width: 40.w),
       ],
-    );
-  }
-
-  Widget _buildAnalysisResult(String text, AppLocalizations l10n) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 600),
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 30 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
-        );
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Аватар AI с особым оформлением для результата
-          Container(
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _accentGreen,
-                  _lightGreen,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: _accentGreen.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(
-                Icons.auto_awesome,
-                color: Colors.white,
-                size: 22.w,
-              ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-
-          // Карточка результата
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white,
-                    _cardBg,
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4.r),
-                  topRight: Radius.circular(20.r),
-                  bottomLeft: Radius.circular(20.r),
-                  bottomRight: Radius.circular(20.r),
-                ),
-                border: Border.all(
-                  color: _accentGreen.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryGreen.withValues(alpha: 0.1),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.verified,
-                        color: _accentGreen,
-                        size: 18.w,
-                      ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        l10n.analysisResult,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          color: _primaryGreen,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      color: Colors.black87,
-                      height: 1.6,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(width: 24.w),
-        ],
-      ),
     );
   }
 
@@ -601,7 +1003,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Аватар AI
         Container(
           width: 40.w,
           height: 40.w,
@@ -610,10 +1011,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                _lightGreen,
-                _primaryGreen,
-              ],
+              colors: [_lightGreen, _primaryGreen],
             ),
           ),
           child: Center(
@@ -628,8 +1026,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           ),
         ),
         SizedBox(width: 12.w),
-
-        // Typing indicator
         Container(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
           decoration: BoxDecoration(
@@ -651,11 +1047,11 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildTypingDot(0),
+              _buildDot(0),
               SizedBox(width: 4.w),
-              _buildTypingDot(1),
+              _buildDot(1),
               SizedBox(width: 4.w),
-              _buildTypingDot(2),
+              _buildDot(2),
               SizedBox(width: 12.w),
               Text(
                 l10n.analyzing,
@@ -669,34 +1065,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTypingDot(int index) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 600),
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final delay = index * 0.2;
-            final animValue = ((_pulseController.value + delay) % 1.0);
-            final scale = 0.6 + (math.sin(animValue * math.pi) * 0.4);
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 8.w,
-                height: 8.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _primaryGreen.withValues(alpha: 0.6 + (scale - 0.6)),
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 
@@ -717,7 +1085,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
         top: false,
         child: Column(
           children: [
-            // Подсказка
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
@@ -745,10 +1112,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                 ],
               ),
             ),
-
             SizedBox(height: 16.h),
-
-            // Кнопка сканирования
             GestureDetector(
               onTap: state.isLoading
                   ? null
@@ -800,8 +1164,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
-
-            // Отступ для NavBar
             SizedBox(height: NavBar.getBottomPadding(context)),
           ],
         ),
@@ -809,10 +1171,6 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     );
   }
 }
-
-// ============================================================================
-// WAVE PAINTER - Рисует анимированную волну
-// ============================================================================
 
 class WavePainter extends CustomPainter {
   final double animation;
@@ -842,7 +1200,6 @@ class WavePainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    // Вторая волна с меньшей амплитудой
     final paint2 = Paint()
       ..color = color.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke

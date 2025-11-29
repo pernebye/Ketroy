@@ -1659,13 +1659,19 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Модальное окно уведомления при публикации новости -->
+    <news-publish-notification-modal 
+      v-model="showPublishNotificationModal"
+      @confirm="onPublishNotificationConfirm"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 import { AdminEnums } from '~/types/enums';
 import { useConfirm } from '~/composables/useConfirm';
-import { t } from '~/composables';
+import { t, useNewsPublishNotification } from '~/composables';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 
@@ -2094,6 +2100,11 @@ const showNewsArchive = ref(false);
 const archivingNews = ref(false);
 const isModeSwitching = ref(false);
 
+// Модальное окно уведомления при публикации
+const showPublishNotificationModal = ref(false);
+const pendingNewsToggle = ref<{ news: any; newState: boolean } | null>(null);
+const { shouldShowNotification, confirmPublish, rejectPublish } = useNewsPublishNotification();
+
 // Drag & Drop для новостей
 const draggingNewsIndex = ref<number | null>(null);
 const isDraggingNews = ref(false);
@@ -2297,13 +2308,81 @@ const formatNewsCategory = (category: any): string => {
 };
 
 const toggleNewsActive = async (news: any) => {
+  const newState = !news.is_active;
+  
+  // Если нужно активировать новость, проверяем нужно ли показывать модальное окно
+  if (newState && shouldShowNotification(news.id)) {
+    pendingNewsToggle.value = { news, newState };
+    showPublishNotificationModal.value = true;
+    return;
+  }
+  
+  // Иначе сразу обновляем
   try {
-    await api.news.quickUpdate(news.id, { is_active: !news.is_active });
-    news.is_active = !news.is_active;
-    showToaster('success', news.is_active ? 'Новость опубликована' : 'Новость скрыта');
+    await api.news.quickUpdate(news.id, { is_active: newState });
+    news.is_active = newState;
+    showToaster('success', newState ? 'Новость опубликована' : 'Новость скрыта');
   } catch (err) {
     console.error('Failed to toggle news:', err);
     showToaster('error', 'Ошибка обновления');
+  }
+};
+
+const onPublishNotificationConfirm = async (result: { sendNotification: boolean; dontAskAgain: boolean }) => {
+  const { sendNotification, dontAskAgain } = result;
+  
+  if (!pendingNewsToggle.value) return;
+  
+  const { news, newState } = pendingNewsToggle.value;
+  
+  try {
+    // Подготавливаем данные для отправки уведомления с учётом фильтров таргетирования
+    const updateData: any = { is_active: newState };
+    
+    if (sendNotification) {
+      updateData.send_notification = true;
+      // Передаём фильтры таргетирования вместе с уведомлением
+      updateData.target_cities = news.city && news.city !== 'Все' ? (Array.isArray(news.city) ? news.city : [news.city]) : undefined;
+      updateData.target_categories = news.category && news.category !== 'Все' ? (Array.isArray(news.category) ? news.category : [news.category]) : undefined;
+      updateData.target_shoe_size = news.shoe_size || undefined;
+      updateData.target_clothing_size = news.clothing_size || undefined;
+      
+      console.log('📢 Отправка уведомления с фильтрами:', { 
+        newsId: news.id, 
+        newsName: news.name,
+        filters: {
+          target_cities: updateData.target_cities,
+          target_categories: updateData.target_categories,
+          target_shoe_size: updateData.target_shoe_size,
+          target_clothing_size: updateData.target_clothing_size
+        }
+      });
+    } else {
+      console.log('🔇 Уведомление НЕ отправляется - пользователь выбрал "Нет"', { newsId: news.id, newsName: news.name });
+    }
+    
+    // Отправляем запрос с флагом отправки уведомления и фильтрами
+    console.log('📤 Отправляем запрос на сервер:', updateData);
+    await api.news.quickUpdate(news.id, updateData);
+    news.is_active = newState;
+    
+    // Сохраняем выбор пользователя если нужно
+    if (dontAskAgain) {
+      if (sendNotification) {
+        confirmPublish(true);
+      } else {
+        rejectPublish(true);
+      }
+    }
+    
+    const notificationStatus = sendNotification ? ' ✓ с уведомлением' : '';
+    showToaster('success', newState ? 'Новость опубликована' + notificationStatus : 'Новость скрыта');
+  } catch (err) {
+    console.error('Failed to toggle news:', err);
+    showToaster('error', 'Ошибка обновления');
+  } finally {
+    pendingNewsToggle.value = null;
+    showPublishNotificationModal.value = false;
   }
 };
 
@@ -2381,12 +2460,15 @@ const deleteSelectedNews = async () => {
 // Архивация одной новости
 const archiveNews = async (news: any) => {
   try {
+    // При архивации отключаем новость
     await api.news.archive(news.id);
+    // Создаём копию с отключённым статусом
+    const archivedNews = { ...news, is_active: false };
     // Удаляем из основного списка
     newsList.value = newsList.value.filter(n => n.id !== news.id);
-    // Добавляем в архив
-    archivedNewsList.value.unshift({ ...news });
-    showToaster('success', 'Новость перемещена в архив');
+    // Добавляем в архив с деактивированным статусом
+    archivedNewsList.value.unshift(archivedNews);
+    showToaster('success', 'Новость перемещена в архив и деактивирована');
   } catch (err) {
     console.error('Failed to archive news:', err);
     showToaster('error', 'Ошибка архивации');
@@ -2409,15 +2491,18 @@ const archiveSelectedNews = async () => {
   archivingNews.value = true;
   try {
     const idsToArchive = [...selectedNewsIds.value];
-    // Сохраняем новости для добавления в архив
-    const newsToArchive = newsList.value.filter(n => idsToArchive.includes(n.id));
+    // Сохраняем новости для добавления в архив с деактивированным статусом
+    const newsToArchive = newsList.value.filter(n => idsToArchive.includes(n.id)).map(n => ({
+      ...n,
+      is_active: false
+    }));
     await api.news.archiveMany(idsToArchive);
     // Удаляем из основного списка
     newsList.value = newsList.value.filter(n => !idsToArchive.includes(n.id));
-    // Добавляем в архив
+    // Добавляем в архив с деактивированным статусом
     archivedNewsList.value.unshift(...newsToArchive);
     selectedNewsIds.value = [];
-    showToaster('success', 'Новости перемещены в архив');
+    showToaster('success', 'Новости перемещены в архив и деактивированы');
   } catch (err) {
     console.error('Failed to archive news:', err);
     showToaster('error', 'Ошибка архивации');

@@ -77,6 +77,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<GetCityListFetch>(_cityListFetch);
     on<LoadCityShop>(_loadCityShop);
     on<GetPromotionsFetch>(_getPromotionsFetch);
+    on<RefreshBonusFromServer>(_refreshBonusFromServer);
   }
 
   void _resetProfileState(ResetProfileState event, Emitter<ProfileState> emit) {
@@ -286,8 +287,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       // Сохраняем обновленные данные пользователя
       await UserDataManager.saveUser(userData);
 
+      // Обновляем состояние с бонусами для анимированного счётчика
       emit(state.copyWith(
           profileData: userData,
+          bonus: userData.bonusAmount?.toString(),
           status: ProfileStatus.success,
           isCleaned: false)); // Сбрасываем isCleaned
     });
@@ -432,6 +435,41 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           promotions: promotions,
           promotionsStatus: PromotionsStatus.success,
         ));
+      },
+    );
+  }
+
+  /// Обновление бонусов с сервера (при получении push-уведомления)
+  /// Запрашивает актуальные данные пользователя и обновляет бонусы в UI с анимацией
+  void _refreshBonusFromServer(
+      RefreshBonusFromServer event, Emitter<ProfileState> emit) async {
+    debugPrint('💰 RefreshBonusFromServer: fetching user data from API...');
+    
+    final res = await _getProfileUser(NoParams(), null);
+
+    await res.fold(
+      (failure) async {
+        debugPrint('❌ Failed to refresh bonus: ${failure.message}');
+        // Не меняем состояние ошибки, просто логируем
+      },
+      (userData) async {
+        final previousBonus = state.bonus;
+        final newBonus = userData.bonusAmount?.toString() ?? '0';
+        
+        debugPrint('💰 Bonus update: $previousBonus → $newBonus');
+        
+        // Сохраняем обновленные данные пользователя в локальное хранилище
+        await UserDataManager.saveUser(userData);
+
+        // Обновляем состояние с новым значением бонусов
+        // AnimatedBonusCounter автоматически анимирует изменение
+        emit(state.copyWith(
+          profileData: userData,
+          bonus: newBonus,
+          isCleaned: false,
+        ));
+        
+        debugPrint('✅ Bonus refreshed successfully: $newBonus');
       },
     );
   }

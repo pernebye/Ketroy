@@ -12,12 +12,13 @@ class GetAiResponse implements UseCase<AiEntity, AiParams> {
   GetAiResponse({required this.aiRepository});
   @override
   Future<Either<Failure, AiEntity>> call(AiParams params, String? path) async {
-    return await aiRepository.getAiResponse(params.imageFile);
+    return await aiRepository.getAiResponse(params.imageFile, languageCode: params.languageCode);
   }
 }
 
 class AiParams {
   final File imageFile;
+  final String? languageCode;
 
-  AiParams({required this.imageFile});
+  AiParams({required this.imageFile, this.languageCode});
 }

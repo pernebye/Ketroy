@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:ketroy_app/core/utils/date_parser.dart';
 import 'package:ketroy_app/features/my_gifts/domain/entities/gifts_entities.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gift_issuance_scanner.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
@@ -24,6 +25,14 @@ class MyGiftsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
+    // Определяем дату для отображения
+    DateTime? displayDate;
+    if (gift.isSelected && gift.updatedAt != null) {
+      displayDate = gift.updatedAt; // Время выбора
+    } else if (gift.isIssued && gift.updatedAt != null) {
+      displayDate = gift.updatedAt; // Время выдачи
+    }
+    
     return Container(
       padding: EdgeInsets.all(16.w),
       child: Column(
@@ -41,17 +50,40 @@ class MyGiftsWidget extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Название подарка
-                    Text(
-                      gift.name,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    // Заголовок с названием и временем
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Название подарка
+                        Expanded(
+                          child: Text(
+                            gift.name,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        
+                        // Время (если есть)
+                        if (displayDate != null) ...[
+                          SizedBox(width: 8.w),
+                          Flexible(
+                            child: Text(
+                              SafeDateParser.formatRelativeTime(displayDate, l10n),
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.black54,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     
                     // Описание (если есть)
@@ -79,8 +111,8 @@ class MyGiftsWidget extends StatelessWidget {
             ],
           ),
           
-          // Кнопка получения для выбранных подарков
-          if (gift.isSelected) ...[
+          // Кнопка получения для выбранных и активированных подарков
+          if (gift.isSelected || gift.isActivated) ...[
             SizedBox(height: 16.h),
             _buildGetGiftButton(context),
           ],

@@ -18,12 +18,36 @@ class ClothingAnalyzerController extends Controller
      */
     public function analyzeLabel(Request $request): JsonResponse
     {
+        // Проверка авторизации
+        if (!$request->user()) {
+            Log::warning('Clothing Analyzer: Unauthorized request');
+            return response()->json([
+                'success' => false,
+                'error' => 'Требуется авторизация'
+            ], 401);
+        }
+
+        // Логирование входящего запроса
+        Log::info('Clothing Analyzer: Incoming request', [
+            'user_id' => $request->user()->id,
+            'has_file' => $request->hasFile('image'),
+            'file_size' => $request->file('image')?->getSize(),
+            'mime_type' => $request->file('image')?->getMimeType(),
+            'language' => $request->input('language'),
+            'request_keys' => $request->keys()
+        ]);
+
         // Валидация для мобильных форматов камер
         $validator = Validator::make($request->all(), [
             'image' => 'required|file|mimes:jpeg,png,jpg,heic,heif|max:10240', // 10MB
+            'language' => 'nullable|string|in:en,ru,kk,tr', // Поддерживаемые языки
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Clothing Analyzer: Validation failed', [
+                'errors' => $validator->errors()->toArray()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'error' => 'Некорректное изображение. Поддерживаемые форматы: JPEG, PNG, HEIC, HEIF. Максимальный размер: 10MB',
@@ -43,18 +67,31 @@ class ClothingAnalyzerController extends Controller
 
             // Получаем и обрабатываем изображение
             $image = $request->file('image');
+            Log::info('Clothing Analyzer: Processing image', [
+                'original_name' => $image->getClientOriginalName(),
+                'size' => $image->getSize()
+            ]);
+            
             $imageBase64 = $this->processImage($image);
             
             if (!$imageBase64) {
+                Log::error('Clothing Analyzer: Failed to process image');
                 return response()->json([
                     'success' => false,
                     'error' => 'Ошибка обработки изображения'
                 ], 400);
             }
 
+            Log::info('Clothing Analyzer: Image processed successfully', [
+                'base64_size' => strlen($imageBase64)
+            ]);
+
+            // Получаем язык из запроса (по умолчанию русский)
+            $language = $request->input('language', 'ru');
+
             // Отправляем запрос к OpenAI
             $startTime = microtime(true);
-            $response = $this->callOpenAI($imageBase64, $apiKey);
+            $response = $this->callOpenAI($imageBase64, $apiKey, $language);
             $processingTime = round((microtime(true) - $startTime), 2);
 
             if (!$response['success']) {
@@ -78,11 +115,17 @@ class ClothingAnalyzerController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Ошибка анализа ярлыка: ' . $e->getMessage());
+            Log::error('Ошибка анализа ярлыка', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return response()->json([
                 'success' => false,
-                'error' => 'Внутренняя ошибка сервера при анализе изображения'
+                'error' => 'Внутренняя ошибка сервера при анализе изображения',
+                'debug' => env('APP_DEBUG') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -277,38 +320,98 @@ class ClothingAnalyzerController extends Controller
      * 
      * @param string $imageBase64
      * @param string $apiKey
+     * @param string $language Язык ответа (en, ru, kk, tr)
      * @return array
      */
-    private function callOpenAI(string $imageBase64, string $apiKey): array
+    private function callOpenAI(string $imageBase64, string $apiKey, string $language = 'ru'): array
     {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json'
-            ])->timeout(60)->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4o',
+            Log::info('Clothing Analyzer: callOpenAI started', [
+                'language' => $language,
+                'model' => env('OPENAI_MODEL', 'gpt-5-nano'),
+                'api_key_exists' => !empty($apiKey),
+                'image_size' => strlen($imageBase64)
+            ]);
+
+            $model = env('OPENAI_MODEL', 'gpt-5-nano');
+            
+            // Определяем инструкцию по языку
+            $languageInstruction = $this->getLanguageInstruction($language);
+            
+            // Динамический промпт в зависимости от языка
+            $prompts = [
+                'ru' => 'Это изображение этикетки одежды? 
+
+ЕСЛИ ДА - проанализируй кратко и вежливо на РУССКОМ:
+📌 Тип изделия: [описание]
+📌 Материал: [состав]
+📌 Рекомендации по уходу: [стирка, сушка, глажка]
+📌 Советы: [практические рекомендации]
+
+ЕСЛИ НЕТ - ответь кратко и вежливо на РУССКОМ (без длинных текстов):
+"Привет! 👋 Я не вижу этикетку на фото. Отправь, пожалуйста, четкое фото этикетки - я помогу!" 
+Добавь легкий юмор/шутку если видишь человека вместо этикетки.',
+                
+                'en' => 'Is this a clothing label image?
+
+IF YES - analyze briefly and politely in ENGLISH:
+📌 Type of clothing: [description]
+📌 Material: [composition]
+📌 Care recommendations: [washing, drying, ironing]
+📌 Tips: [practical advice]
+
+IF NO - answer briefly in ENGLISH (short message):
+"Hi! 👋 I don\'t see a clothing label here. Please send a clear photo of the label - I\'ll help!"
+Add a light joke if you see a person instead of a label.',
+                
+                'kk' => 'Бұл киімнің этикеткасының суреті ме?
+
+ЕГЕР ҚЫ - қысқаша және құрметті түрде ҚАЗАҚША сипатта:
+📌 Киім түрі: [сипаттамасы]
+📌 Материалы: [құрамасы]
+📌 Қараусы бойынша ұсынымдар: [жуу, кептіру, үтіктеу]
+📌 Кеңестер: [іс-әрекетті ұсынымдар]
+
+ЕГЕР ЖОҚ - қысқаша және құрметті түрде ҚАЗАҚША (ұзын мәтін жоқ):
+"Сәлем! 👋 Мен этикетканы көрмедім. Өтінішінме, этикетканың нақты суретін жіберіңіз - мен көмектесемін!"
+Егер адамды көрсеңіз, жеңіл күлкі қосыңыз.',
+                
+                'tr' => 'Bu bir giysi etiketi görüntüsü mü?
+
+EVET İSE - kısaca ve nazikçe TÜRKÇE analiz et:
+📌 Giysi türü: [açıklama]
+📌 Malzeme: [bileşim]
+📌 Bakım önerileri: [yıkama, kurutma, ütüleme]
+📌 İpuçları: [pratik tavsiyeler]
+
+HAYIR İSE - kısaca ve nazikçe TÜRKÇE cevap ver (uzun mesaj yok):
+"Merhaba! 👋 Etiketi göremiyorum. Lütfen etiketi net olarak fotoğrafla - yardım ederim!"
+Eğer insan görürseniz hafif bir şaka ekleyin.',
+            ];
+
+            $fullPrompt = $languageInstruction . ($prompts[$language] ?? $prompts['ru']);
+
+            Log::info('Clothing Analyzer: Full prompt that will be sent', [
+                'language' => $language,
+                'prompt' => $fullPrompt,
+                'image_base64_first_100_chars' => substr($imageBase64, 0, 100),
+                'image_base64_length' => strlen($imageBase64)
+            ]);
+
+            Log::debug('Clothing Analyzer: Sending request to OpenAI', [
+                'model' => $model,
+                'language_instruction' => $languageInstruction
+            ]);
+            
+            $requestPayload = [
+                'model' => $model,
                 'messages' => [
                     [
                         'role' => 'user',
                         'content' => [
                             [
                                 'type' => 'text',
-                                'text' => 'Проанализируй это изображение этикетки одежды и предоставь следующую информацию:
-
-1. ТИП ИЗДЕЛИЯ: Определи, что это за предмет одежды (рубашка, брюки, свитер и т.д.)
-
-2. СОСТАВ МАТЕРИАЛА: Укажи состав ткани, если видно на этикетке
-
-3. РЕКОМЕНДАЦИИ ПО УХОДУ: Подробно расшифруй все символы на этикетке по уходу:
-   - Стирка (температура, режим)
-   - Отбеливание (разрешено/запрещено)
-   - Сушка (способ сушки)
-   - Глажка (температура, особенности)
-   - Химчистка (тип, если необходима)
-
-4. ДОПОЛНИТЕЛЬНЫЕ СОВЕТЫ: Практические советы по уходу за изделием
-
-Отвечай на русском языке простым и понятным текстом, без использования JSON или других форматов структурированных данных. Если какая-то информация не видна на этикетке, так и укажи.'
+                                'text' => $fullPrompt
                             ],
                             [
                                 'type' => 'image_url',
@@ -319,11 +422,35 @@ class ClothingAnalyzerController extends Controller
                         ]
                     ]
                 ],
-                'max_tokens' => 1000
+                // Не ограничиваем токены - дав модели свободу для анализа изображения
+                // max_tokens и max_completion_tokens удалены намеренно
+            ];
+
+            Log::info('Clothing Analyzer: Request payload structure', [
+                'has_model' => isset($requestPayload['model']),
+                'has_messages' => isset($requestPayload['messages']),
+                'message_count' => count($requestPayload['messages']),
+                'first_message_role' => $requestPayload['messages'][0]['role'],
+                'content_items' => count($requestPayload['messages'][0]['content']),
+                'has_token_limit' => isset($requestPayload['max_completion_tokens']) || isset($requestPayload['max_tokens']),
+                'note' => 'No token limits set - model will generate as needed'
             ]);
+            
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json'
+            ])->withoutVerifying()
+              ->timeout(60)->post('https://api.openai.com/v1/chat/completions', $requestPayload);
 
             if (!$response->successful()) {
                 $error = $response->json();
+                Log::error('Clothing Analyzer: OpenAI API error', [
+                    'status' => $response->status(),
+                    'error' => $error,
+                    'language' => $language,
+                    'model' => $model
+                ]);
+                
                 return [
                     'success' => false,
                     'error' => 'Ошибка OpenAI API: ' . ($error['error']['message'] ?? 'Неизвестная ошибка')
@@ -332,12 +459,44 @@ class ClothingAnalyzerController extends Controller
 
             $data = $response->json();
             
+            Log::info('Clothing Analyzer: Full response from OpenAI', [
+                'status_code' => $response->status(),
+                'response_data' => json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ]);
+            
+            // Проверяем структуру ответа
+            if (!isset($data['choices']) || !isset($data['choices'][0])) {
+                Log::error('Clothing Analyzer: Invalid response structure', [
+                    'response_keys' => array_keys($data),
+                    'has_choices' => isset($data['choices'])
+                ]);
+                return [
+                    'success' => false,
+                    'error' => 'Неправильная структура ответа от OpenAI'
+                ];
+            }
+
+            $analysisContent = $data['choices'][0]['message']['content'] ?? '';
+            
+            Log::info('Clothing Analyzer: Analysis content extracted', [
+                'language' => $language,
+                'content_length' => strlen($analysisContent),
+                'content_preview' => substr($analysisContent, 0, 200),
+                'full_content' => $analysisContent
+            ]);
+            
             return [
                 'success' => true,
-                'analysis' => $data['choices'][0]['message']['content']
+                'analysis' => $analysisContent
             ];
 
         } catch (\Exception $e) {
+            Log::error('Clothing Analyzer: Exception in callOpenAI', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'language' => $language
+            ]);
+            
             return [
                 'success' => false,
                 'error' => 'Ошибка подключения к OpenAI: ' . $e->getMessage()
@@ -346,6 +505,241 @@ class ClothingAnalyzerController extends Controller
     }
 
 
+
+    /**
+     * Получает инструкцию для ИИ на основе выбранного языка
+     * Используется только для ПЕРВОГО анализа этикетки как предпочтительный язык ответа.
+     * 
+     * @param string $language Код языка (en, ru, kk, tr)
+     * @return string
+     */
+    private function getLanguageInstruction(string $language): string
+    {
+        // Мягкая инструкция - предпочтительный язык, но не строгое требование
+        $instructions = [
+            'en' => 'Preferred response language: English. ',
+            'ru' => 'Предпочтительный язык ответа: русский. ',
+            'kk' => 'Жауаптың қалаулы тілі: қазақша. ',
+            'tr' => 'Tercih edilen yanıt dili: Türkçe. ',
+        ];
+        
+        return $instructions[$language] ?? $instructions['ru'];
+    }
+
+    /**
+     * Продолжить чат с контекстом
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function chat(Request $request): JsonResponse
+    {
+        Log::info('AI Chat: Incoming request', [
+            'user_id' => $request->user()?->id,
+            'has_image' => $request->hasFile('image'),
+            'message' => $request->input('message'),
+            'language' => $request->input('language'),
+            'chat_history_raw_type' => gettype($request->input('chat_history')),
+        ]);
+
+        // Проверка авторизации
+        if (!$request->user()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Требуется авторизация'
+            ], 401);
+        }
+
+        // Парсим chat_history если это JSON строка (при отправке FormData)
+        $chatHistoryInput = $request->input('chat_history', []);
+        if (is_string($chatHistoryInput)) {
+            $chatHistoryInput = json_decode($chatHistoryInput, true) ?? [];
+        }
+        
+        // Подменяем в request для валидации
+        $request->merge(['chat_history' => $chatHistoryInput]);
+
+        $validator = Validator::make($request->all(), [
+            'message' => 'required_without:image|string|max:2000',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,heic,heif|max:10240',
+            'chat_history' => 'required|array',
+            'chat_history.*.role' => 'required|string|in:user,assistant',
+            'chat_history.*.content' => 'required|string',
+            'language' => 'nullable|string|in:en,ru,kk,tr',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('AI Chat: Validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'has_image' => $request->hasFile('image'),
+                'message' => $request->input('message'),
+                'chat_history_type' => gettype($chatHistoryInput),
+                'chat_history_count' => is_array($chatHistoryInput) ? count($chatHistoryInput) : 0
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Некорректные данные',
+                'details' => $validator->errors()
+            ], 400);
+        }
+
+        try {
+            $apiKey = env('OPENAI_API_KEY');
+            if (!$apiKey) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'API ключ OpenAI не настроен'
+                ], 500);
+            }
+
+            $language = $request->input('language', 'ru');
+            $chatHistory = $chatHistoryInput;
+            $userMessage = $request->input('message', '');
+            
+            // Системное сообщение для контекста чата
+            $systemPrompt = $this->getChatSystemPrompt($language);
+            
+            // Формируем массив сообщений
+            $messages = [
+                ['role' => 'system', 'content' => $systemPrompt]
+            ];
+            
+            // Добавляем историю чата
+            foreach ($chatHistory as $msg) {
+                $messages[] = [
+                    'role' => $msg['role'],
+                    'content' => $msg['content']
+                ];
+            }
+            
+            // Добавляем новое сообщение пользователя
+            if ($request->hasFile('image')) {
+                // Если есть изображение
+                $image = $request->file('image');
+                $imageBase64 = $this->processImage($image);
+                
+                if (!$imageBase64) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Ошибка обработки изображения'
+                    ], 400);
+                }
+                
+                $content = [
+                    ['type' => 'text', 'text' => $userMessage ?: 'Проанализируй эту этикетку'],
+                    ['type' => 'image_url', 'image_url' => ['url' => 'data:image/jpeg;base64,' . $imageBase64]]
+                ];
+                $messages[] = ['role' => 'user', 'content' => $content];
+            } else {
+                // Только текст
+                $messages[] = ['role' => 'user', 'content' => $userMessage];
+            }
+
+            $model = env('OPENAI_MODEL', 'gpt-5-nano');
+            
+            Log::info('AI Chat: Sending request', [
+                'user_id' => $request->user()->id,
+                'message_count' => count($messages),
+                'has_image' => $request->hasFile('image'),
+                'language' => $language
+            ]);
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json'
+            ])->withoutVerifying()
+              ->timeout(60)
+              ->post('https://api.openai.com/v1/chat/completions', [
+                  'model' => $model,
+                  'messages' => $messages
+              ]);
+
+            if (!$response->successful()) {
+                $error = $response->json();
+                Log::error('AI Chat: OpenAI API error', [
+                    'status' => $response->status(),
+                    'error' => $error
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Ошибка API: ' . ($error['error']['message'] ?? 'Неизвестная ошибка')
+                ], 500);
+            }
+
+            $data = $response->json();
+            $assistantMessage = $data['choices'][0]['message']['content'] ?? '';
+
+            Log::info('AI Chat: Response received', [
+                'user_id' => $request->user()->id,
+                'response_length' => strlen($assistantMessage)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $assistantMessage,
+                'timestamp' => now()->toISOString()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('AI Chat: Exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Внутренняя ошибка сервера'
+            ], 500);
+        }
+    }
+
+    /**
+     * Получает системный промпт для чата
+     * Язык передается только как предпочтение для ПЕРВОГО ответа.
+     * Далее ИИ адаптируется к языку пользователя.
+     */
+    private function getChatSystemPrompt(string $initialLanguage): string
+    {
+        // Определяем начальный язык для первого ответа
+        $languageHint = match($initialLanguage) {
+            'kk' => 'қазақша (казахский)',
+            'en' => 'English (английский)',
+            'tr' => 'Türkçe (турецкий)',
+            default => 'русский'
+        };
+
+        return "Ты - дружелюбный AI-помощник KETROY по уходу за одеждой.
+
+⚠️ СТРОГИЕ ОГРАНИЧЕНИЯ:
+Ты помогаешь ТОЛЬКО с темами, связанными с одеждой:
+✅ Анализ этикеток одежды (символы стирки, сушки, глажки, химчистки)
+✅ Советы по уходу за одеждой и тканями
+✅ Рекомендации по стирке, сушке, глажке разных материалов
+✅ Удаление пятен с одежды
+✅ Хранение одежды
+✅ Общие вопросы о тканях и материалах
+
+❌ НЕ ОТВЕЧАЙ на вопросы, не связанные с одеждой:
+- Математика, история, география, наука
+- Программирование, технологии
+- Политика, новости, события
+- Рецепты, медицина, юридические вопросы
+- Любые другие темы вне сферы одежды
+
+Если пользователь спрашивает о чём-то вне твоей компетенции - вежливо откажи и напомни, что ты специализируешься только на уходе за одеждой. Можешь пошутить, но не отвечай по существу на посторонние вопросы.
+
+ПРАВИЛА ОБЩЕНИЯ:
+1. Отвечай КРАТКО, вежливо и с лёгким юмором.
+2. АДАПТИРУЙСЯ к языку пользователя: если пользователь пишет на русском - отвечай на русском, на казахском - на казахском, на английском - на английском и т.д.
+3. Если пользователь явно просит ответить на другом языке - отвечай на том языке, который он просит.
+4. НЕ ТРЕБУЙ от пользователя писать на каком-либо конкретном языке.
+5. Предпочтительный язык для ПЕРВОГО ответа (если контекст не ясен): {$languageHint}.
+
+Если видишь этикетку на изображении - анализируй её.
+Если этикетки нет - вежливо попроси отправить фото этикетки.";
+    }
 
     /**
      * Проверка работоспособности сервиса
@@ -371,7 +765,8 @@ class ClothingAnalyzerController extends Controller
             'supported_formats' => ['jpeg', 'jpg', 'png', 'heic', 'heif'],
             'max_file_size' => '10MB',
             'capabilities' => $capabilities,
-            'heic_conversion' => $capabilities['imagick_available'] || $capabilities['heif_convert_available'] ? 'available' : 'basic'
+            'heic_conversion' => $capabilities['imagick_available'] || $capabilities['heif_convert_available'] ? 'available' : 'basic',
+            'supported_languages' => ['en', 'ru', 'kk', 'tr']
         ]);
     }
 } 

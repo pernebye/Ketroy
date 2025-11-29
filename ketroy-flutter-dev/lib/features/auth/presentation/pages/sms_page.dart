@@ -9,6 +9,7 @@ import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/post_user_info_first.dart';
 import 'package:ketroy_app/features/auth/presentation/viewModel/view_model.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/main.dart' show navigatorKey;
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
@@ -92,7 +93,7 @@ class _SmsBodyState extends State<SmsBody> {
     }
 
     if (smsCodeController.text.length != 5) {
-      showSnackBar(context, 'Введите код из 5 цифр');
+      showSnackBar(context, AppLocalizations.of(context)!.enterCode);
       return;
     }
 
@@ -134,7 +135,7 @@ class _SmsBodyState extends State<SmsBody> {
           listener: (context, state) {
             if (state.isFailure) {
               wrongPassword = true;
-              showSnackBar(context, state.message ?? 'Ошибка авторизации');
+              showSnackBar(context, state.message ?? AppLocalizations.of(context)!.unknownError);
             } else if (state.isSuccess) {
               wrongPassword = false;
               _handleSuccessState(state);
@@ -193,7 +194,7 @@ class _SmsBodyState extends State<SmsBody> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Введите код',
+                                AppLocalizations.of(context)!.enterCode,
                                 style: AppTheme.authTitleTextStyle,
                               ),
                             ],
@@ -208,9 +209,9 @@ class _SmsBodyState extends State<SmsBody> {
                                   color: const Color(0x80FFFFFF),
                                   fontSize: 17.sp),
                               children: [
-                                const TextSpan(
+                                TextSpan(
                                   text:
-                                      'Мы отправили SMS с кодом активации на ваш номер телефона ',
+                                      '${AppLocalizations.of(context)!.smsSent} ',
                                 ),
                                 TextSpan(
                                   text: '+7${widget.phoneNumber}',
@@ -256,7 +257,7 @@ class _SmsBodyState extends State<SmsBody> {
                                   child: GlassMorphism(
                                 onPressed: _onContinuePressed,
                                 child: Text(
-                                  'Продолжить',
+                                  AppLocalizations.of(context)!.proceed,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
@@ -278,7 +279,7 @@ class _SmsBodyState extends State<SmsBody> {
                             Column(
                               children: [
                                 Text(
-                                  'Неверный код',
+                                  AppLocalizations.of(context)!.wrongCode,
                                   style: TextStyle(
                                     color: const Color(0xFFFF3B30),
                                     fontSize: 17.sp,
@@ -295,7 +296,7 @@ class _SmsBodyState extends State<SmsBody> {
                               onTap: () {
                                 _resendCode(vm);
                               },
-                              child: Text('Отправить код повторно',
+                              child: Text(AppLocalizations.of(context)!.sendCodeAgain,
                                   style: AppTheme.regularText
                                       .copyWith(color: Colors.white)),
                             )
@@ -304,7 +305,7 @@ class _SmsBodyState extends State<SmsBody> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: 'Отправить код повторно через ',
+                                    text: '${AppLocalizations.of(context)!.sendCodeAgain} ${AppLocalizations.of(context)!.through} ',
                                     style: AppTheme.regularText,
                                   ),
                                   TextSpan(
@@ -364,13 +365,13 @@ class _SmsBodyState extends State<SmsBody> {
           if (mounted) {
             // Если по какой-то причине не сохранилось, показываем ошибку
             showSnackBar(
-                context, 'Ошибка сохранения данных. Попробуйте снова.');
+                context, AppLocalizations.of(context)!.dataLoadError);
           }
         }
       } catch (e) {
         _isNavigating = false;
         if (mounted) {
-          showSnackBar(context, 'Произошла ошибка. Попробуйте снова.');
+          showSnackBar(context, AppLocalizations.of(context)!.unknownError);
         }
       }
     } else if (widget.routeFrom == 'reg') {
@@ -407,7 +408,7 @@ class _SmsBodyState extends State<SmsBody> {
       // Пользователь не зарегистрирован
       if (mounted && !_isNavigating) {
         showSnackBar(
-            context, 'Пользователь не найден. Пожалуйста, зарегистрируйтесь.');
+            context, AppLocalizations.of(context)!.userNotFound);
         _isNavigating = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {

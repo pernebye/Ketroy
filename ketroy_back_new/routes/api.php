@@ -86,9 +86,10 @@ Route::get('/bonus-programs/{id}', [BonusProgramController::class, 'show']);
 // Уровни лояльности (публичный, только чтение)
 Route::get('/loyalty-levels', [LoyaltyLevelController::class, 'index']);
 
-// AI анализатор одежды
+// AI анализатор одежды (требует авторизацию для analyze и chat, health публичный)
 Route::prefix('clothing-analyzer')->group(function () {
-    Route::post('/analyze', [ClothingAnalyzerController::class, 'analyzeLabel']);
+    Route::post('/analyze', [ClothingAnalyzerController::class, 'analyzeLabel'])->middleware('auth:sanctum');
+    Route::post('/chat', [ClothingAnalyzerController::class, 'chat'])->middleware('auth:sanctum');
     Route::get('/health', [ClothingAnalyzerController::class, 'health']);
 });
 

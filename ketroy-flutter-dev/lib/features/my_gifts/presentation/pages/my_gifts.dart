@@ -354,6 +354,15 @@ class _MyGiftsContentState extends State<MyGiftsContent>
     
     // Объединяем все подарки: и сохранённые (isViewed=1), и новые (isViewed=0)
     final allGifts = [...state.savedGiftsList, ...state.gifts];
+    
+    // Сортируем по дате обновления (новые сверху)
+    allGifts.sort((a, b) {
+      final dateA = a.updatedAt ?? a.createdAt;
+      final dateB = b.updatedAt ?? b.createdAt;
+      if (dateA == null || dateB == null) return 0;
+      return dateB.compareTo(dateA); // Новые в начале
+    });
+    
     final hasPending = state.hasPending && state.pendingGroups.isNotEmpty;
     
     // Вычисляем нижний padding для NavBar (только если из навбара)

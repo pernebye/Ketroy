@@ -539,10 +539,22 @@ class AuthController extends Controller
     public function user(Request $request): JsonResponse
     {
         $user = $request->user();
-        $this->oneCApi->getClientInfo(str_replace('+7', '8', $user->country_code) . $user->phone);
+        
+        // Получаем актуальные данные о бонусах из 1С (единственный источник правды)
+        $phone1C = str_replace('+7', '8', $user->country_code) . $user->phone;
+        $oneCData = $this->oneCApi->getClientInfo($phone1C);
+        
+        // Формируем ответ с данными пользователя
+        $userData = $user->load('promoCode')->toArray();
+        
+        // Перезаписываем бонусы из 1С (если получены)
+        if ($oneCData) {
+            $userData['bonus_amount'] = $oneCData['bonusAmount'] ?? 0;
+            $userData['discount'] = $oneCData['personalDiscount'] ?? $user->discount ?? 0;
+        }
 
         return response()->json([
-            'user' => $user->load('promoCode')
+            'user' => $userData
         ]);
     }
 

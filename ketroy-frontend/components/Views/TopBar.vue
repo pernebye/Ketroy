@@ -21,9 +21,9 @@
         size="small"
         @click="toggleColorMode"
         class="topbar__theme-btn"
-        :title="colorMode.value === 'dark' ? 'Светлая тема' : 'Тёмная тема'"
+        :title="isDarkMode ? 'Светлая тема' : 'Тёмная тема'"
       >
-        <v-icon>{{ colorMode.value === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+        <v-icon>{{ isDarkMode ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
     </div>
 
@@ -64,10 +64,31 @@ const store = useStore();
 const stayIn = ref<boolean>(true);
 const {hasRole} = useAccess();
 const colorMode = useColorMode();
+const isDarkMode = ref<boolean>(false);
+
+const updateDarkModeState = () => {
+  isDarkMode.value = colorMode.value === 'dark';
+};
 
 const toggleColorMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
+  const newPreference = isDarkMode.value ? 'light' : 'dark';
+  // Устанавливаем предпочтение
+  colorMode.preference = newPreference;
+  // Сохраняем в localStorage для надежности
+  if (import.meta.client) {
+    localStorage.setItem('nuxt-color-mode-preference', newPreference);
+  }
+  // Обновляем локальное состояние
+  updateDarkModeState();
 };
+
+onMounted(() => {
+  updateDarkModeState();
+  // Синхронизируем состояние при изменении colorMode.value
+  watch(() => colorMode.value, () => {
+    updateDarkModeState();
+  });
+});
 
 const logout = useDebounceFn(
     async () => {

@@ -25,27 +25,23 @@ class DioClient {
       connectTimeout: AppConfig.connectTimeout,
       receiveTimeout: AppConfig.receiveTimeout,
       responseType: ResponseType.json,
+      followRedirects: true,
+      maxRedirects: 3,
     ));
 
     // Retry interceptor для нестабильных соединений
     _dio.interceptors.add(RetryInterceptor(dio: _dio));
 
-    // Логирование запросов в debug режиме
-    if (AppConfig.enableLogging) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: false, // Отключаем логирование больших ответов
-        error: true,
-        logPrint: (obj) => debugPrint('📡 DIO: $obj'),
-      ));
-    }
-
-    // Interceptor для автоматического добавления токена
+    // Interceptor для автоматического добавления токена и сохранения для редиректов
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await UserDataManager.getToken();
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
+        }
+        // Сохраняем Authorization в extra для редиректов
+        if (options.headers.containsKey('Authorization')) {
+          options.extra['authHeader'] = options.headers['Authorization'];
         }
         return handler.next(options);
       },
@@ -58,6 +54,16 @@ class DioClient {
         return handler.next(error);
       },
     ));
+
+    // Логирование запросов в debug режиме
+    if (AppConfig.enableLogging) {
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: false, // Отключаем логирование больших ответов
+        error: true,
+        logPrint: (obj) => debugPrint('📡 DIO: $obj'),
+      ));
+    }
   }
 
   /// Получить базовые заголовки

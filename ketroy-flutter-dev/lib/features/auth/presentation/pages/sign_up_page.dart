@@ -14,6 +14,7 @@ import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/login_page.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/sms_page.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/post_user_info_first.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -148,18 +149,18 @@ class _SignUpPageState extends State<SignUpPage> {
                 image: AssetImage('images/back_image.jpg'), fit: BoxFit.cover)),
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state.isFailure) {
-              showSnackBar(context, state.message ?? 'fail');
+              if (state.isFailure) {
+              showSnackBar(context, state.message ?? AppLocalizations.of(context)!.unknownError);
             }
             if (state.isVerifyFailure) {
               showSnackBar(
-                  context, state.message ?? 'Ошибка при отправке кода');
+                  context, state.message ?? AppLocalizations.of(context)!.codeSendError);
             }
             if (state.isVerifySuccess) {
               // Проверяем существует ли уже пользователь с этим номером
               if (state.userExists == true) {
                 // Пользователь уже существует - перенаправляем на вход
-                showSnackBar(context, 'Аккаунт найден! Введите код для входа.');
+                showSnackBar(context, AppLocalizations.of(context)!.accountFound);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -222,7 +223,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: Column(
                       children: [
                         Text(
-                          'Добро пожаловать!',
+                          AppLocalizations.of(context)!.welcomeBack,
                           style: AppTheme.authTitleTextStyle,
                         ),
                         SizedBox(
@@ -230,7 +231,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         Text(
                           textAlign: TextAlign.center,
-                          'Войдите в закрытый клуб ценителей — регистрация откроет доступ к лучшему.',
+                          AppLocalizations.of(context)!.enterPrivateClub,
                           style: AppTheme.signUpSmallTextStyle
                               .copyWith(color: const Color(0xFFD0CFCF)),
                         ),
@@ -245,7 +246,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             maxLines: 1,
                             style: UnifiedInputField.textStyle,
                             decoration: InputDecoration(
-                              hintText: 'Имя',
+                              hintText: AppLocalizations.of(context)!.name,
                               hintStyle: UnifiedInputField.hintStyle,
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
@@ -267,7 +268,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             maxLines: 1,
                             style: UnifiedInputField.textStyle,
                             decoration: InputDecoration(
-                              hintText: 'Фамилия',
+                              hintText: AppLocalizations.of(context)!.surname,
                               hintStyle: UnifiedInputField.hintStyle,
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
@@ -339,39 +340,39 @@ class _SignUpPageState extends State<SignUpPage> {
                           children: [
                             Expanded(
                                 child: GlassMorphism(
-                              onPressed: state.isVerifyLoading
-                                  ? null
-                                  : () {
-                                      // Валидация имени и фамилии
-                                      if (userNameController.text
-                                          .trim()
-                                          .isEmpty) {
-                                        showSnackBar(
-                                            context, 'Пожалуйста, введите имя');
-                                        return;
-                                      }
-                                      if (userSurnameController.text
-                                          .trim()
-                                          .isEmpty) {
-                                        showSnackBar(context,
-                                            'Пожалуйста, введите фамилию');
-                                        return;
-                                      }
-                                      if (phoneController.text.trim().isEmpty) {
-                                        showSnackBar(context,
-                                            'Пожалуйста, введите номер телефона');
-                                        return;
-                                      }
+                                  onPressed: state.isVerifyLoading
+                                      ? null
+                                      : () {
+                                          // Валидация имени и фамилии
+                                          if (userNameController.text
+                                              .trim()
+                                              .isEmpty) {
+                                            showSnackBar(
+                                                context, AppLocalizations.of(context)!.name);
+                                            return;
+                                          }
+                                          if (userSurnameController.text
+                                              .trim()
+                                              .isEmpty) {
+                                            showSnackBar(context,
+                                                AppLocalizations.of(context)!.surname);
+                                            return;
+                                          }
+                                          if (phoneController.text.trim().isEmpty) {
+                                            showSnackBar(context,
+                                                AppLocalizations.of(context)!.enterPhoneNumber);
+                                            return;
+                                          }
 
-                                      phoneNumberFormat = phoneController.text
-                                          .replaceAll(RegExp(r'\D'), '');
+                                          phoneNumberFormat = phoneController.text
+                                              .replaceAll(RegExp(r'\D'), '');
 
-                                      // Валидация формата номера телефона (должно быть минимум 10 цифр)
-                                      if (phoneNumberFormat.length < 10) {
-                                        showSnackBar(context,
-                                            'Пожалуйста, введите полный номер телефона');
-                                        return;
-                                      }
+                                          // Валидация формата номера телефона (должно быть минимум 10 цифр)
+                                          if (phoneNumberFormat.length < 10) {
+                                            showSnackBar(context,
+                                                AppLocalizations.of(context)!.phoneNumberTooShort);
+                                            return;
+                                          }
 
                                       // Если номер уже верифицирован, переходим сразу на post_user_info_first
                                       if (isPhoneVerified) {
@@ -407,8 +408,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                     },
                               child: Text(
                                 state.isVerifyLoading
-                                    ? 'Отправка кода...'
-                                    : 'Зарегистрироваться',
+                                    ? '${AppLocalizations.of(context)!.sending}...'
+                                    : AppLocalizations.of(context)!.register,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
@@ -432,38 +433,38 @@ class _SignUpPageState extends State<SignUpPage> {
                               children: [
                                 TextSpan(
                                     text:
-                                        'Нажав "ЗАРЕГИСТРИРОВАТЬСЯ", вы соглашаетесь c ',
+                                        '${AppLocalizations.of(context)!.agreementStart} ',
                                     style: TextStyle(
                                         fontSize: 13.sp,
                                         color: const Color(0xFFFAF3ED)
                                             .withValues(alpha: 0.5))),
                                 TextSpan(
-                                    text: 'Условиями использования',
+                                    text: AppLocalizations.of(context)!.termsOfUse,
                                     style: AppTheme.underLineWords,
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         WebViewBottomSheet.show(
                                           context,
                                           url: 'https://ketroy-shop.kz/terms',
-                                          title: 'Условия использования',
+                                          title: AppLocalizations.of(context)!.termsOfUse,
                                         );
                                       }),
                                 TextSpan(
-                                    text: ' и ',
+                                    text: ' ${AppLocalizations.of(context)!.and} ',
                                     style: TextStyle(
                                         height: 1.2,
                                         fontSize: 13.sp,
                                         color: const Color(0xFFFAF3ED)
                                             .withValues(alpha: 0.5))),
                                 TextSpan(
-                                    text: 'Политикой конфиденциальности',
+                                    text: AppLocalizations.of(context)!.privacyPolicy,
                                     style: AppTheme.underLineWords,
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         WebViewBottomSheet.show(
                                           context,
                                           url: 'https://ketroy-shop.kz/privacy',
-                                          title: 'Политика конфиденциальности',
+                                          title: AppLocalizations.of(context)!.privacyPolicy,
                                         );
                                       })
                               ],
@@ -471,11 +472,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         SizedBox(
                           height: 13.h,
                         ),
-                        Row(
+                          Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Уже есть аккаунт?',
+                              AppLocalizations.of(context)!.haveAccount,
                               style: AppTheme.haveAccount,
                             ),
                             GestureDetector(
@@ -485,7 +486,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         (route) => route.isFirst);
                               },
                               child: Text(
-                                ' Войти',
+                                ' ${AppLocalizations.of(context)!.loginToAccount}',
                                 style: AppTheme.haveAccount
                                     .copyWith(fontWeight: FontWeight.bold),
                               ),

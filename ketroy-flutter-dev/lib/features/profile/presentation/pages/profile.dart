@@ -106,8 +106,11 @@ class _ProfilePageState extends State<ProfilePage>
     _bonusUpdateSubscription = NotificationServices.instance.onBonusUpdate.listen((event) {
       debugPrint('💰 Received bonus update event: ${event.operation} ${event.amount}');
       if (mounted) {
-        // Обновляем данные о бонусах
-        context.read<ProfileBloc>().add(GetDiscountFetch());
+        // Запрашиваем актуальные данные пользователя с сервера
+        // Бонусы обновятся автоматически с анимацией через AnimatedBonusCounter
+        context.read<ProfileBloc>().add(RefreshBonusFromServer(
+          expectedAmount: event.amount,
+        ));
       }
     });
   }
@@ -125,7 +128,8 @@ class _ProfilePageState extends State<ProfilePage>
       ..add(LoadUserInfo())
       ..add(GetDiscountFetch())
       ..add(LoadCityShop()) // Загружаем магазин для соцсетей
-      ..add(GetPromotionsFetch()); // Загружаем акции для вкладки бонусов
+      ..add(GetPromotionsFetch()) // Загружаем акции для вкладки бонусов
+      ..add(const RefreshBonusFromServer()); // Обновляем бонусы с сервера
     // Проверяем доступность реферальной программы
     context.read<DiscountBloc>().add(CheckReferralAvailability());
   }

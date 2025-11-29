@@ -533,7 +533,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyzing => 'Analyzing...';
 
   @override
-  String get pointCameraAtLabel => 'Point the camera at the label to scan';
+  String get typeMessage => 'Type a message...';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get pointCameraAtLabel => 'Point the camera at the clothing label';
 
   @override
   String get processing => 'Processing...';
@@ -879,4 +888,233 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get activateGiftInstructions =>
       'Activate the gift only at the checkout and pick it up within 10 minutes. If you want to pick up the gift later, save it in the \"My Gifts\" section';
+
+  @override
+  String get timeNow => 'Now';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# minutes ago',
+      one: 'a minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# hours ago',
+      one: 'an hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeYesterday => 'Yesterday';
+
+  @override
+  String timeWeekday(String day) {
+    return '$day';
+  }
+
+  @override
+  String timeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# weeks ago',
+      one: 'a week ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeMonthsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# months ago',
+      one: 'a month ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# years ago',
+      one: 'a year ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekdayMonday => 'Monday';
+
+  @override
+  String get weekdayTuesday => 'Tuesday';
+
+  @override
+  String get weekdayWednesday => 'Wednesday';
+
+  @override
+  String get weekdayThursday => 'Thursday';
+
+  @override
+  String get weekdayFriday => 'Friday';
+
+  @override
+  String get weekdaySaturday => 'Saturday';
+
+  @override
+  String get weekdaySunday => 'Sunday';
+
+  @override
+  String get sending => 'Sending code';
+
+  @override
+  String get agreementStart => 'By clicking \"REGISTER\", you agree to our';
+
+  @override
+  String get termsOfUse => 'Terms of Use';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get haveAccount => 'Already have an account?';
+
+  @override
+  String get accountFound => 'Account found! Enter code to login.';
+
+  @override
+  String get enterCode => 'Enter code';
+
+  @override
+  String get smsSent =>
+      'We sent an SMS with an activation code to your phone number';
+
+  @override
+  String get proceed => 'Continue';
+
+  @override
+  String get wrongCode => 'Wrong code';
+
+  @override
+  String get through => 'in';
+
+  @override
+  String get userNotFound => 'User not found. Please register.';
+
+  @override
+  String get almostDone => 'Almost done';
+
+  @override
+  String get provideDataHint =>
+      'Please provide your actual data so we can pick the perfect style for you.';
+
+  @override
+  String get scanGiftAtCheckout => 'Scan QR code at the checkout';
+
+  @override
+  String get qrCodeAtCheckout => 'QR code is at the checkout';
+
+  @override
+  String get scanQrAtStore => 'Scan QR code at the store';
+
+  @override
+  String get qrCodeForGift => 'QR code to receive a gift';
+
+  @override
+  String get qrCodeScannedSuccess => 'QR code scanned successfully!';
+
+  @override
+  String get pointCameraAtQr => 'Point the camera at the QR code';
+
+  @override
+  String get qrCodeInStore => 'QR code at KETROY store';
+
+  @override
+  String get giftReceivedSuccess => 'Gift received successfully! 🎁';
+
+  @override
+  String get giftDataError => 'Gift data error. Try again.';
+
+  @override
+  String get giftActivationError => 'Error activating gifts';
+
+  @override
+  String get activatingGift => 'Activating gift';
+
+  @override
+  String get checkingGifts => 'Checking gifts...';
+
+  @override
+  String get flashOff => 'Off';
+
+  @override
+  String get flashOn => 'Flash';
+
+  @override
+  String get giftConfirmationError => 'Confirmation error';
+
+  @override
+  String get giftConfirmationFailed => 'Error confirming gift issue';
+
+  @override
+  String get noInternetConnection => 'No internet connection';
+
+  @override
+  String get giftNotFound => 'Gift not found in catalog or was deleted';
+
+  @override
+  String get giftNotYours => 'Gift does not belong to you';
+
+  @override
+  String get giftAlreadyIssued =>
+      'Gift has already been issued or is not ready for issue';
+
+  @override
+  String get showEmployeeMessage => 'Show this message to an employee';
+
+  @override
+  String get excellent => 'Great!';
+
+  @override
+  String get receivingGift => 'Receiving gift';
+
+  @override
+  String get yourGift => 'Your gift:';
+
+  @override
+  String get confirmingIssue => 'Confirming issue...';
+
+  @override
+  String get selectGiftInstruction =>
+      'Click on any gift\nto see what\'s inside!';
+
+  @override
+  String get photographClothingLabel => 'Photograph the clothing label';
+
+  @override
+  String get washingSymbols => 'Washing, ironing and drying symbols';
+
+  @override
+  String get analyzingLabel => 'Analyzing label...';
+
+  @override
+  String get aiProcessingImage => 'AI is processing the image';
+
+  @override
+  String get analyzeThisLabel => 'Analyze this label';
 }

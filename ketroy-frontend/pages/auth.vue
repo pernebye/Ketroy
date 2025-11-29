@@ -7,18 +7,18 @@
     <div class="auth-page__overlay"></div>
     
     <!-- Liquid Glass Container - изолирует позиционирование от эффектов библиотеки -->
-    <div class="liquid-glass-container">
+    <div v-if="isFormVisible" class="liquid-glass-container">
       <div class="shape liquidGL"></div>
     </div>
     
-    <div class="auth-page__content">
+    <div class="auth-page__content" :class="{ 'auth-page__content--hidden': !isFormVisible }">
       <!-- Logo -->
       <div class="auth-page__logo-wrapper">
         <img src="../public/logo.png" alt="Ketroy" draggable="false" class="auth-page__logo" />
       </div>
       
       <!-- Form Card - контент поверх стекла -->
-      <div class="auth-page__card">
+      <div v-if="isFormVisible" class="auth-page__card">
         <fade>
           <div class="auth-page__header">
             <h1 class="auth-page__title">Добро пожаловать</h1>
@@ -109,47 +109,71 @@ const password = ref<string>('');
 const stayIn = ref<boolean>(true);
 const loading = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
+const isFormVisible = ref<boolean>(true);
 
 let glassEffect: any = null;
 
-const auth = useDebounceFn(
-  async () => {
+const destroyGlassEffect = () => {
+  if (glassEffect && typeof glassEffect.destroy === 'function') {
     try {
-      await form.value.validate().then(async (v: Types.VFormValidation) => {
-        if (v.valid) {
-          loading.value = true;
-          const response = await api.auth.login({
-            email: email.value,
-            password: password.value,
-          });
-          console.log(response);
-          
-          if (response) {
-            store.atoken = response.token;
-            store.auser = response.user;
-            localStorage.setItem("roles", JSON.stringify(response.user.roles));
+      glassEffect.destroy();
+      glassEffect = null;
+    } catch (e) {
+      console.error('Error destroying glass effect:', e);
+    }
+  }
+};
 
-            if (stayIn.value) {
-              const atoken = useCookie('atoken');
-              const auser = useCookie('auser');
-              atoken.value = response.token;
-              auser.value = JSON.stringify(response.user);
-            }
-            if (response.message) showToaster('success', String(response.message));
-            navigateTo({ name: 'content' });
+const hideFormAndNavigate = () => {
+  // Сразу скрываем жидкое стекло и форму
+  destroyGlassEffect();
+  isFormVisible.value = false;
+  loading.value = false;
+  
+  // Даем время на CSS анимацию
+  setTimeout(() => {
+    navigateTo({ name: 'content' });
+  }, 300);
+};
+
+const auth = async () => {
+  if (loading.value) return; // Предотвращаем двойной клик
+  
+  try {
+    await form.value.validate().then(async (v: Types.VFormValidation) => {
+      if (v.valid) {
+        loading.value = true;
+        const response = await api.auth.login({
+          email: email.value,
+          password: password.value,
+        });
+        console.log(response);
+        
+        if (response) {
+          store.atoken = response.token;
+          store.auser = response.user;
+          localStorage.setItem("roles", JSON.stringify(response.user.roles));
+
+          if (stayIn.value) {
+            const atoken = useCookie('atoken');
+            const auser = useCookie('auser');
+            atoken.value = response.token;
+            auser.value = JSON.stringify(response.user);
           }
+          if (response.message) showToaster('success', String(response.message));
+          
+          // Скрыть форму и перейти
+          hideFormAndNavigate();
+        } else {
           loading.value = false;
         }
-      });
-    } catch (err) {
-      console.log(err);
-    } finally {
-      loading.value = false;
-    }
-  },
-  500,
-  { maxWait: 3000 },
-);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    loading.value = false;
+  }
+};
 
 // Инициализация Liquid Glass эффекта
 const initLiquidGlass = async () => {
@@ -218,9 +242,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (glassEffect && glassEffect.destroy) {
-    glassEffect.destroy();
-  }
+  destroyGlassEffect();
 });
 </script>
 
@@ -266,6 +288,13 @@ onUnmounted(() => {
   height: 605px;
   z-index: 5;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 1, 1), transform 0.3s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.liquid-glass-container.v-leave-active {
+  opacity: 0;
+  transform: translate(-50%, -47%) scale(0.95);
 }
 
 /* Само стекло - заполняет контейнер, без трансформаций позиционирования */
@@ -304,6 +333,11 @@ onUnmounted(() => {
   width: 100%;
   max-width: 460px;
   animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.auth-page__content--hidden {
+  opacity: 0;
 }
 
 @keyframes slideUp {
@@ -321,6 +355,7 @@ onUnmounted(() => {
   margin-bottom: 0.5rem;
   margin-top: -4.5rem; /* Поднимаем логотип выше */
   animation: fadeIn 1s ease-out 0.3s backwards;
+  transition: all 0.4s cubic-bezier(0.4, 0, 1, 1);
 }
 
 @keyframes fadeIn {
@@ -358,6 +393,12 @@ onUnmounted(() => {
   border-radius: 28px;
   animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
   background: transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.auth-page__card.v-leave-active {
+  opacity: 0;
+  transform: scale(0.95) translateY(-20px);
 }
 
 @keyframes cardAppear {

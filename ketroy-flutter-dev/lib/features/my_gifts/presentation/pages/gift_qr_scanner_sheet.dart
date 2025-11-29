@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/my_gifts/data/data_source/gift_data_source.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gift_selection_page.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 /// Показать QR-сканер для активации подарков
@@ -99,12 +100,12 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
         );
 
         if (selected == true && mounted) {
-          showSnackBar(context, 'Подарок успешно получен! 🎁');
+          showSnackBar(context, AppLocalizations.of(context)!.giftReceivedSuccess);
         }
       } else if (result.hasPendingGifts && result.giftGroupId == null) {
         // Ошибка: есть подарки, но нет giftGroupId
         Navigator.pop(context, false);
-        showSnackBar(context, 'Ошибка данных подарка. Попробуйте ещё раз.');
+        showSnackBar(context, AppLocalizations.of(context)!.giftDataError);
       } else {
         // Нет подарков для активации
         Navigator.pop(context, false);
@@ -113,7 +114,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
     } catch (e) {
       if (mounted) {
         Navigator.pop(context, false);
-        showSnackBar(context, 'Ошибка при активации подарков');
+        showSnackBar(context, AppLocalizations.of(context)!.giftActivationError);
       }
     }
   }
@@ -184,7 +185,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Активация подарка',
+                  AppLocalizations.of(context)!.activatingGift,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
@@ -193,7 +194,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Отсканируйте QR-код в магазине',
+                  AppLocalizations.of(context)!.scanQrAtStore,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -282,7 +283,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
                       ),
                       SizedBox(height: 16.h),
                       Text(
-                        'Проверяем подарки...',
+                        AppLocalizations.of(context)!.checkingGifts,
                         style: TextStyle(
                           fontSize: 15.sp,
                           color: Colors.white,
@@ -316,7 +317,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        'QR-код для получения подарка',
+                        AppLocalizations.of(context)!.qrCodeForGift,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -341,7 +342,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
         children: [
           _buildActionButton(
             icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-            label: flashOn ? 'Выкл' : 'Вспышка',
+            label: flashOn ? AppLocalizations.of(context)!.flashOff : AppLocalizations.of(context)!.flashOn,
             isActive: flashOn,
             onTap: _toggleFlash,
           ),

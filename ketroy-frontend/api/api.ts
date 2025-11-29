@@ -676,7 +676,14 @@ export class ApiClass {
         data: data,
       });
     },
-    quickUpdate: async (id: number, data: { is_active?: boolean }) => {
+    quickUpdate: async (id: number, data: { 
+      is_active?: boolean; 
+      send_notification?: boolean;
+      target_cities?: string[];
+      target_categories?: string[];
+      target_shoe_size?: string | number | null;
+      target_clothing_size?: string | number | null;
+    }) => {
       return await this.axiosCall<Api.News.Self>({
         url: `${this.news.adminLink}/${id}`,
         method: 'PATCH',

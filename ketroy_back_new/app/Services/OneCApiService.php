@@ -61,6 +61,10 @@ class OneCApiService
 
     /**
      * Получить информацию о клиенте из 1С
+     * 
+     * ВАЖНО: Данные о бонусах НЕ синхронизируются в БД!
+     * Единственный источник правды о бонусах = 1С.
+     * Push-уведомления о бонусах приходят ТОЛЬКО через вебхук от 1С (TransactionController).
      */
     public function getClientInfo(string $phoneNumber): ?array
     {
@@ -68,13 +72,15 @@ class OneCApiService
             $response = $this->makeRequest()
                 ->get("{$this->baseUrl}/user-data", ['phone' => $phoneNumber]);
 
-        if ($response->failed()) {
+            if ($response->failed()) {
                 $this->handleClientNotFound($phoneNumber);
                 return null;
-        }
+            }
 
-        if ($response->successful() && $response->json()) {
-                $this->syncUserBonuses($phoneNumber, $response->json());
+            if ($response->successful() && $response->json()) {
+                // НЕ синхронизируем bonus_amount в БД!
+                // Это вызывало дублирование push-уведомлений при каждом открытии приложения.
+                // Бонусы возвращаются напрямую из 1С.
                 return $response->json();
             }
 
@@ -134,23 +140,6 @@ class OneCApiService
                 ];
 
         $this->createClient($data);
-    }
-
-    /**
-     * Синхронизировать бонусы пользователя из 1С
-     */
-    protected function syncUserBonuses(string $phoneNumber, array $oneCData): void
-    {
-        $user = User::where('phone', mb_substr($phoneNumber, 1))->first();
-
-        if (!$user) {
-            return;
-        }
-
-        $user->update([
-            'bonus_amount' => $oneCData['bonusAmount'] ?? $user->bonus_amount,
-            'discount' => $oneCData['personalDiscount'] ?? $user->discount,
-        ]);
     }
 
     /**

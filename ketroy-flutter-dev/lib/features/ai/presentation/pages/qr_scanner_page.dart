@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 
 class CameraPhotoPage extends StatefulWidget {
   const CameraPhotoPage({super.key});
@@ -48,8 +49,9 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
       if (cameras!.isNotEmpty) {
         controller = CameraController(
           cameras![0], // Задняя камера по умолчанию
-          ResolutionPreset.high,
+          ResolutionPreset.medium,
           enableAudio: false,
+          imageFormatGroup: ImageFormatGroup.bgra8888,
         );
 
         await controller!.initialize();
@@ -95,8 +97,14 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
       // Преобразуем XFile в File
       final file = File(photo.path);
 
-      // Отправляем через BLoC
-      context.read<AiBloc>().add(SendImageToServerFetch(imageFile: file));
+      // Получаем текущий язык приложения
+      final locale = Localizations.localeOf(context);
+      final languageCode = locale.languageCode;
+
+      // Отправляем через BLoC с языком
+      context.read<AiBloc>().add(
+        SendImageToServerFetch(imageFile: file, languageCode: languageCode),
+      );
     } catch (e) {
       // Показываем ошибку
       ScaffoldMessenger.of(context).showSnackBar(
@@ -356,9 +364,9 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Наведите камеру на этикетку одежды',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.pointCameraAtLabel,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,

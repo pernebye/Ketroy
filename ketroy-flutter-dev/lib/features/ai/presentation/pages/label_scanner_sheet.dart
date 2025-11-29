@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 
 /// Показать сканер этикеток как нижнюю шторку
 Future<bool?> showLabelScannerSheet(BuildContext context) {
@@ -64,8 +65,9 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
       if (cameras!.isNotEmpty) {
         controller = CameraController(
           cameras![0],
-          ResolutionPreset.high,
+          ResolutionPreset.medium,
           enableAudio: false,
+          imageFormatGroup: ImageFormatGroup.bgra8888,
         );
 
         await controller!.initialize();
@@ -114,7 +116,18 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
 
     try {
       final file = File(photo.path);
-      context.read<AiBloc>().add(SendImageToServerFetch(imageFile: file));
+      // Получаем текущий язык приложения
+      final locale = Localizations.localeOf(context);
+      final languageCode = locale.languageCode;
+      final l10n = AppLocalizations.of(context)!;
+      
+      context.read<AiBloc>().add(
+        SendImageToServerFetch(
+          imageFile: file, 
+          languageCode: languageCode,
+          userMessage: l10n.analyzeThisLabel,
+        ),
+      );
     } catch (e) {
       setState(() => isLoading = false);
       _showSnackBar('Ошибка при загрузке фото', isError: true);
@@ -237,7 +250,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Сканировать этикетку',
+                  AppLocalizations.of(context)!.scanLabel,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
@@ -246,7 +259,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Сфотографируйте ярлык одежды',
+                  AppLocalizations.of(context)!.photographClothingLabel,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -403,7 +416,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
             ),
             SizedBox(height: 20.h),
             Text(
-              'Анализирую этикетку...',
+              AppLocalizations.of(context)!.analyzingLabel,
               style: TextStyle(
                 fontSize: 16.sp,
                 color: Colors.white,
@@ -412,7 +425,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
             ),
             SizedBox(height: 8.h),
             Text(
-              'AI обрабатывает изображение',
+              AppLocalizations.of(context)!.aiProcessingImage,
               style: TextStyle(
                 fontSize: 13.sp,
                 color: Colors.white.withValues(alpha: 0.6),
@@ -442,7 +455,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
             ),
             SizedBox(width: 8.w),
             Text(
-              'Символы стирки, глажки и сушки',
+              AppLocalizations.of(context)!.washingSymbols,
               style: TextStyle(
                 fontSize: 13.sp,
                 color: Colors.white,

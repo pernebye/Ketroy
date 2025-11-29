@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\GiftService;
+use App\Jobs\SendBonusPushJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -72,15 +73,16 @@ class TransactionController extends Controller
             }
             $processedDocuments[$dedupeKey] = true;
             
-            // Дедупликация между запросами (кэш на 60 секунд)
-            // Это защита от двойного вызова подписки в 1С
+            // Дедупликация между запросами (кэш на 24 часа)
+            // 1С переотправляет вебхуки при перезаписи регистра БонусныеБаллы (при каждой продаже)
+            // Увеличенный кэш гарантирует что один документ обрабатывается только один раз
             $cacheKey = 'transaction_' . $dedupeKey;
             if ($documentId && Cache::has($cacheKey)) {
                 Log::info('[Transaction] Skipping duplicate from cache: ' . $dedupeKey);
                 continue;
             }
             if ($documentId) {
-                Cache::put($cacheKey, true, 60); // 60 секунд
+                Cache::put($cacheKey, true, 86400); // 24 часа (86400 секунд)
             }
             
             $user = User::where('phone', mb_substr($transactionData['userId'], 1))->first();
@@ -90,17 +92,23 @@ class TransactionController extends Controller
                 continue;
             }
 
-            // Сохраняем withDelay в кэш для UserObserver (чтобы формировать правильный текст push)
+            // НЕ обновляем bonus_amount в БД!
+            // 1С является единственным источником правды о бонусах.
+            // Баланс запрашивается из 1С при каждом обращении к API.
+            
+            // Отправляем push-уведомление напрямую
             $withDelay = $transactionData['withDelay'] ?? false;
-            Cache::put('bonus_with_delay_' . $user->id, $withDelay, 60);
-
-            // Обновляем бонусы пользователя
-            // Push-уведомление отправляется автоматически через UserObserver
-            if ($transactionData['operation'] === 'add') {
-                $user->increment('bonus_amount', $transactionData['bonusAmount']);
-            } else {
-                $user->decrement('bonus_amount', $transactionData['bonusAmount']);
-            }
+            $bonusAmount = $transactionData['bonusAmount'];
+            $operation = $transactionData['operation'];
+            
+            SendBonusPushJob::dispatch($bonusAmount, $user->id, $operation, $withDelay);
+            
+            Log::info('[Transaction] Push dispatched', [
+                'user_id' => $user->id,
+                'amount' => $bonusAmount,
+                'operation' => $operation,
+                'withDelay' => $withDelay,
+            ]);
             
             $purchase = null;
 

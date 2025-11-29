@@ -312,7 +312,10 @@ void initAi() {
     //Usecase
     ..registerFactory(() => GetAiResponse(aiRepository: serviceLocator()))
     //bloc
-    ..registerLazySingleton(() => AiBloc(getAiResponse: serviceLocator()));
+    ..registerLazySingleton(() => AiBloc(
+          getAiResponse: serviceLocator(),
+          aiDataSource: serviceLocator(),
+        ));
 }
 
 void initBonuses() {

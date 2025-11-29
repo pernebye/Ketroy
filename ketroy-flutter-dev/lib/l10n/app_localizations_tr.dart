@@ -533,7 +533,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get analyzing => 'Analiz ediliyor...';
 
   @override
-  String get pointCameraAtLabel => 'Taramak için kamerayı etikete doğrultun';
+  String get typeMessage => 'Mesaj yazın...';
+
+  @override
+  String get takePhoto => 'Fotoğraf Çek';
+
+  @override
+  String get chooseFromGallery => 'Galeriden Seç';
+
+  @override
+  String get pointCameraAtLabel => 'Kamerayı giyim etiketine doğrultun';
 
   @override
   String get processing => 'İşleniyor...';
@@ -882,4 +891,233 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get activateGiftInstructions =>
       'Hediyeyi sadece kasada aktive edin ve 10 dakika içinde alın. Hediyeyi daha sonra almak istiyorsanız, \"Hediyelerim\" bölümüne kaydedin';
+
+  @override
+  String get timeNow => 'Şimdi';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# dakika önce',
+      one: 'bir dakika önce',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# saat önce',
+      one: 'bir saat önce',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeYesterday => 'Dün';
+
+  @override
+  String timeWeekday(String day) {
+    return '$day';
+  }
+
+  @override
+  String timeWeeksAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# hafta önce',
+      one: 'bir hafta önce',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeMonthsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# ay önce',
+      one: 'bir ay önce',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# yıl önce',
+      one: 'bir yıl önce',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekdayMonday => 'Pazartesi';
+
+  @override
+  String get weekdayTuesday => 'Salı';
+
+  @override
+  String get weekdayWednesday => 'Çarşamba';
+
+  @override
+  String get weekdayThursday => 'Perşembe';
+
+  @override
+  String get weekdayFriday => 'Cuma';
+
+  @override
+  String get weekdaySaturday => 'Cumartesi';
+
+  @override
+  String get weekdaySunday => 'Pazar';
+
+  @override
+  String get sending => 'Kod gönderiliyor';
+
+  @override
+  String get agreementStart => '\"KAYIT OL\" düğmesine tıklayarak, anlaşıyorum';
+
+  @override
+  String get termsOfUse => 'Kullanım Koşulları';
+
+  @override
+  String get and => 've';
+
+  @override
+  String get privacyPolicy => 'Gizlilik Politikası';
+
+  @override
+  String get haveAccount => 'Zaten bir hesabınız var mı?';
+
+  @override
+  String get accountFound => 'Hesap bulundu! Giriş yapmak için kodu girin.';
+
+  @override
+  String get enterCode => 'Kodu girin';
+
+  @override
+  String get smsSent =>
+      'Telefon numaranıza etkinleştirme koduyla bir SMS gönderdik';
+
+  @override
+  String get proceed => 'Devam Et';
+
+  @override
+  String get wrongCode => 'Yanlış kod';
+
+  @override
+  String get through => 'içinde';
+
+  @override
+  String get userNotFound => 'Kullanıcı bulunamadı. Lütfen kayıt olun.';
+
+  @override
+  String get almostDone => 'Neredeyse bitti';
+
+  @override
+  String get provideDataHint =>
+      'Sizin için mükemmel stili seçebilmemiz için lütfen gerçek verilerinizi sağlayın.';
+
+  @override
+  String get scanGiftAtCheckout => 'Kassa noktasında QR kodunu tarayın';
+
+  @override
+  String get qrCodeAtCheckout => 'QR kodu kassa noktasındadır';
+
+  @override
+  String get scanQrAtStore => 'Mağazada QR kodunu tarayın';
+
+  @override
+  String get qrCodeForGift => 'Hediye almak için QR kodu';
+
+  @override
+  String get qrCodeScannedSuccess => 'QR kodu başarıyla tarandı!';
+
+  @override
+  String get pointCameraAtQr => 'Kamerayı QR koduna yönlendirin';
+
+  @override
+  String get qrCodeInStore => 'KETROY mağazasında QR kodu';
+
+  @override
+  String get giftReceivedSuccess => 'Hediye başarıyla alındı! 🎁';
+
+  @override
+  String get giftDataError => 'Hediye veri hatası. Lütfen tekrar deneyin.';
+
+  @override
+  String get giftActivationError => 'Hediyeleri etkinleştirme hatası';
+
+  @override
+  String get activatingGift => 'Hediye etkinleştiriliyor';
+
+  @override
+  String get checkingGifts => 'Hediyeler kontrol ediliyor...';
+
+  @override
+  String get flashOff => 'Kapat';
+
+  @override
+  String get flashOn => 'Flaş';
+
+  @override
+  String get giftConfirmationError => 'Onaylama hatası';
+
+  @override
+  String get giftConfirmationFailed => 'Hediye teslimatını onaylama hatası';
+
+  @override
+  String get noInternetConnection => 'İnternet bağlantısı yok';
+
+  @override
+  String get giftNotFound => 'Hediye katalogda bulunamadı veya silindi';
+
+  @override
+  String get giftNotYours => 'Hediye size ait değil';
+
+  @override
+  String get giftAlreadyIssued =>
+      'Hediye zaten verilmiş veya teslimat için hazır değil';
+
+  @override
+  String get showEmployeeMessage => 'Bu mesajı bir çalışana gösterin';
+
+  @override
+  String get excellent => 'Harika!';
+
+  @override
+  String get receivingGift => 'Hediye alma';
+
+  @override
+  String get yourGift => 'Senin hediyend:';
+
+  @override
+  String get confirmingIssue => 'Teslimat onaylanıyor...';
+
+  @override
+  String get selectGiftInstruction =>
+      'İçinde ne olduğunu görmek için\nherhang bir hediye tıklayın!';
+
+  @override
+  String get photographClothingLabel => 'Giyim etiketinin fotoğrafını çekin';
+
+  @override
+  String get washingSymbols => 'Yıkama, ütüleme ve kurutma sembolleri';
+
+  @override
+  String get analyzingLabel => 'Etiket analiz ediliyor...';
+
+  @override
+  String get aiProcessingImage => 'AI görüntüyü işliyor';
+
+  @override
+  String get analyzeThisLabel => 'Bu etiketi analiz et';
 }

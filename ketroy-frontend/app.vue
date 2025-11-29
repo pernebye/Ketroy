@@ -16,6 +16,15 @@ const colorMode = useColorMode();
 const init = () => {
   const auserCookie = useCookie<any>('auser');
   if (auserCookie.value) store.auser = auserCookie.value;
+  
+  // Инициализируем тему из localStorage
+  if (import.meta.client) {
+    const savedTheme = localStorage.getItem('nuxt-color-mode-preference');
+    if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
+      colorMode.preference = savedTheme as 'dark' | 'light';
+    }
+    updateColorModeClass();
+  }
 };
 
 // Синхронизация класса dark с HTML элементом
@@ -30,11 +39,11 @@ const updateColorModeClass = () => {
   }
 };
 
+// Синхронизация при изменении colorMode
 watch(() => colorMode.value, updateColorModeClass, { immediate: true });
 
 onMounted(() => {
   init();
-  updateColorModeClass();
 });
 
 useHead({
@@ -398,6 +407,13 @@ body {
 }
 .dark .v-switch .v-switch__track {
   background-color: rgba(120, 120, 128, 0.5) !important;
+}
+.dark .v-switch .v-selection-control--dirty .v-switch__track {
+  background-color: #34C759 !important;
+}
+.dark .v-switch .v-switch__thumb {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Табы */

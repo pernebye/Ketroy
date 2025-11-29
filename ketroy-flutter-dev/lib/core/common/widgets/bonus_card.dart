@@ -14,7 +14,7 @@ class AnimatedBonusCounter extends StatefulWidget {
     super.key,
     required this.value,
     this.style,
-    this.duration = const Duration(milliseconds: 800),
+    this.duration = const Duration(milliseconds: 1200),
   });
 
   @override
@@ -27,6 +27,7 @@ class _AnimatedBonusCounterState extends State<AnimatedBonusCounter>
   late Animation<double> _animation;
   int _previousValue = 0;
   int _currentValue = 0;
+  bool _isIncreasing = true;
 
   @override
   void initState() {
@@ -50,7 +51,9 @@ class _AnimatedBonusCounterState extends State<AnimatedBonusCounter>
     if (oldWidget.value != widget.value) {
       _previousValue = oldWidget.value;
       _currentValue = widget.value;
+      _isIncreasing = widget.value > oldWidget.value;
       _controller.forward(from: 0);
+      debugPrint('💰 Bonus animation: $_previousValue → $_currentValue (${_isIncreasing ? "+" : "-"})');
     }
   }
 
@@ -69,16 +72,39 @@ class _AnimatedBonusCounterState extends State<AnimatedBonusCounter>
         final displayValue = (_previousValue + 
             ((_currentValue - _previousValue) * _animation.value)).round();
         
-        // Добавляем небольшой эффект масштаба при изменении
-        final scale = _controller.isAnimating 
-            ? 1.0 + (0.1 * (1 - (_animation.value - 0.5).abs() * 2))
-            : 1.0;
+        // Эффект масштаба: увеличивается при начислении, уменьшается при списании
+        final scaleEffect = _controller.isAnimating 
+            ? 0.15 * (1 - (_animation.value - 0.3).abs() * 1.5).clamp(0.0, 1.0)
+            : 0.0;
+        final scale = _isIncreasing ? 1.0 + scaleEffect : 1.0 - scaleEffect * 0.5;
+        
+        // Эффект подсветки: зелёный при начислении, красный при списании
+        Color? glowColor;
+        if (_controller.isAnimating && _animation.value < 0.7) {
+          final glowOpacity = (1 - _animation.value / 0.7) * 0.6;
+          glowColor = _isIncreasing 
+              ? const Color(0xFF8BC34A).withValues(alpha: glowOpacity)
+              : const Color(0xFFE57373).withValues(alpha: glowOpacity);
+        }
             
         return Transform.scale(
           scale: scale,
-          child: Text(
-            displayValue.toString(),
-            style: widget.style,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+            decoration: glowColor != null ? BoxDecoration(
+              borderRadius: BorderRadius.circular(4.r),
+              boxShadow: [
+                BoxShadow(
+                  color: glowColor,
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
+            ) : null,
+            child: Text(
+              displayValue.toString(),
+              style: widget.style,
+            ),
           ),
         );
       },

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 /// Показать QR-сканер как нижнюю шторку
@@ -95,7 +96,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
       listener: (context, state) {
         if (state.isQrSuccess) {
           Navigator.pop(context, true);
-          showSnackBar(context, 'QR-код успешно отсканирован!');
+          showSnackBar(context, AppLocalizations.of(context)!.qrCodeScannedSuccess);
         } else if (state.isQrFailure) {
           Navigator.pop(context, false);
           showSnackBar(context, state.message ?? 'Ошибка сканирования');
@@ -169,7 +170,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Сканировать QR',
+                  AppLocalizations.of(context)!.scanQr,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
@@ -178,7 +179,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Наведите камеру на QR-код',
+                  AppLocalizations.of(context)!.pointCameraAtQr,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -303,7 +304,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        'QR-код в магазине KETROY',
+                        AppLocalizations.of(context)!.qrCodeInStore,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -329,7 +330,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
           // Кнопка вспышки
           _buildActionButton(
             icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-            label: flashOn ? 'Выкл' : 'Вспышка',
+            label: flashOn ? AppLocalizations.of(context)!.flashOff : AppLocalizations.of(context)!.flashOn,
             isActive: flashOn,
             onTap: _toggleFlash,
           ),

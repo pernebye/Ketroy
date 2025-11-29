@@ -65,8 +65,11 @@ class BonusCardController extends Controller
      */
     public function generateDiscountQrCode()
     {
-
-        $url = route('scan-discount');
+        // Генерируем полный HTTPS URL для QR кода
+        $url = route('scan-discount', [], true); // true = абсолютный URL
+        // Убедимся, что используется HTTPS
+        $url = str_replace('http://', 'https://', $url);
+        
         $qrCode = QrCode::size(300)->generate($url);
 
         return response($qrCode)->header('Content-Type', 'image/svg+xml');

@@ -70,3 +70,13 @@ class GetCityListFetch extends ProfileEvent {}
 class LoadCityShop extends ProfileEvent {}
 
 class GetPromotionsFetch extends ProfileEvent {}
+
+/// Событие для обновления бонусов с сервера (при получении push-уведомления)
+class RefreshBonusFromServer extends ProfileEvent {
+  final int? expectedAmount; // Ожидаемое количество бонусов (если известно из push)
+  
+  const RefreshBonusFromServer({this.expectedAmount});
+  
+  @override
+  List<Object> get props => [expectedAmount ?? 0];
+}

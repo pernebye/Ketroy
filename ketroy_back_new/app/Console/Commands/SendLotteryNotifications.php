@@ -36,3 +36,4 @@ class SendLotteryNotifications extends Command
     }
 }
 
+

@@ -4,7 +4,6 @@ import 'package:ketroy_app/core/model/active_gift_model.dart';
 
 class ActiveGiftsViewModel with ChangeNotifier {
   final ActiveGiftModel giftModel;
-  final VoidCallback? onExpired;
   late int _secondsRemaining;
   Timer? _timer;
   bool _isExpired = false;
@@ -12,7 +11,6 @@ class ActiveGiftsViewModel with ChangeNotifier {
 
   ActiveGiftsViewModel({
     required this.giftModel,
-    this.onExpired,
   }) {
     _startCountDown();
   }
@@ -66,7 +64,6 @@ class ActiveGiftsViewModel with ChangeNotifier {
     if (_secondsRemaining <= 0) {
       _secondsRemaining = 0;
       _isExpired = true;
-      onExpired?.call(); // Уведомляем о истечении
 
       if (!_disposed) {
         notifyListeners();
@@ -91,9 +88,6 @@ class ActiveGiftsViewModel with ChangeNotifier {
         _secondsRemaining = 0;
         _isExpired = true;
         timer.cancel();
-
-        // Уведомляем родительский ViewModel об истечении
-        onExpired?.call();
 
         if (!_disposed) {
           notifyListeners();
