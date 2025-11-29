@@ -25,7 +25,7 @@ class AppConfig {
   // ============================================
   static String get baseUrl {
     switch (current) {
-      case Environment.development:
+      case Environment.production:
         // Для эмулятора Android используйте 10.0.2.2 вместо localhost
         // Для iOS симулятора используйте localhost или 127.0.0.1
         // Для реального устройства используйте IP вашего компьютера
