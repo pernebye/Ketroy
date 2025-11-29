@@ -18,14 +18,14 @@ class AppConfig {
   // ТЕКУЩЕЕ ОКРУЖЕНИЕ
   // ============================================
   // ⚠️ PRODUCTION MODE - для релиза в App Store / Google Play
-  static const Environment current = Environment.development;
+  static const Environment current = Environment.production;
 
   // ============================================
   // API ENDPOINTS
   // ============================================
   static String get baseUrl {
     switch (current) {
-      case Environment.production:
+      case Environment.development:
         // Для эмулятора Android используйте 10.0.2.2 вместо localhost
         // Для iOS симулятора используйте localhost или 127.0.0.1
         // Для реального устройства используйте IP вашего компьютера

@@ -1,45 +1,28 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/common/entities/menu.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart';
 import 'package:ketroy_app/core/common/widgets/unified_input_field.dart';
-import 'package:ketroy_app/core/common/widgets/bottom_sheet_picker.dart'
-    show CountryCodeBottomSheetPicker;
+import 'package:ketroy_app/core/common/widgets/bottom_sheet_picker.dart' show CountryCodeBottomSheetPicker;
 import 'package:ketroy_app/core/theme/theme.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
-import 'package:ketroy_app/core/widgets/webview_bottom_sheet.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/login_page.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/sms_page.dart';
 import 'package:ketroy_app/features/auth/presentation/pages/post_user_info_first.dart';
-import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class SignUpPage extends StatefulWidget {
   final List<Menu> codes;
-  final String? initialPhone;
-  final int? initialCountryCode;
+  const SignUpPage({super.key, required this.codes});
 
-  const SignUpPage({
-    super.key,
-    required this.codes,
-    this.initialPhone,
-    this.initialCountryCode,
-  });
-
-  static Route route(
-      {required List<Menu> codes,
-      String? initialPhone,
-      int? initialCountryCode}) {
+  static Route route({required List<Menu> codes}) {
     return MaterialPageRoute(builder: (context) {
       return SignUpPage(
         codes: codes,
-        initialPhone: initialPhone,
-        initialCountryCode: initialCountryCode,
       );
     });
   }
@@ -70,20 +53,6 @@ class _SignUpPageState extends State<SignUpPage> {
     super.initState();
     phoneController.addListener(_onPhoneChanged);
     _loadPhoneVerificationStatus();
-
-    // Инициализация начальных значений (если переход со страницы логина)
-    if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
-      // Форматируем номер для отображения в маске
-      final phone = widget.initialPhone!;
-      if (phone.length == 10) {
-        final formatted =
-            '(${phone.substring(0, 3)}) ${phone.substring(3, 6)}-${phone.substring(6, 8)}-${phone.substring(8, 10)}';
-        phoneController.text = formatted;
-      }
-    }
-    if (widget.initialCountryCode != null) {
-      selectedValue = widget.initialCountryCode!;
-    }
   }
 
   Future<void> _loadPhoneVerificationStatus() async {
@@ -94,9 +63,8 @@ class _SignUpPageState extends State<SignUpPage> {
   void _onPhoneChanged() {
     // Проверяем если текущий номер совпадает с верифицированным в текущей сессии
     final currentPhone = phoneController.text.replaceAll(RegExp(r'\D'), '');
-
-    if (_currentSessionVerifiedPhone != null &&
-        _currentSessionVerifiedPhone == currentPhone) {
+    
+    if (_currentSessionVerifiedPhone != null && _currentSessionVerifiedPhone == currentPhone) {
       // Номер совпадает с верифицированным в этой сессии
       if (!isPhoneVerified) {
         setState(() {
@@ -116,9 +84,9 @@ class _SignUpPageState extends State<SignUpPage> {
   void _checkVerificationStatus() {
     // Проверяем если номер верифицирован в текущей сессии при возврате
     final currentPhone = phoneController.text.replaceAll(RegExp(r'\D'), '');
-
-    if (_currentSessionVerifiedPhone != null &&
-        _currentSessionVerifiedPhone == currentPhone &&
+    
+    if (_currentSessionVerifiedPhone != null && 
+        _currentSessionVerifiedPhone == currentPhone && 
         !isPhoneVerified) {
       setState(() {
         isPhoneVerified = true;
@@ -139,7 +107,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     // Проверяем верификацию при каждой перестройке страницы (например при возврате)
     _checkVerificationStatus();
-
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
@@ -149,55 +117,54 @@ class _SignUpPageState extends State<SignUpPage> {
                 image: AssetImage('images/back_image.jpg'), fit: BoxFit.cover)),
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-              if (state.isFailure) {
-              showSnackBar(context, state.message ?? AppLocalizations.of(context)!.unknownError);
+            if (state.isFailure) {
+              showSnackBar(context, state.message ?? 'fail');
             }
             if (state.isVerifyFailure) {
-              showSnackBar(
-                  context, state.message ?? AppLocalizations.of(context)!.codeSendError);
+              showSnackBar(context, state.message ?? 'Ошибка при отправке кода');
             }
             if (state.isVerifySuccess) {
-              // Проверяем существует ли уже пользователь с этим номером
-              if (state.userExists == true) {
-                // Пользователь уже существует - перенаправляем на вход
-                showSnackBar(context, AppLocalizations.of(context)!.accountFound);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SmsPage(
-                              code: widget.codes
-                                  .firstWhere(
-                                      (menu) => menu.value == selectedValue)
-                                  .name,
-                              phoneNumber: phoneNumberFormat,
-                              routeFrom: 'login', // Вход, а не регистрация
-                            )));
-              } else {
-                // Новый пользователь - продолжаем регистрацию
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SmsPage(
-                              code: widget.codes
-                                  .firstWhere(
-                                      (menu) => menu.value == selectedValue)
-                                  .name,
-                              phoneNumber: phoneNumberFormat,
-                              routeFrom: 'reg',
-                              name: userNameController.text,
-                              surname: userSurnameController.text,
-                              refCode: refCode,
-                            ))).then((result) {
-                  // Если вернулся верифицированный номер, устанавливаем флаг
-                  if (result != null && result is String) {
-                    setState(() {
-                      _currentSessionVerifiedPhone = result;
-                      isPhoneVerified = true;
-                    });
-                  }
-                });
-              }
+              // Галочка будет установлена только после проверки кода на SMS странице
+              // context.read<AuthBloc>().add(AuthSendVerifyCode(
+              //     phone: phoneNumberFormat,
+              //     code: itemsSkud
+              //         .firstWhere((menu) => menu.value == selectedValue)
+              //         .name));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SmsPage(
+                            code: widget.codes
+                                .firstWhere(
+                                    (menu) => menu.value == selectedValue)
+                                .name,
+                            phoneNumber: phoneNumberFormat,
+                            routeFrom: 'reg',
+                            name: userNameController.text,
+                            surname: userSurnameController.text,
+                            refCode: refCode,
+                          ))).then((result) {
+                // Если вернулся верифицированный номер, устанавливаем флаг
+                if (result != null && result is String) {
+                  setState(() {
+                    _currentSessionVerifiedPhone = result;
+                    isPhoneVerified = true;
+                  });
+                }
+              });
             }
+            // if (state.isVerifySuccess) {
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => SmsPage(
+            //                 code: itemsSkud
+            //                     .firstWhere((menu) => menu.value == selectedValue)
+            //                     .name,
+            //                 phoneNumber: phoneNumberFormat,
+            //                 routeFrom: 'reg',
+            //               )));
+            // }
           },
           builder: (context, state) {
             return SingleChildScrollView(
@@ -223,7 +190,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: Column(
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.welcomeBack,
+                          'Добро пожаловать!',
                           style: AppTheme.authTitleTextStyle,
                         ),
                         SizedBox(
@@ -231,7 +198,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         Text(
                           textAlign: TextAlign.center,
-                          AppLocalizations.of(context)!.enterPrivateClub,
+                          'Войдите в закрытый клуб ценителей — регистрация откроет доступ к лучшему.',
                           style: AppTheme.signUpSmallTextStyle
                               .copyWith(color: const Color(0xFFD0CFCF)),
                         ),
@@ -246,7 +213,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             maxLines: 1,
                             style: UnifiedInputField.textStyle,
                             decoration: InputDecoration(
-                              hintText: AppLocalizations.of(context)!.name,
+                              hintText: 'Имя',
                               hintStyle: UnifiedInputField.hintStyle,
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
@@ -268,7 +235,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             maxLines: 1,
                             style: UnifiedInputField.textStyle,
                             decoration: InputDecoration(
-                              hintText: AppLocalizations.of(context)!.surname,
+                              hintText: 'Фамилия',
                               hintStyle: UnifiedInputField.hintStyle,
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
@@ -324,8 +291,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,
                                       focusedBorder: InputBorder.none,
-                                      contentPadding:
-                                          EdgeInsets.only(bottom: 6.h),
+                                      contentPadding: EdgeInsets.only(bottom: 6.h),
                                       isDense: true,
                                       isCollapsed: true,
                                     ),
@@ -340,76 +306,59 @@ class _SignUpPageState extends State<SignUpPage> {
                           children: [
                             Expanded(
                                 child: GlassMorphism(
-                                  onPressed: state.isVerifyLoading
-                                      ? null
-                                      : () {
-                                          // Валидация имени и фамилии
-                                          if (userNameController.text
-                                              .trim()
-                                              .isEmpty) {
-                                            showSnackBar(
-                                                context, AppLocalizations.of(context)!.name);
-                                            return;
-                                          }
-                                          if (userSurnameController.text
-                                              .trim()
-                                              .isEmpty) {
-                                            showSnackBar(context,
-                                                AppLocalizations.of(context)!.surname);
-                                            return;
-                                          }
-                                          if (phoneController.text.trim().isEmpty) {
-                                            showSnackBar(context,
-                                                AppLocalizations.of(context)!.enterPhoneNumber);
-                                            return;
-                                          }
+                              onPressed: state.isVerifyLoading ? null : () {
+                                // Валидация имени и фамилии
+                                if (userNameController.text.trim().isEmpty) {
+                                  showSnackBar(context, 'Пожалуйста, введите имя');
+                                  return;
+                                }
+                                if (userSurnameController.text.trim().isEmpty) {
+                                  showSnackBar(context, 'Пожалуйста, введите фамилию');
+                                  return;
+                                }
+                                if (phoneController.text.trim().isEmpty) {
+                                  showSnackBar(context, 'Пожалуйста, введите номер телефона');
+                                  return;
+                                }
+                                
+                                phoneNumberFormat = phoneController.text
+                                    .replaceAll(RegExp(r'\D'), '');
+                                
+                                // Валидация формата номера телефона (должно быть минимум 10 цифр)
+                                if (phoneNumberFormat.length < 10) {
+                                  showSnackBar(context, 'Пожалуйста, введите полный номер телефона');
+                                  return;
+                                }
 
-                                          phoneNumberFormat = phoneController.text
-                                              .replaceAll(RegExp(r'\D'), '');
-
-                                          // Валидация формата номера телефона (должно быть минимум 10 цифр)
-                                          if (phoneNumberFormat.length < 10) {
-                                            showSnackBar(context,
-                                                AppLocalizations.of(context)!.phoneNumberTooShort);
-                                            return;
-                                          }
-
-                                      // Если номер уже верифицирован, переходим сразу на post_user_info_first
-                                      if (isPhoneVerified) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                PostUserInfoFirst(
-                                              name: userNameController.text,
-                                              surname:
-                                                  userSurnameController.text,
-                                              phone: phoneNumberFormat,
-                                              code: widget.codes
-                                                  .firstWhere((menu) =>
-                                                      menu.value ==
-                                                      selectedValue)
-                                                  .name,
-                                              refCode: refCode,
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        // Если не верифицирован, отправляем код SMS
-                                        context.read<AuthBloc>().add(
-                                            AuthSendVerifyCode(
-                                                phone: phoneNumberFormat,
-                                                code: widget.codes
-                                                    .firstWhere((menu) =>
-                                                        menu.value ==
-                                                        selectedValue)
-                                                    .name));
-                                      }
-                                    },
+                                // Если номер уже верифицирован, переходим сразу на post_user_info_first
+                                if (isPhoneVerified) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PostUserInfoFirst(
+                                        name: userNameController.text,
+                                        surname: userSurnameController.text,
+                                        phone: phoneNumberFormat,
+                                        code: widget.codes
+                                            .firstWhere((menu) =>
+                                                menu.value == selectedValue)
+                                            .name,
+                                        refCode: refCode,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  // Если не верифицирован, отправляем код SMS
+                                  context.read<AuthBloc>().add(AuthSendVerifyCode(
+                                      phone: phoneNumberFormat,
+                                      code: widget.codes
+                                          .firstWhere((menu) =>
+                                              menu.value == selectedValue)
+                                          .name));
+                                }
+                              },
                               child: Text(
-                                state.isVerifyLoading
-                                    ? '${AppLocalizations.of(context)!.sending}...'
-                                    : AppLocalizations.of(context)!.register,
+                                state.isVerifyLoading ? 'Отправка кода...' : 'Зарегистрироваться',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
@@ -433,60 +382,45 @@ class _SignUpPageState extends State<SignUpPage> {
                               children: [
                                 TextSpan(
                                     text:
-                                        '${AppLocalizations.of(context)!.agreementStart} ',
+                                        'Нажав "ЗАРЕГИСТРИРОВАТЬСЯ", вы соглашаетесь c ',
                                     style: TextStyle(
                                         fontSize: 13.sp,
                                         color: const Color(0xFFFAF3ED)
                                             .withValues(alpha: 0.5))),
                                 TextSpan(
-                                    text: AppLocalizations.of(context)!.termsOfUse,
-                                    style: AppTheme.underLineWords,
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        WebViewBottomSheet.show(
-                                          context,
-                                          url: 'https://ketroy-shop.kz/terms',
-                                          title: AppLocalizations.of(context)!.termsOfUse,
-                                        );
-                                      }),
+                                    text: 'Условиями использования',
+                                    style: AppTheme.underLineWords),
                                 TextSpan(
-                                    text: ' ${AppLocalizations.of(context)!.and} ',
+                                    text: ' и ',
                                     style: TextStyle(
                                         height: 1.2,
                                         fontSize: 13.sp,
                                         color: const Color(0xFFFAF3ED)
                                             .withValues(alpha: 0.5))),
                                 TextSpan(
-                                    text: AppLocalizations.of(context)!.privacyPolicy,
-                                    style: AppTheme.underLineWords,
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () {
-                                        WebViewBottomSheet.show(
-                                          context,
-                                          url: 'https://ketroy-shop.kz/privacy',
-                                          title: AppLocalizations.of(context)!.privacyPolicy,
-                                        );
-                                      })
+                                    text: 'Политикой конфиденциальности',
+                                    style: AppTheme.underLineWords)
                               ],
                             )),
                         SizedBox(
                           height: 13.h,
                         ),
-                          Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              AppLocalizations.of(context)!.haveAccount,
+                              'Уже есть аккаунт?',
                               style: AppTheme.haveAccount,
                             ),
                             GestureDetector(
                               onTap: () {
                                 Navigator.of(context, rootNavigator: true)
-                                    .pushAndRemoveUntil(LoginPage.route(),
+                                    .pushAndRemoveUntil(
+                                        LoginPage.route(),
                                         (route) => route.isFirst);
                               },
                               child: Text(
-                                ' ${AppLocalizations.of(context)!.loginToAccount}',
+                                ' Войти',
                                 style: AppTheme.haveAccount
                                     .copyWith(fontWeight: FontWeight.bold),
                               ),
