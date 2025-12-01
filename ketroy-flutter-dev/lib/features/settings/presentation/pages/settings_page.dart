@@ -31,6 +31,11 @@ class _SettingsPageState extends State<SettingsPage>
   late AnimationController _animController;
   late List<Animation<double>> _itemAnimations;
 
+  // Для адаптивной высоты градиента
+  final GlobalKey _headerKey = GlobalKey();
+  double _gradientHeight = 0;
+  bool _headerMeasured = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +60,37 @@ class _SettingsPageState extends State<SettingsPage>
     });
 
     _animController.forward();
+    
+    // Измеряем хедер после первого билда
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+  }
+
+  void _measureHeaderHeight() {
+    final context = _headerKey.currentContext;
+    if (context != null) {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) {
+        final newHeight = renderBox.size.height + 32.h; // +32 для комфортного отступа
+        if (!_headerMeasured || (_gradientHeight - newHeight).abs() > 5) {
+          setState(() {
+            _gradientHeight = newHeight;
+            _headerMeasured = true;
+          });
+        }
+      }
+    }
+  }
+
+  // Минимальная высота градиента
+  static double get _minGradientHeight => 120.h;
+
+  double get _effectiveGradientHeight {
+    if (_headerMeasured) {
+      return _gradientHeight.clamp(_minGradientHeight, double.infinity);
+    }
+    // Fallback для первого рендера
+    final fallback = MediaQuery.of(context).size.height * 0.22;
+    return fallback.clamp(_minGradientHeight, double.infinity);
   }
 
   @override
@@ -67,15 +103,20 @@ class _SettingsPageState extends State<SettingsPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
+    // Перемеряем после каждого билда
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+    
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _cardBg,
         body: Stack(
           children: [
-            // Gradient header
-            Container(
-              height: 180.h,
+            // Адаптивный градиентный хедер
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              height: _effectiveGradientHeight,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -89,7 +130,10 @@ class _SettingsPageState extends State<SettingsPage>
             SafeArea(
               child: Column(
                 children: [
-                  _buildHeader(l10n),
+                  KeyedSubtree(
+                    key: _headerKey,
+                    child: _buildHeader(l10n),
+                  ),
                   Expanded(
                     child: Container(
                       margin: EdgeInsets.only(top: 16.h),

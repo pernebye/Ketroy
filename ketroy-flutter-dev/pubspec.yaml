@@ -126,13 +126,7 @@ flutter:
         - asset: assets/fonts/Gilroy-Bold.ttf
           weight: 700
     # Noto Sans - fallback font for Kazakh characters (Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ, І)
-    # This font has complete support for all Cyrillic Extended characters
     - family: NotoSans
       fonts:
         - asset: assets/fonts/NotoSans-Regular.ttf
           weight: 400
-        # Note: For Medium and Bold, using Regular as fallback since those weights may not be available
-        - asset: assets/fonts/NotoSans-Regular.ttf
-          weight: 500
-        - asset: assets/fonts/NotoSans-Regular.ttf
-          weight: 700

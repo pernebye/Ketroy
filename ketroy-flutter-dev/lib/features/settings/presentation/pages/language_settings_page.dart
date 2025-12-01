@@ -6,6 +6,7 @@ import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:provider/provider.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class LanguageSettingsPage extends StatefulWidget {
   const LanguageSettingsPage({super.key});
@@ -15,7 +16,7 @@ class LanguageSettingsPage extends StatefulWidget {
 }
 
 class _LanguageSettingsPageState extends State<LanguageSettingsPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AdaptiveHeaderMixin {
   // Design colors
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _accentGreen = Color(0xFF8BC34A);
@@ -31,6 +32,9 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..forward();
+    
+    // Инициализация адаптивного хедера
+    initAdaptiveHeader(fallbackHeightRatio: 0.22);
   }
 
   @override
@@ -43,6 +47,9 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locService = Provider.of<LocalizationService>(context);
+    
+    // Планируем измерение хедера
+    scheduleHeaderMeasurement();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -50,23 +57,14 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage>
         backgroundColor: _cardBg,
         body: Stack(
           children: [
-            // Gradient header
-            Container(
-              height: 180.h,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [_darkBg, _primaryGreen],
-                ),
-              ),
-            ),
+            // Адаптивный градиентный header
+            buildAdaptiveGradient(colors: [_darkBg, _primaryGreen]),
 
             // Content
             SafeArea(
               child: Column(
                 children: [
-                  _buildHeader(l10n),
+                  KeyedSubtree(key: headerKey, child: _buildHeader(l10n)),
                   Expanded(
                     child: Container(
                       margin: EdgeInsets.only(top: 16.h),

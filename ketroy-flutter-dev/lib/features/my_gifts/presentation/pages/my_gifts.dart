@@ -53,6 +53,11 @@ class _MyGiftsContentState extends State<MyGiftsContent>
   bool _showNewGiftBanner = false;
   String? _newGiftName;
 
+  // Для адаптивной высоты градиента
+  final GlobalKey _headerKey = GlobalKey();
+  double _gradientHeight = 0;
+  bool _headerMeasured = false;
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +69,37 @@ class _MyGiftsContentState extends State<MyGiftsContent>
     
     // Подписываемся на события новых подарков
     _giftEventSubscription = NotificationServices.instance.onNewGift.listen(_onNewGiftReceived);
+    
+    // Измеряем хедер после первого билда
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+  }
+
+  void _measureHeaderHeight() {
+    final context = _headerKey.currentContext;
+    if (context != null) {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) {
+        // Увеличенный отступ для комфортного отображения хедера
+        final newHeight = renderBox.size.height + 32.h;
+        if (!_headerMeasured || (_gradientHeight - newHeight).abs() > 5) {
+          setState(() {
+            _gradientHeight = newHeight;
+            _headerMeasured = true;
+          });
+        }
+      }
+    }
+  }
+
+  // Минимальная высота градиента для комфортного отображения
+  static double get _minGradientHeight => 120.h;
+
+  double get _effectiveGradientHeight {
+    if (_headerMeasured) {
+      // Гарантируем минимальную высоту
+      return _gradientHeight.clamp(_minGradientHeight, double.infinity);
+    }
+    return MediaQuery.of(context).size.height * 0.22;
   }
 
   @override
@@ -160,12 +196,17 @@ class _MyGiftsContentState extends State<MyGiftsContent>
               );
             }
             
+            // Перемеряем после каждого билда
+            WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+            
             // С header (из профиля)
             return Stack(
               children: [
-                // Градиентный header
-                Container(
-                  height: 180.h,
+                // Адаптивный градиентный header
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  height: _effectiveGradientHeight,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -179,7 +220,10 @@ class _MyGiftsContentState extends State<MyGiftsContent>
                 SafeArea(
                   child: Column(
                     children: [
-                      _buildHeader(l10n),
+                      KeyedSubtree(
+                        key: _headerKey,
+                        child: _buildHeader(l10n),
+                      ),
                       Expanded(
                         child: Container(
                           margin: EdgeInsets.only(top: 16.h),

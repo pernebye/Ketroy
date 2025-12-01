@@ -9,6 +9,7 @@ import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:share_plus/share_plus.dart';
+import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class DiscountPage extends StatefulWidget {
   const DiscountPage({super.key});
@@ -18,7 +19,7 @@ class DiscountPage extends StatefulWidget {
 }
 
 class _DiscountPageState extends State<DiscountPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AdaptiveHeaderMixin {
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _lightGreen = Color(0xFF5A6F2B);
@@ -41,6 +42,9 @@ class _DiscountPageState extends State<DiscountPage>
     
     // Загружаем информацию о реферальной программе
     context.read<DiscountBloc>().add(LoadReferralInfo());
+    
+    // Инициализация адаптивного хедера
+    initAdaptiveHeader(fallbackHeightRatio: 0.25);
   }
 
   @override
@@ -114,26 +118,20 @@ class _DiscountPageState extends State<DiscountPage>
   }
 
   Widget _buildContent(DiscountState state, AppLocalizations l10n) {
+    // Планируем измерение хедера
+    scheduleHeaderMeasurement();
+    
     return Stack(
       children: [
-        // Градиентный header
-        Container(
-          height: 200.h,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [_darkBg, _primaryGreen],
-            ),
-          ),
-        ),
+        // Адаптивный градиентный header
+        buildAdaptiveGradient(colors: [_darkBg, _primaryGreen]),
 
         // Контент
         SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _buildHeader(l10n),
+                KeyedSubtree(key: headerKey, child: _buildHeader(l10n)),
                 SizedBox(height: 24.h),
                 _buildShareSection(state, l10n),
                 SizedBox(height: 20.h),

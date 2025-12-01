@@ -7,6 +7,7 @@ import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/bonus/presentation/bloc/bonus_bloc.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class BonusPage extends StatefulWidget {
   const BonusPage({super.key});
@@ -16,7 +17,7 @@ class BonusPage extends StatefulWidget {
 }
 
 class _BonusPageState extends State<BonusPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AdaptiveHeaderMixin {
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _lightGreen = Color(0xFF5A6F2B);
@@ -34,6 +35,9 @@ class _BonusPageState extends State<BonusPage>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..forward();
+    
+    // Инициализация адаптивного хедера
+    initAdaptiveHeader(fallbackHeightRatio: 0.25);
   }
 
   @override
@@ -61,26 +65,20 @@ class _BonusPageState extends State<BonusPage>
   }
 
   Widget _buildContent(BonusState state) {
+    // Планируем измерение хедера
+    scheduleHeaderMeasurement();
+    
     return Stack(
       children: [
-        // Градиентный header
-        Container(
-          height: 200.h,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [_darkBg, _primaryGreen],
-            ),
-          ),
-        ),
+        // Адаптивный градиентный header
+        buildAdaptiveGradient(colors: [_darkBg, _primaryGreen]),
 
         // Контент
         SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _buildHeader(),
+                KeyedSubtree(key: headerKey, child: _buildHeader()),
                 SizedBox(height: 16.h),
                 _buildBonusCard(state),
               ],

@@ -181,12 +181,47 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  // Ключ для измерения высоты хедера
+  final GlobalKey _headerKey = GlobalKey();
+  double _gradientHeight = 0;
+  bool _headerMeasured = false;
+
+  void _measureHeaderHeight() {
+    final context = _headerKey.currentContext;
+    if (context != null) {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) {
+        final newHeight = renderBox.size.height + 32.h; // +32 для комфортного отступа
+        if (!_headerMeasured || (_gradientHeight - newHeight).abs() > 5) {
+          setState(() {
+            _gradientHeight = newHeight;
+            _headerMeasured = true;
+          });
+        }
+      }
+    }
+  }
+
+  // Минимальная высота градиента
+  static double get _minGradientHeight => 180.h;
+
+  double get _effectiveGradientHeight {
+    if (_headerMeasured) {
+      return _gradientHeight.clamp(_minGradientHeight, double.infinity);
+    }
+    // Fallback: используем процент от экрана для первого рендера
+    return MediaQuery.of(context).size.height * 0.42;
+  }
+
   Widget _buildContent(ProfileState state) {
     final hasUserData = state.token != null && _hasUserData(state);
 
+    // Измеряем хедер после каждого билда
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+
     return Stack(
       children: [
-        // Фоновый градиент
+        // Адаптивный фоновый градиент
         _buildBackground(),
 
         // Основной контент
@@ -196,9 +231,12 @@ class _ProfilePageState extends State<ProfilePage>
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // Header с профилем
+              // Header с профилем (с ключом для измерения)
               SliverToBoxAdapter(
-                child: _buildProfileHeader(state, hasUserData),
+                child: KeyedSubtree(
+                  key: _headerKey,
+                  child: _buildProfileHeader(state, hasUserData),
+                ),
               ),
 
               // Контент
@@ -258,8 +296,10 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildBackground() {
-    return Container(
-      height: 320.h,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      height: _effectiveGradientHeight,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,

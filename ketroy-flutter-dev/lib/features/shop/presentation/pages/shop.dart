@@ -12,6 +12,7 @@ import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class ShopPage extends StatefulWidget {
   final bool pop;
@@ -21,7 +22,7 @@ class ShopPage extends StatefulWidget {
   State<ShopPage> createState() => _ShopPageState();
 }
 
-class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin {
+class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin, AdaptiveHeaderMixin {
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _accentGreen = Color(0xFF8BC34A);
@@ -43,6 +44,9 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
       vsync: this,
       duration: const Duration(milliseconds: 800),
     )..forward();
+    
+    // Инициализация адаптивного хедера
+    initAdaptiveHeader(fallbackHeightRatio: 0.25);
   }
 
   @override
@@ -133,19 +137,13 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildContent(ShopState state, AppLocalizations l10n) {
+    // Планируем измерение хедера
+    scheduleHeaderMeasurement();
+    
     return Stack(
       children: [
-        // Градиентный header
-        Container(
-          height: 200.h,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [_darkBg, _primaryGreen],
-            ),
-          ),
-        ),
+        // Адаптивный градиентный header
+        buildAdaptiveGradient(colors: [_darkBg, _primaryGreen]),
 
         // Контент
         SafeArea(
@@ -154,8 +152,10 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
             onRefresh: _loadShopList,
             child: CustomScrollView(
               slivers: [
-                // Header
-                SliverToBoxAdapter(child: _buildHeader(l10n)),
+                // Header с ключом для измерения
+                SliverToBoxAdapter(
+                  child: KeyedSubtree(key: headerKey, child: _buildHeader(l10n)),
+                ),
 
                 // Dropdown города
                 SliverToBoxAdapter(

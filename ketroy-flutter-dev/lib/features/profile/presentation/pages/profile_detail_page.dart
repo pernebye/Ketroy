@@ -17,6 +17,7 @@ import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class ProfileDetailPage extends StatefulWidget {
   const ProfileDetailPage({super.key});
@@ -26,7 +27,7 @@ class ProfileDetailPage extends StatefulWidget {
 }
 
 class _ProfileDetailPageState extends State<ProfileDetailPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AdaptiveHeaderMixin {
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _lightGreen = Color(0xFF5A6F2B);
@@ -58,6 +59,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..forward();
+    
+    // Инициализация адаптивного хедера
+    initAdaptiveHeader(fallbackHeightRatio: 0.18);
   }
 
   @override
@@ -103,26 +107,20 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   }
 
   Widget _buildContent(ProfileState state) {
+    // Планируем измерение хедера
+    scheduleHeaderMeasurement();
+    
     return Stack(
       children: [
-        // Градиентный фон (только верхняя часть)
-        Container(
-          height: 140.h,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [_darkBg, _primaryGreen],
-            ),
-          ),
-        ),
+        // Адаптивный градиентный фон
+        buildAdaptiveGradient(colors: [_darkBg, _primaryGreen]),
 
         // Основной контент
         SafeArea(
           child: Column(
             children: [
-              // Header
-              _buildHeader(),
+              // Header с ключом для измерения
+              KeyedSubtree(key: headerKey, child: _buildHeader()),
 
               // Scrollable content
               Expanded(
