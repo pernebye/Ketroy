@@ -94,16 +94,19 @@ class SendBirthdayNotifications extends Command
                     $badge = $notificationCount + 1;
                     
                     // Отправляем push-уведомление с активным токеном
-                    $firebase->sendPushNotification(null, $badge, 'birthday', $activeToken, $title, $body);
-                    
-                    // Сохраняем уведомление в базу данных
-                    Notification::create([
-                        'user_id' => $user->id,
-                        'title' => $title,
-                        'body' => $body,
-                        'type' => 'birthday',
-                        'is_read' => false,
-                    ]);
+                    // FirebaseService автоматически создаст запись в БД через NotificationSendedEvent
+                    $firebase->sendPushNotification(
+                        null, 
+                        $badge, 
+                        'bonus',  // label = 'bonus' для навигации на страницу бонусов
+                        $activeToken, 
+                        $title, 
+                        $body,
+                        [
+                            'type' => 'bonus',  // Бонусы начисляются за день рождения
+                            'birthday' => 'true',
+                        ]
+                    );
 
                     $sentCount++;
                     Log::info("[Birthday] Push отправлен пользователю {$user->id} (ДР через {$daysBefore} дней)");

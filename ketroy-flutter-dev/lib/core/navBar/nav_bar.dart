@@ -1223,13 +1223,21 @@ class NavBar extends StatefulWidget {
   static const double navBarHeight = 72;
   static const double bottomMargin = 4;
   static const double horizontalMargin = 20;
+  
+  /// Минимальный отступ снизу для устройств без системной навигации
+  /// (жесты без видимой панели или очень маленький padding)
+  static const double minBottomSafeArea = 16;
 
   /// Порог яркости для переключения цветовой схемы (0-1)
   /// < 0.5 = тёмный фон, >= 0.5 = светлый фон
   static const double luminanceThreshold = 0.5;
 
   static double getBottomPadding(BuildContext context) {
-    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    final systemBottomPadding = MediaQuery.of(context).padding.bottom;
+    // Гарантируем минимальный отступ на всех устройствах
+    final bottomSafeArea = systemBottomPadding < minBottomSafeArea 
+        ? minBottomSafeArea 
+        : systemBottomPadding;
     return navBarHeight.h + bottomMargin.h + bottomSafeArea + 8.h;
   }
 
@@ -1342,7 +1350,11 @@ class _NavBarState extends State<NavBar> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final systemBottomPadding = MediaQuery.of(context).padding.bottom;
+    // Гарантируем минимальный отступ на всех устройствах
+    final bottomPadding = systemBottomPadding < NavBar.minBottomSafeArea 
+        ? NavBar.minBottomSafeArea 
+        : systemBottomPadding;
     final navBarWidth =
         MediaQuery.of(context).size.width - (NavBar.horizontalMargin * 2).w;
 

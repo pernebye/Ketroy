@@ -1,10 +1,10 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/features/partners/presentation/bloc/partners_bloc.dart';
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
@@ -75,33 +75,35 @@ class _PartnersPageState extends State<PartnersPage>
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocBuilder<PartnersBloc, PartnersState>(
-          builder: (context, state) {
-            return Stack(
-              children: [
-                // Фоновый градиент
-                _buildBackground(),
+      child: SwipeBackWrapper(
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: BlocBuilder<PartnersBloc, PartnersState>(
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  // Фоновый градиент
+                  _buildBackground(),
 
-                // Основной контент
-                CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    // Header
-                    SliverToBoxAdapter(
-                      child: _buildHeader(l10n),
-                    ),
+                  // Основной контент
+                  CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      // Header
+                      SliverToBoxAdapter(
+                        child: _buildHeader(l10n),
+                      ),
 
-                    // Контент
-                    SliverToBoxAdapter(
-                      child: _buildContent(l10n, state),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+                      // Контент
+                      SliverToBoxAdapter(
+                        child: _buildContent(l10n, state),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -223,30 +225,14 @@ class _PartnersPageState extends State<PartnersPage>
   }
 
   Widget _buildBackButton() {
-    return GestureDetector(
+    return LiquidGlassButton(
       onTap: () => Navigator.of(context).pop(),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14.r),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 18.sp,
-              color: Colors.white,
-            ),
-          ),
-        ),
+      width: 44.w,
+      height: 44.w,
+      child: Icon(
+        Icons.arrow_back_ios_new_rounded,
+        color: Colors.white,
+        size: 20.sp,
       ),
     );
   }

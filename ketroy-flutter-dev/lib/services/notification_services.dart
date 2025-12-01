@@ -9,10 +9,14 @@ import 'package:flutter_app_badge_control/flutter_app_badge_control.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
 import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
+import 'package:ketroy_app/features/certificates/presentation/pages/certificate_page.dart';
+import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gifts_page.dart';
+import 'package:ketroy_app/features/my_gifts/presentation/pages/my_gifts.dart';
 import 'package:ketroy_app/features/news/presentation/pages/news_page_detail.dart';
 import 'package:ketroy_app/features/notification/domain/entities/notification_entity.dart';
 import 'package:ketroy_app/features/notification/presentation/pages/notification_page.dart';
+import 'package:ketroy_app/features/profile/presentation/pages/profile.dart';
 import 'package:ketroy_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -447,24 +451,97 @@ class NotificationServices {
     try {
       final type = data['type'] as String?;
       final route = data['route'] as String?;
+      final label = data['label'] as String?;
 
-      debugPrint('🧭 Navigation data - type: $type, route: $route, data: $data');
+      debugPrint('🧭 Navigation data - type: $type, label: $label, route: $route, data: $data');
 
-      // Обработка уведомлений о новостях
-      if (type == 'news') {
-        final newsIdStr = data['news_id'] as String?;
-        if (newsIdStr != null) {
-          final newsId = int.tryParse(newsIdStr);
-          if (newsId != null) {
-            debugPrint('📰 Navigating to news detail: $newsId');
-            _navigateToNewsDetail(newsId);
-            return;
+      // Определяем тип по полю 'type' или 'label'
+      final notificationType = (type ?? label)?.toLowerCase();
+
+      switch (notificationType) {
+        // ============================================
+        // БОНУСЫ → BonusPage
+        // ============================================
+        case 'bonus':
+        case 'bonuses':
+        case 'debit':
+        case 'loyalty':
+        case 'loyalty_level_up':
+        case 'birthday':
+          debugPrint('💰 Navigating to bonus page');
+          _navigateToBonusPage();
+          return;
+
+        // ============================================
+        // ПОДАРКИ → MyGifts / GiftsPage
+        // ============================================
+        case 'gift':
+        case 'gifts':
+        case 'new_gift':
+        case 'gift_received':
+        case 'gift_issuance':
+        case 'pending_gift':
+        case 'lottery':
+          debugPrint('🎁 Navigating to gifts page');
+          _navigateToGiftsPage();
+          return;
+
+        // ============================================
+        // НОВОСТИ → NewsDetailPage
+        // ============================================
+        case 'news':
+          final newsIdStr = data['news_id']?.toString() ?? data['source_id']?.toString();
+          if (newsIdStr != null) {
+            final newsId = int.tryParse(newsIdStr);
+            if (newsId != null) {
+              debugPrint('📰 Navigating to news detail: $newsId');
+              _navigateToNewsDetail(newsId);
+              return;
+            }
           }
-        }
-      }
+          // Если нет ID новости — на список уведомлений
+          _navigateToNotifications();
+          return;
 
-      // По умолчанию переходим на уведомления
-      _navigateToNotifications();
+        // ============================================
+        // СЕРТИФИКАТЫ → CertificatePage
+        // ============================================
+        case 'certificate':
+        case 'certificates':
+          debugPrint('🎫 Navigating to certificate page');
+          _navigateToCertificatePage();
+          return;
+
+        // ============================================
+        // ПРОМОКОДЫ / СКИДКИ → DiscountPage
+        // ============================================
+        case 'discount':
+        case 'discounts':
+        case 'promo':
+        case 'promo_code':
+        case 'promocode':
+        case 'referral':
+        case 'referral_applied':
+          debugPrint('🏷️ Navigating to discount page');
+          _navigateToDiscountPage();
+          return;
+
+        // ============================================
+        // СИСТЕМНЫЕ / ИНФОРМАЦИОННЫЕ → NotificationPage
+        // ============================================
+        case 'system':
+        case 'info':
+        case 'information':
+        case 'reminder':
+        case 'test':
+        case 'broadcast':
+        case 'promotion':
+        case 'custom_push':
+        default:
+          debugPrint('📋 Navigating to notifications page (type: $notificationType)');
+          _navigateToNotifications();
+          return;
+      }
     } catch (e) {
       debugPrint('❌ Error in navigation logic: $e');
       _navigateToNotifications();
@@ -497,6 +574,110 @@ class NotificationServices {
       });
 
       debugPrint('✅ Navigated to news detail: $newsId');
+    });
+  }
+
+  // Навигация на страницу профиля с вкладкой "Бонусы"
+  void _navigateToBonusPage() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+
+      // Переходим к главному экрану на вкладку профиля
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => const NavScreen(
+                  initialTab: 1, // Профиль
+                )),
+        (route) => route.isFirst,
+      );
+
+      // Затем открываем профиль с вкладкой "Бонусы"
+      Future.delayed(const Duration(milliseconds: 100), () {
+        navigator.push(
+          SlideOverPageRoute(page: const ProfilePage(showBonusTab: true)),
+        );
+      });
+
+      debugPrint('✅ Navigated to profile bonus tab');
+    });
+  }
+
+  // Навигация на страницу подарков
+  void _navigateToGiftsPage() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+
+      // Переходим к главному экрану на вкладку профиля
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => const NavScreen(
+                  initialTab: 1, // Профиль
+                )),
+        (route) => route.isFirst,
+      );
+
+      // Затем открываем страницу подарков
+      Future.delayed(const Duration(milliseconds: 100), () {
+        navigator.push(
+          SlideOverPageRoute(page: const MyGifts()),
+        );
+      });
+
+      debugPrint('✅ Navigated to gifts page');
+    });
+  }
+
+  // Навигация на страницу сертификатов
+  void _navigateToCertificatePage() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+
+      // Переходим к главному экрану на вкладку профиля
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => const NavScreen(
+                  initialTab: 1, // Профиль
+                )),
+        (route) => route.isFirst,
+      );
+
+      // Затем открываем страницу сертификатов
+      Future.delayed(const Duration(milliseconds: 100), () {
+        navigator.push(
+          SlideOverPageRoute(page: const CertificatePage()),
+        );
+      });
+
+      debugPrint('✅ Navigated to certificate page');
+    });
+  }
+
+  // Навигация на страницу скидок/промокодов
+  void _navigateToDiscountPage() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+
+      // Переходим к главному экрану на вкладку профиля
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (context) => const NavScreen(
+                  initialTab: 1, // Профиль
+                )),
+        (route) => route.isFirst,
+      );
+
+      // Затем открываем страницу скидок
+      Future.delayed(const Duration(milliseconds: 100), () {
+        navigator.push(
+          SlideOverPageRoute(page: const DiscountPage()),
+        );
+      });
+
+      debugPrint('✅ Navigated to discount page');
     });
   }
 

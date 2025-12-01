@@ -220,7 +220,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
               
               // Поздравление
               Text(
-                '🎉 Подарок получен! 🎉',
+                'Подарок получен!',
                 style: TextStyle(
                   fontSize: 22.sp,
                   fontWeight: FontWeight.w800,

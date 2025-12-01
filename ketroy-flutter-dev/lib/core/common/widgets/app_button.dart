@@ -185,15 +185,15 @@ class AppLiquidGlassSettings {
   );
   
   static const LiquidGlassSettings navBar = LiquidGlassSettings(
-    thickness: 10,
-    blur: 6,
-    glassColor: Color(0x30FFFFFF),
+    thickness: 5,
+    blur: 3,
+    glassColor: Color.fromARGB(17, 226, 226, 226),
     lightIntensity: 1.3,
     saturation: 1.1,
   );
 }
 
-class GlassMorphism extends StatelessWidget {
+class GlassMorphism extends StatefulWidget {
   const GlassMorphism({
     super.key,
     this.borderRadius = 16.0,
@@ -214,23 +214,189 @@ class GlassMorphism extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
+  State<GlassMorphism> createState() => _GlassMorphismState();
+}
+
+class _GlassMorphismState extends State<GlassMorphism>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.7).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    if (widget.onPressed != null) {
+      _controller.forward();
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    if (widget.onPressed != null) {
+      _controller.reverse();
+      widget.onPressed!();
+    }
+  }
+
+  void _onTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        margin: margin,
-        width: width,
-        constraints: BoxConstraints(
-          minHeight: height ?? 53.h,
-        ),
-        child: LiquidGlass.withOwnLayer(
-          settings: AppLiquidGlassSettings.button,
-          shape: LiquidRoundedSuperellipse(borderRadius: borderRadius.r),
-          child: Padding(
-            padding: padding,
-            child: Center(child: child),
-          ),
-        ),
+      behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+      onTapDown: widget.onPressed != null ? _onTapDown : null,
+      onTapUp: widget.onPressed != null ? _onTapUp : null,
+      onTapCancel: widget.onPressed != null ? _onTapCancel : null,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: Container(
+                margin: widget.margin,
+                width: widget.width,
+                constraints: BoxConstraints(
+                  minHeight: widget.height ?? 53.h,
+                ),
+                child: LiquidGlass.withOwnLayer(
+                  settings: AppLiquidGlassSettings.button,
+                  shape: LiquidRoundedSuperellipse(borderRadius: widget.borderRadius.r),
+                  child: Padding(
+                    padding: widget.padding,
+                    child: Center(child: widget.child),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// LIQUID GLASS BUTTON - Универсальная интерактивная кнопка
+// С правильным hit testing и визуальным откликом
+// ============================================================================
+
+class LiquidGlassButton extends StatefulWidget {
+  const LiquidGlassButton({
+    super.key,
+    required this.onTap,
+    required this.child,
+    this.width,
+    this.height,
+    this.borderRadius = 22.0,
+    this.settings,
+    this.enabled = true,
+  });
+
+  final VoidCallback onTap;
+  final Widget child;
+  final double? width;
+  final double? height;
+  final double borderRadius;
+  final LiquidGlassSettings? settings;
+  final bool enabled;
+
+  @override
+  State<LiquidGlassButton> createState() => _LiquidGlassButtonState();
+}
+
+class _LiquidGlassButtonState extends State<LiquidGlassButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 80),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.75).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    if (widget.enabled) {
+      _controller.forward();
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    if (widget.enabled) {
+      _controller.reverse();
+      widget.onTap();
+    }
+  }
+
+  void _onTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, // ✅ Важно! Ловит тапы по всей области
+      onTapDown: widget.enabled ? _onTapDown : null,
+      onTapUp: widget.enabled ? _onTapUp : null,
+      onTapCancel: widget.enabled ? _onTapCancel : null,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: widget.enabled ? _opacityAnimation.value : 0.5,
+              child: LiquidGlass.withOwnLayer(
+                settings: widget.settings ?? AppLiquidGlassSettings.button,
+                shape: LiquidRoundedSuperellipse(borderRadius: widget.borderRadius.r),
+                child: SizedBox(
+                  width: widget.width,
+                  height: widget.height,
+                  child: Center(child: widget.child),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

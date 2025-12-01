@@ -195,12 +195,13 @@ class AuthController extends Controller
      */
     public function sendVerificationCode(Request $request): JsonResponse
     {
+        try {
         $request->validate([
             'phone' => 'required|string|regex:/^\d{10}$/',
             'country_code' => 'required|string|regex:/^\+\d{1,3}$/',
         ]);
 
-        $verificationCode = str(rand(10000, 99999));
+            $verificationCode = (string) rand(10000, 99999);
         $message = 'Ketroy. Ваш код верификации: ' . $verificationCode;
 
         $user = User::where('phone', $request->phone)->first();
@@ -235,6 +236,17 @@ class AuthController extends Controller
             'message' => 'Код подтверждения отправлен.',
             'user_exists' => false
         ], 200);
+        } catch (\Exception $e) {
+            Log::error('sendVerificationCode error', [
+                'phone' => $request->phone ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Ошибка при отправке кода: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -263,6 +275,7 @@ class AuthController extends Controller
      */
     public function loginSendCode(Request $request): JsonResponse
     {
+        try {
         $request->validate([
             'phone' => 'required|string|regex:/^\d{10}$/',
             'country_code' => 'required|string|regex:/^\+\d{1,3}$/',
@@ -279,7 +292,7 @@ class AuthController extends Controller
         }
 
         // Пользователь существует - отправляем код для входа
-        $verificationCode = str(rand(10000, 99999));
+            $verificationCode = (string) rand(10000, 99999);
         $message = 'Ketroy. Ваш код верификации: ' . $verificationCode;
 
         $user->verification_code = $verificationCode;
@@ -295,6 +308,17 @@ class AuthController extends Controller
             'message' => 'Код подтверждения отправлен.',
             'user_exists' => true
         ], 200);
+        } catch (\Exception $e) {
+            Log::error('loginSendCode error', [
+                'phone' => $request->phone ?? 'unknown',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Ошибка при отправке кода: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
 

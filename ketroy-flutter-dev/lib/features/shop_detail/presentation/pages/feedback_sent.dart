@@ -4,12 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/common/widgets/auth_required_dialog.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bloc.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 
 class FeedbackSent extends StatefulWidget {
   final int id;
@@ -67,48 +67,50 @@ class _FeedbackSentState extends State<FeedbackSent>
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocConsumer<ShopDetailBloc, ShopDetailState>(
-          listener: (context, state) {
-            if (state.isSendSuccess) {
-              Navigator.pop(context);
-            }
-          },
-          builder: (context, state) {
-            return Stack(
-              children: [
-                // Градиент сверху
-                Container(
-                  height: 200.h,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [_darkBg, _primaryGreen],
+    return SwipeBackWrapper(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: BlocConsumer<ShopDetailBloc, ShopDetailState>(
+            listener: (context, state) {
+              if (state.isSendSuccess) {
+                Navigator.pop(context);
+              }
+            },
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  // Градиент сверху
+                  Container(
+                    height: 200.h,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [_darkBg, _primaryGreen],
+                      ),
                     ),
                   ),
-                ),
 
-                // Контент
-                SafeArea(
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.all(16.w),
-                          child: _buildContent(state),
+                  // Контент
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        _buildHeader(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(16.w),
+                            child: _buildContent(state),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -119,20 +121,14 @@ class _FeedbackSentState extends State<FeedbackSent>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          GestureDetector(
+          LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
           Expanded(

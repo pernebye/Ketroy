@@ -235,8 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                                               border: InputBorder.none,
                                               enabledBorder: InputBorder.none,
                                               focusedBorder: InputBorder.none,
-                                              contentPadding:
-                                                  EdgeInsets.only(bottom: 6.h),
+                                              contentPadding: EdgeInsets.zero,
                                               isDense: true,
                                               isCollapsed: true,
                                             ),

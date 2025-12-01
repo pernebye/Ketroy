@@ -91,6 +91,7 @@ class SelectPage extends StatelessWidget {
                             ),
                             SizedBox(height: 20.h),
                             GlassMorphism(
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
                               width: double.infinity,
                               onPressed: () {
                                 Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(

@@ -84,7 +84,7 @@ class SlideOverPageRoute<T> extends PageRouteBuilder<T> {
 }
 
 /// Виджет-обёртка для добавления свайп-жеста закрытия
-/// Позволяет закрыть экран свайпом вправо (как в iOS)
+/// Позволяет закрыть экран свайпом вправо с любого места экрана
 class SwipeBackWrapper extends StatefulWidget {
   final Widget child;
   final VoidCallback? onSwipeBack;
@@ -101,30 +101,64 @@ class SwipeBackWrapper extends StatefulWidget {
   State<SwipeBackWrapper> createState() => _SwipeBackWrapperState();
 }
 
-class _SwipeBackWrapperState extends State<SwipeBackWrapper> {
+class _SwipeBackWrapperState extends State<SwipeBackWrapper>
+    with SingleTickerProviderStateMixin {
   double _dragOffset = 0;
   bool _isDragging = false;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _animation = Tween<double>(begin: 0, end: 0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _resetPosition() {
+    _animation = Tween<double>(begin: _dragOffset, end: 0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _animationController.forward(from: 0).then((_) {
+      if (mounted) {
+        setState(() {
+          _dragOffset = 0;
+          _isDragging = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
 
     return GestureDetector(
+      // Разрешаем начинать свайп с любого места экрана
       onHorizontalDragStart: (details) {
-        // Начинаем только с левого края экрана (зона 40px)
-        if (details.localPosition.dx < 40) {
-          setState(() {
-            _isDragging = true;
-            _dragOffset = 0;
-          });
-        }
+        _animationController.stop();
+        setState(() {
+          _isDragging = true;
+          _dragOffset = 0;
+        });
       },
       onHorizontalDragUpdate: (details) {
         if (_isDragging) {
+          final delta = details.primaryDelta ?? 0;
           setState(() {
-            _dragOffset = (details.primaryDelta ?? 0) + _dragOffset;
-            _dragOffset =
-                _dragOffset.clamp(0, MediaQuery.of(context).size.width);
+            // Только свайп вправо (положительное значение)
+            _dragOffset = (_dragOffset + delta).clamp(0.0, MediaQuery.of(context).size.width);
           });
         }
       },
@@ -133,31 +167,38 @@ class _SwipeBackWrapperState extends State<SwipeBackWrapper> {
           final velocity = details.primaryVelocity ?? 0;
           final screenWidth = MediaQuery.of(context).size.width;
 
-          // Закрываем если свайпнули больше 30% или быстро
-          if (_dragOffset > screenWidth * 0.3 || velocity > 500) {
+          // Закрываем если свайпнули больше 15% экрана или быстро вправо
+          // Мягкий порог для удобства пользователя
+          if (_dragOffset > screenWidth * 0.15 || velocity > 200) {
             if (widget.onSwipeBack != null) {
               widget.onSwipeBack!();
             } else {
               Navigator.of(context).pop();
             }
+            setState(() {
+              _isDragging = false;
+              _dragOffset = 0;
+            });
+          } else {
+            // Возвращаем экран на место с анимацией
+            _resetPosition();
           }
-
-          setState(() {
-            _isDragging = false;
-            _dragOffset = 0;
-          });
         }
       },
       onHorizontalDragCancel: () {
-        setState(() {
-          _isDragging = false;
-          _dragOffset = 0;
-        });
+        if (_isDragging) {
+          _resetPosition();
+        }
       },
-      child: AnimatedContainer(
-        duration:
-            _isDragging ? Duration.zero : const Duration(milliseconds: 200),
-        transform: Matrix4.translationValues(_dragOffset, 0, 0),
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          final offset = _isDragging ? _dragOffset : _animation.value;
+          return Transform.translate(
+            offset: Offset(offset, 0),
+            child: child,
+          );
+        },
         child: widget.child,
       ),
     );

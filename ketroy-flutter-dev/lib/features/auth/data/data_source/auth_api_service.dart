@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ketroy_app/core/internet_services/dio_client.dart';
 import 'package:ketroy_app/core/internet_services/error/dio_exception.dart';
 import 'package:ketroy_app/core/internet_services/error/exceptions.dart';
@@ -69,26 +70,42 @@ class AuthApiServiceImpl implements AuthApiService {
   @override
   Future<VerifyCodeResponseModel> sendVerifyCode(
       {required String phone, required String countryCode}) async {
+    debugPrint('📱 sendVerifyCode: phone=$phone, countryCode=$countryCode');
     try {
       final response = await DioClient.instance.post(sendVerifyCodePath,
           data: {'phone': phone, 'country_code': countryCode});
+      debugPrint('✅ sendVerifyCode response: $response');
       return VerifyCodeResponseModel.fromJson(response);
     } on DioException catch (e) {
+      debugPrint('❌ sendVerifyCode DioException: ${e.type} - ${e.message}');
+      debugPrint('   Response: ${e.response?.data}');
       var error = DioExceptionService.fromDioError(e);
       throw ServerException(error.errorMessage);
+    } catch (e, stackTrace) {
+      debugPrint('❌ sendVerifyCode unexpected error: $e');
+      debugPrint('   StackTrace: $stackTrace');
+      throw ServerException('Ошибка при отправке кода: $e');
     }
   }
 
   @override
   Future<VerifyCodeResponseModel> loginSendCode(
       {required String phone, required String countryCode}) async {
+    debugPrint('📱 loginSendCode: phone=$phone, countryCode=$countryCode');
     try {
       final response = await DioClient.instance.post(loginSendCodePath,
           data: {'phone': phone, 'country_code': countryCode});
+      debugPrint('✅ loginSendCode response: $response');
       return VerifyCodeResponseModel.fromJson(response);
     } on DioException catch (e) {
+      debugPrint('❌ loginSendCode DioException: ${e.type} - ${e.message}');
+      debugPrint('   Response: ${e.response?.data}');
       var error = DioExceptionService.fromDioError(e);
       throw ServerException(error.errorMessage);
+    } catch (e, stackTrace) {
+      debugPrint('❌ loginSendCode unexpected error: $e');
+      debugPrint('   StackTrace: $stackTrace');
+      throw ServerException('Ошибка при отправке кода: $e');
     }
   }
 

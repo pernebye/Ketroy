@@ -8,8 +8,7 @@ import 'package:ketroy_app/features/notification/presentation/pages/notification
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:ketroy_app/features/settings/presentation/pages/language_settings_page.dart';
 import 'package:ketroy_app/services/localization/localization_service.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:provider/provider.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 
@@ -106,57 +105,59 @@ class _SettingsPageState extends State<SettingsPage>
     // Перемеряем после каждого билда
     WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
     
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: Stack(
-          children: [
-            // Адаптивный градиентный хедер
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-              height: _effectiveGradientHeight,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [_darkBg, _primaryGreen],
+    return SwipeBackWrapper(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: Stack(
+            children: [
+              // Адаптивный градиентный хедер
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                height: _effectiveGradientHeight,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [_darkBg, _primaryGreen],
+                  ),
                 ),
               ),
-            ),
 
-            // Content
-            SafeArea(
-              child: Column(
-                children: [
-                  KeyedSubtree(
-                    key: _headerKey,
-                    child: _buildHeader(l10n),
-                  ),
-                  Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(top: 16.h),
-                      decoration: BoxDecoration(
-                        color: _cardBg,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(32.r),
-                          topRight: Radius.circular(32.r),
+              // Content
+              SafeArea(
+                child: Column(
+                  children: [
+                    KeyedSubtree(
+                      key: _headerKey,
+                      child: _buildHeader(l10n),
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(top: 16.h),
+                        decoration: BoxDecoration(
+                          color: _cardBg,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(32.r),
+                            topRight: Radius.circular(32.r),
+                          ),
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(32.r),
-                          topRight: Radius.circular(32.r),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(32.r),
+                            topRight: Radius.circular(32.r),
+                          ),
+                          child: _buildContent(l10n),
                         ),
-                        child: _buildContent(l10n),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -167,20 +168,14 @@ class _SettingsPageState extends State<SettingsPage>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          GestureDetector(
+          LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
           Expanded(

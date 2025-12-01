@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\DeviceToken;
-use App\Models\Notification;
 use App\Models\PushNotification;
 use App\Services\FirebaseService;
 use Carbon\Carbon;
@@ -87,26 +86,17 @@ class SendCustomPushNotificationJob implements ShouldQueue
                         ->where('is_read', false)
                         ->count();
 
-                    // Создаём уведомление в БД
-                    Notification::create([
-                        'user_id' => $user->id,
-                        'title' => $pushNotification->title,
-                        'body' => $pushNotification->body,
-                        'is_read' => false,
-                        'label' => 'custom_push',
-                        'source_id' => $pushNotification->id,
-                    ]);
-
                     // Отправляем push через Firebase
+                    // FirebaseService автоматически создаст уведомление в БД через NotificationSendedEvent
                     $success = $firebaseService->sendPushNotification(
-                        $pushNotification->id,
+                        $pushNotification->id, // source_id
                         $unreadCount + 1,
-                        'custom_push',
-                        $activeToken, // Используем активный токен
+                        'info', // label = 'info' для информационных push-уведомлений
+                        $activeToken,
                         $pushNotification->title,
                         $pushNotification->body,
                         [
-                            'type' => 'custom_push',
+                            'type' => 'info',
                             'push_id' => (string) $pushNotification->id,
                         ]
                     );

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/util/launch_url.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
@@ -11,8 +12,7 @@ import 'package:ketroy_app/features/shop/domain/entities/shop_entity.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bloc.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/pages/feedback_sent.dart';
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 
 class ShopDetail extends StatefulWidget {
   const ShopDetail({super.key, required this.userId, required this.shopData});
@@ -105,18 +105,20 @@ class _ShopDetailState extends State<ShopDetail>
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocConsumer<ShopDetailBloc, ShopDetailState>(
-          listener: (context, state) {
-            if (state.isFailure) showSnackBar(context, state.message ?? '');
-          },
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(child: Loader());
-            }
-            return _buildContent(state);
-          },
+      child: SwipeBackWrapper(
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: BlocConsumer<ShopDetailBloc, ShopDetailState>(
+            listener: (context, state) {
+              if (state.isFailure) showSnackBar(context, state.message ?? '');
+            },
+            builder: (context, state) {
+              if (state.isLoading) {
+                return const Center(child: Loader());
+              }
+              return _buildContent(state);
+            },
+          ),
         ),
       ),
     );
@@ -242,20 +244,14 @@ class _ShopDetailState extends State<ShopDetail>
         Positioned(
           top: MediaQuery.of(context).padding.top + 8.h,
           left: 16.w,
-          child: GestureDetector(
+          child: LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
         ),

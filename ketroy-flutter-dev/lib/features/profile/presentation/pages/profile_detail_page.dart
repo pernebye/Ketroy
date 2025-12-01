@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:ketroy_app/core/common/widgets/dropdown_field.dart';
 import 'package:ketroy_app/core/constants/constants.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
@@ -77,9 +78,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocConsumer<ProfileBloc, ProfileState>(
+      child: SwipeBackWrapper(
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: BlocConsumer<ProfileBloc, ProfileState>(
           listener: (context, state) {
             if (state.isUpdateSuccess && !_hasNavigatedBack) {
               context.read<ProfileBloc>().add(ResetListener());
@@ -101,6 +103,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
             }
             return const Center(child: Loader());
           },
+        ),
         ),
       ),
     );

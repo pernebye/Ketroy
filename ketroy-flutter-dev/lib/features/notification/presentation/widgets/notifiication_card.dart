@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:ketroy_app/features/bonus/presentation/pages/bonus_page.dart';
 import 'package:ketroy_app/features/certificates/presentation/pages/certificate_page.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gifts_page.dart';
 import 'package:ketroy_app/features/news/presentation/pages/news_page_detail.dart';
 import 'package:ketroy_app/features/notification/domain/entities/notification_entity.dart';
 import 'package:ketroy_app/features/notification/presentation/bloc/notification_bloc.dart';
+import 'package:ketroy_app/features/profile/presentation/pages/profile.dart';
 import 'package:ketroy_app/services/notification_services.dart';
 
 enum NotificationLabelType {
@@ -22,6 +22,10 @@ enum NotificationLabelType {
   reminder,
   system,
   test,
+  birthday,
+  customPush,
+  loyalty,
+  referral,
 }
 
 class NotificationCardWithAutoRefresh extends StatelessWidget {
@@ -128,7 +132,9 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
 
     switch (type) {
       case NotificationLabelType.bonus:
-        // Золотая монета тенге для списания/начисления бонусов
+      case NotificationLabelType.birthday:
+      case NotificationLabelType.loyalty:
+        // Золотая монета тенге для списания/начисления бонусов и бонусов ДР
         imagePath = 'images/notif_coin.png';
         break;
       case NotificationLabelType.gift:
@@ -141,12 +147,14 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
         break;
       case NotificationLabelType.discount:
       case NotificationLabelType.promo:
+      case NotificationLabelType.referral:
         // Чёрная бирка скидки
         imagePath = 'images/notif_discount.png';
         break;
       case NotificationLabelType.news:
       case NotificationLabelType.info:
       case NotificationLabelType.reminder:
+      case NotificationLabelType.customPush:
         // Новости и информационные уведомления
         imagePath = 'images/news.png';
         break;
@@ -177,6 +185,8 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
 
     switch (type) {
       case NotificationLabelType.bonus:
+      case NotificationLabelType.birthday:
+      case NotificationLabelType.loyalty:
         icon = Icons.monetization_on_rounded;
         color = const Color(0xFFFFB300);
         bgColor = const Color(0xFFFFF8E1);
@@ -189,6 +199,7 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
         break;
       case NotificationLabelType.discount:
       case NotificationLabelType.promo:
+      case NotificationLabelType.referral:
         icon = Icons.local_offer_rounded;
         color = const Color(0xFF212121);
         bgColor = const Color(0xFFF5F5F5);
@@ -196,6 +207,7 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
       case NotificationLabelType.news:
       case NotificationLabelType.info:
       case NotificationLabelType.reminder:
+      case NotificationLabelType.customPush:
         icon = Icons.newspaper_rounded;
         color = const Color(0xFF1976D2);
         bgColor = const Color(0xFFE3F2FD);
@@ -247,16 +259,21 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
 
     switch (labelType) {
       case NotificationLabelType.gift:
+        // Подарки → Страница подарков
         await Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(builder: (context) => const GiftsPage()),
         );
         break;
       case NotificationLabelType.bonus:
+      case NotificationLabelType.birthday:
+      case NotificationLabelType.loyalty:
+        // Бонусы, ДР, лояльность → Профиль, вкладка "Бонусы"
         await Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => const BonusPage()),
+          MaterialPageRoute(builder: (context) => const ProfilePage(showBonusTab: true)),
         );
         break;
       case NotificationLabelType.news:
+        // Новости → Детальная страница новости или список
         if (notification.sourceId != null) {
           await Navigator.of(context, rootNavigator: true).push(
             NewsDetailPageRoute(
@@ -265,14 +282,18 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
             ),
           );
         }
+        // Если sourceId нет — остаёмся на странице уведомлений
         break;
       case NotificationLabelType.certificate:
+        // Сертификаты → Страница сертификатов
         await Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(builder: (context) => const CertificatePage()),
         );
         break;
       case NotificationLabelType.discount:
       case NotificationLabelType.promo:
+      case NotificationLabelType.referral:
+        // Скидки, промокоды, реферальная программа → Страница скидок
         await Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(builder: (context) => const DiscountPage()),
         );
@@ -281,38 +302,92 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
       case NotificationLabelType.reminder:
       case NotificationLabelType.system:
       case NotificationLabelType.test:
-        // Просто помечаем как прочитанное без навигации
+      case NotificationLabelType.customPush:
+        // Информационные и системные уведомления — без навигации
         break;
     }
   }
 
   /// Метод для преобразования строки в enum
   NotificationLabelType _getNotificationLabelType(String? label) {
-    if (label == null) return NotificationLabelType.news;
+    if (label == null || label.isEmpty) return NotificationLabelType.info;
 
     switch (label.toLowerCase()) {
+      // Подарки
       case 'gift':
+      case 'gifts':
+      case 'new_gift':
+      case 'gift_received':
+      case 'gift_issuance':
+      case 'pending_gift':
+      case 'lottery':
         return NotificationLabelType.gift;
+      
+      // Бонусы
       case 'bonus':
+      case 'bonuses':
         return NotificationLabelType.bonus;
+      
+      // День рождения
+      case 'birthday':
+        return NotificationLabelType.birthday;
+      
+      // Лояльность
+      case 'loyalty':
+      case 'loyalty_level_up':
+        return NotificationLabelType.loyalty;
+      
+      // Новости
       case 'news':
         return NotificationLabelType.news;
+      
+      // Сертификаты
       case 'certificate':
+      case 'certificates':
         return NotificationLabelType.certificate;
+      
+      // Скидки
       case 'discount':
+      case 'discounts':
         return NotificationLabelType.discount;
+      
+      // Промокоды
       case 'promo':
+      case 'promo_code':
+      case 'promocode':
         return NotificationLabelType.promo;
+      
+      // Реферальная программа
+      case 'referral':
+      case 'referral_applied':
+        return NotificationLabelType.referral;
+      
+      // Информационные
       case 'info':
+      case 'information':
         return NotificationLabelType.info;
+      
+      // Напоминания
       case 'reminder':
         return NotificationLabelType.reminder;
+      
+      // Системные
       case 'system':
         return NotificationLabelType.system;
+      
+      // Тестовые
       case 'test':
         return NotificationLabelType.test;
+      
+      // Кастомные push
+      case 'custom_push':
+      case 'broadcast':
+      case 'promotion':
+        return NotificationLabelType.customPush;
+      
       default:
-        return NotificationLabelType.news;
+        // По умолчанию — информационное уведомление
+        return NotificationLabelType.info;
     }
   }
 }

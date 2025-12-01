@@ -36,7 +36,18 @@ class SendGiftCertificateExpiryNotification extends Command
                 $title = 'Срок действия сертификата истекает!';
                 $body = 'Срок действия подарочного сертификата подходит к концу, Вы можете использовать его в течение 7 дней!';
                 $firebase = new FirebaseService();
-                $firebase->sendPushNotification($giftCard->id, $badge, 'certificate', $activeToken, $title, $body);
+                $firebase->sendPushNotification(
+                    $giftCard->id, 
+                    $badge, 
+                    'certificate', 
+                    $activeToken, 
+                    $title, 
+                    $body,
+                    [
+                        'type' => 'certificate',
+                        'certificate_id' => (string)$giftCard->id,
+                    ]
+                );
                 
                 Log::info("[GiftCertificateExpiry] Push отправлен пользователю {$user->id}");
             }

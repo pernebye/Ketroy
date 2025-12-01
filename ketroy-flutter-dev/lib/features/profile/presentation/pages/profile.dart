@@ -39,7 +39,13 @@ import 'package:ketroy_app/services/notification_services.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool? fromGift;
-  const ProfilePage({super.key, this.fromGift});
+  final bool showBonusTab;
+  
+  const ProfilePage({
+    super.key, 
+    this.fromGift,
+    this.showBonusTab = false,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -47,7 +53,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
-  bool account = true;
+  late bool account;
   final sharedService = serviceLocator<SharedPreferencesService>();
   
   // Подписка на события обновления бонусов
@@ -67,6 +73,11 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   void initState() {
     super.initState();
+    
+    // Если showBonusTab = true, показываем вкладку "Бонусы" (account = false)
+    // Иначе показываем вкладку "Аккаунт" (account = true)
+    account = !widget.showBonusTab;
+    
     _initializeProfile();
     _setupBonusUpdateListener();
 

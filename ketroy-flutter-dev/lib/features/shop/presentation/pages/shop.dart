@@ -5,13 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/common/entities/menu.dart';
 import 'package:ketroy_app/core/common/widgets/dropdown_field.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/shop/presentation/bloc/shop_bloc.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/pages/shop_detail.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class ShopPage extends StatefulWidget {
@@ -118,7 +118,8 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
+    
+    Widget content = AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _cardBg,
@@ -134,6 +135,13 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
         ),
       ),
     );
+    
+    // Добавляем свайп-назад только если страница открыта через навигацию
+    if (widget.pop) {
+      return SwipeBackWrapper(child: content);
+    }
+    
+    return content;
   }
 
   Widget _buildContent(ShopState state, AppLocalizations l10n) {
@@ -213,20 +221,14 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
       child: Row(
         children: [
           if (widget.pop)
-            GestureDetector(
+            LiquidGlassButton(
               onTap: () => Navigator.pop(context),
-              child: LiquidGlass.withOwnLayer(
-                settings: AppLiquidGlassSettings.button,
-                shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-                child: SizedBox(
-                  width: 44.w,
-                  height: 44.w,
-                  child: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                ),
+              width: 44.w,
+              height: 44.w,
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20.sp,
               ),
             )
           else

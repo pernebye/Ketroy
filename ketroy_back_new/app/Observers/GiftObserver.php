@@ -33,7 +33,18 @@ class GiftObserver
             $notifications = $user->notifications()->where('is_read', false)->count();
             $badge = $notifications + 1;
 
-            $firebase->sendPushNotification($gift->id, $badge, 'gift', $activeToken, $title, $body);
+            $firebase->sendPushNotification(
+                $gift->id, 
+                $badge, 
+                'gift', 
+                $activeToken, 
+                $title, 
+                $body,
+                [
+                    'type' => 'gift',
+                    'gift_id' => (string)$gift->id,
+                ]
+            );
             
             Log::info('[GiftObserver] Push sent for gift', [
                 'gift_id' => $gift->id,

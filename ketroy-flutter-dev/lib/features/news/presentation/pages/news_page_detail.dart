@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ketroy_app/core/constants/shop_contacts.dart';
 import 'package:ketroy_app/core/theme/theme.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/core/util/launch_url.dart';
 import 'package:ketroy_app/features/auth/domain/entities/user_entity.dart';
@@ -136,10 +137,11 @@ class _NewsPageDetailState extends State<NewsPageDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      extendBodyBehindAppBar: true,
-      body: BlocBuilder<NewsBloc, NewsState>(
+    return SwipeBackWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        extendBodyBehindAppBar: true,
+        body: BlocBuilder<NewsBloc, NewsState>(
         builder: (BuildContext context, NewsState state) {
           if (state.isLoading) {
             return _buildLoadingState();
@@ -331,6 +333,7 @@ class _NewsPageDetailState extends State<NewsPageDetail> {
             ],
           );
         },
+      ),
       ),
     );
   }
@@ -717,9 +720,13 @@ class _LiquidGlassBackButton extends StatefulWidget {
   State<_LiquidGlassBackButton> createState() => _LiquidGlassBackButtonState();
 }
 
-class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton> {
+class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
+    with SingleTickerProviderStateMixin {
   bool _isDarkBackground = false;
   Timer? _luminanceTimer;
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   // Цвета для светлого фона (тёмная иконка)
   static const Color _darkIconColor = Color(0xFF2D2D2D);
@@ -730,13 +737,37 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton> {
   @override
   void initState() {
     super.initState();
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 80),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.75).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
     _startLuminanceAnalysis();
   }
 
   @override
   void dispose() {
     _luminanceTimer?.cancel();
+    _pressController.dispose();
     super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _pressController.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _pressController.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    _pressController.reverse();
   }
 
   void _startLuminanceAnalysis() {
@@ -810,23 +841,37 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
-      child: LiquidGlass.withOwnLayer(
-        settings: AppLiquidGlassSettings.button,
-        shape: LiquidRoundedSuperellipse(borderRadius: 14.r),
-        child: SizedBox(
-          width: 44.w,
-          height: 44.h,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              key: ValueKey(_isDarkBackground),
-              size: 20.sp,
-              color: _iconColor,
+      behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _pressController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: LiquidGlass.withOwnLayer(
+                settings: AppLiquidGlassSettings.button,
+                shape: LiquidRoundedSuperellipse(borderRadius: 14.r),
+                child: SizedBox(
+                  width: 44.w,
+                  height: 44.h,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      key: ValueKey(_isDarkBackground),
+                      size: 20.sp,
+                      color: _iconColor,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -851,11 +896,14 @@ class _LiquidGlassWhatsAppFAB extends StatefulWidget {
 }
 
 class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   bool _isDarkBackground = false;
   Timer? _luminanceTimer;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  late AnimationController _pressController;
+  late Animation<double> _pressScaleAnimation;
+  late Animation<double> _pressOpacityAnimation;
 
   // WhatsApp brand color
   static const Color _whatsAppGreen = Color(0xFF25D366);
@@ -880,13 +928,39 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    // Анимация нажатия
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 80),
+      vsync: this,
+    );
+    _pressScaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+    _pressOpacityAnimation = Tween<double>(begin: 1.0, end: 0.7).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _luminanceTimer?.cancel();
     _pulseController.dispose();
+    _pressController.dispose();
     super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _pressController.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _pressController.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    _pressController.reverse();
   }
 
   void _startLuminanceAnalysis() {
@@ -960,15 +1034,21 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _pulseAnimation,
+      animation: Listenable.merge([_pulseAnimation, _pressController]),
       builder: (context, child) {
         return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: child,
+          scale: _pulseAnimation.value * _pressScaleAnimation.value,
+          child: Opacity(
+            opacity: _pressOpacityAnimation.value,
+            child: child,
+          ),
         );
       },
       child: GestureDetector(
-        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,

@@ -18,3 +18,4 @@ class MarkAllRead implements UseCase<int, NoParams> {
 
 
 
+

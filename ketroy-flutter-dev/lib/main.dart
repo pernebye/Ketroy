@@ -20,7 +20,6 @@ import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/core/widgets/main_screen.dart';
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:ketroy_app/features/bonus/presentation/bloc/bonus_bloc.dart';
 import 'package:ketroy_app/features/certificates/presentation/bloc/certificate_bloc.dart';
 import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/bloc/gifts_bloc.dart';
@@ -43,6 +42,26 @@ import 'package:ketroy_app/l10n/app_localizations.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final DeepLinkManager globalDeepLinkManager = DeepLinkManager();
+
+/// Кастомное поведение скролла без stretch-эффекта Android 12+
+/// Решает проблему исчезновения Liquid Glass при overscroll
+class NoStretchScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    // Возвращаем child без overscroll indicator (без stretch эффекта)
+    return child;
+  }
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    // Используем ClampingScrollPhysics вместо дефолтного BouncingScrollPhysics/StretchingScrollPhysics
+    return const ClampingScrollPhysics();
+  }
+}
 void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -257,6 +276,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
           if (!_isInitialized && _initError == null) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
+              scrollBehavior: NoStretchScrollBehavior(),
               home: const KetroyStyleSplashScreen(),
               theme: AppTheme.lightThemeMode,
             );
@@ -266,6 +286,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
           if (_initError != null) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
+              scrollBehavior: NoStretchScrollBehavior(),
               home: ErrorApp(error: _initError!),
               theme: AppTheme.lightThemeMode,
             );
@@ -325,7 +346,6 @@ class _KetroyAppState extends State<KetroyApp> {
           BlocProvider(create: (context) => serviceLocator<PartnersBloc>()),
           BlocProvider(create: (context) => serviceLocator<NotificationBloc>()),
           BlocProvider(create: (context) => serviceLocator<AiBloc>()),
-          BlocProvider(create: (context) => serviceLocator<BonusBloc>())
         ],
         child: MyApp(),
       ),
@@ -348,6 +368,10 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       title: 'Ketroy App',
       theme: AppTheme.lightThemeMode,
+      
+      // ✅ Отключаем stretch overscroll эффект Android 12+
+      // Это предотвращает исчезновение Liquid Glass при растягивании экрана
+      scrollBehavior: NoStretchScrollBehavior(),
       
       // Localization configuration
       locale: locService.locale,
@@ -429,28 +453,6 @@ class _BrandedLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisSize:
-              MainAxisSize.min, // Минимальный размер, не растягивается
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Брендовый лого (опционально)
-            Image.asset(
-              'images/logoK.png',
-              width: 80,
-              height: 80,
-              errorBuilder: (context, error, stackTrace) =>
-                  const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 24),
-            // Компактный брендовый спиннер
-            const Loader(size: 36, strokeWidth: 3),
-          ],
-        ),
-      ),
-    );
+    return const BrandedLoadingScreen();
   }
 }

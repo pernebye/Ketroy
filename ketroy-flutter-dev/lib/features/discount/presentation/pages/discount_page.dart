@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:share_plus/share_plus.dart';
 import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
@@ -86,32 +86,34 @@ class _DiscountPageState extends State<DiscountPage>
     final l10n = AppLocalizations.of(context)!;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocConsumer<DiscountBloc, DiscountState>(
-          listenWhen: (previous, current) {
-            // Слушаем только когда статус изменился с не-success/failure на success/failure
-            return previous.status != current.status;
-          },
-          listener: (context, state) {
-            if (state.isSuccess) {
-              _showSuccessDialog(context, state, l10n);
-              // Сбрасываем статус после показа диалога
-              context.read<DiscountBloc>().add(ResetStatus());
-            } else if (state.isFailure) {
-              _showErrorDialog(context, state, l10n);
-              // Сбрасываем статус после показа диалога
-              context.read<DiscountBloc>().add(ResetStatus());
-            }
-          },
-          builder: (context, state) {
-            if (state.promoCode != null) {
-              codeController.text = state.promoCode!;
-            } else if (codeController.text.isEmpty) {
-              codeController.text = l10n.yourPromocode;
-            }
-            return _buildContent(state, l10n);
-          },
+      child: SwipeBackWrapper(
+        child: Scaffold(
+          backgroundColor: _cardBg,
+          body: BlocConsumer<DiscountBloc, DiscountState>(
+            listenWhen: (previous, current) {
+              // Слушаем только когда статус изменился с не-success/failure на success/failure
+              return previous.status != current.status;
+            },
+            listener: (context, state) {
+              if (state.isSuccess) {
+                _showSuccessDialog(context, state, l10n);
+                // Сбрасываем статус после показа диалога
+                context.read<DiscountBloc>().add(ResetStatus());
+              } else if (state.isFailure) {
+                _showErrorDialog(context, state, l10n);
+                // Сбрасываем статус после показа диалога
+                context.read<DiscountBloc>().add(ResetStatus());
+              }
+            },
+            builder: (context, state) {
+              if (state.promoCode != null) {
+                codeController.text = state.promoCode!;
+              } else if (codeController.text.isEmpty) {
+                codeController.text = l10n.yourPromocode;
+              }
+              return _buildContent(state, l10n);
+            },
+          ),
         ),
       ),
     );
@@ -152,20 +154,14 @@ class _DiscountPageState extends State<DiscountPage>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          GestureDetector(
+          LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
           Expanded(

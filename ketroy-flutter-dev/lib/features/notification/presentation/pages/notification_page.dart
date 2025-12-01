@@ -84,71 +84,74 @@ class _NotificationPageState extends State<NotificationPage>
       case NotificationFilter.unread:
         return notifications.where((n) => !n.isRead).toList();
       case NotificationFilter.debit:
+        // Бонусы, ДР, лояльность
+        final bonusLabels = ['bonus', 'bonuses', 'debit', 'birthday', 'loyalty', 'loyalty_level_up'];
         return notifications
-            .where((n) =>
-                n.label?.toLowerCase() == 'bonus' ||
-                n.label?.toLowerCase() == 'debit')
+            .where((n) => bonusLabels.contains(n.label?.toLowerCase()))
             .toList();
       case NotificationFilter.gifts:
+        // Подарки, сертификаты
+        final giftLabels = ['gift', 'gifts', 'new_gift', 'gift_received', 'gift_issuance', 
+                           'pending_gift', 'lottery', 'certificate', 'certificates'];
         return notifications
-            .where((n) =>
-                n.label?.toLowerCase() == 'gift' ||
-                n.label?.toLowerCase() == 'certificate')
+            .where((n) => giftLabels.contains(n.label?.toLowerCase()))
             .toList();
       case NotificationFilter.discounts:
+        // Скидки, промокоды, реферальная программа
+        final discountLabels = ['discount', 'discounts', 'promo', 'promo_code', 'promocode', 
+                               'referral', 'referral_applied'];
         return notifications
-            .where((n) =>
-                n.label?.toLowerCase() == 'discount' ||
-                n.label?.toLowerCase() == 'promo')
+            .where((n) => discountLabels.contains(n.label?.toLowerCase()))
             .toList();
       case NotificationFilter.news:
+        // Новости, информационные
+        final newsLabels = ['news', 'info', 'information', 'reminder', 'custom_push', 'broadcast', 'promotion'];
         return notifications
-            .where((n) =>
-                n.label?.toLowerCase() == 'news' ||
-                n.label?.toLowerCase() == 'info' ||
-                n.label?.toLowerCase() == 'reminder')
+            .where((n) => newsLabels.contains(n.label?.toLowerCase()))
             .toList();
       case NotificationFilter.system:
+        // Системные, тестовые
+        final systemLabels = ['system', 'test'];
         return notifications
-            .where((n) =>
-                n.label?.toLowerCase() == 'system' ||
-                n.label?.toLowerCase() == 'test')
+            .where((n) => systemLabels.contains(n.label?.toLowerCase()))
             .toList();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: BlocConsumer<NotificationBloc, NotificationState>(
-          listener: (BuildContext context, NotificationState state) {
-            if (state.isSuccess) {
-              _updateBadgeCount(state);
-            }
-          },
-          builder: (BuildContext context, NotificationState state) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // === Custom AppBar ===
-                _buildCustomAppBar(),
+    return SwipeBackWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: BlocConsumer<NotificationBloc, NotificationState>(
+            listener: (BuildContext context, NotificationState state) {
+              if (state.isSuccess) {
+                _updateBadgeCount(state);
+              }
+            },
+            builder: (BuildContext context, NotificationState state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // === Custom AppBar ===
+                  _buildCustomAppBar(),
 
-                // === Filter Tabs ===
-                _buildFilterTabs(),
+                  // === Filter Tabs ===
+                  _buildFilterTabs(),
 
-                // === Content ===
-                Expanded(
-                  child: _buildContent(state),
-                ),
+                  // === Content ===
+                  Expanded(
+                    child: _buildContent(state),
+                  ),
 
-                // === Кнопка "Прочитать все" ===
-                if (state.isSuccess && state.notificationList.isNotEmpty)
-                  _buildMarkAllReadButton(state),
-              ],
-            );
-          },
+                  // === Кнопка "Прочитать все" ===
+                  if (state.isSuccess && state.notificationList.isNotEmpty)
+                    _buildMarkAllReadButton(state),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

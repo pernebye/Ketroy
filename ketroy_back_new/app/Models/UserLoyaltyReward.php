@@ -62,3 +62,4 @@ class UserLoyaltyReward extends Model
 
 
 
+

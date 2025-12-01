@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/features/active_gifts/presentation/view_model/all_gifts_view_model.dart';
 import 'package:ketroy_app/features/active_gifts/widgets/my_gifts_widget.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/bloc/gifts_bloc.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gift_selection_page.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/notification_services.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:provider/provider.dart';
 
 class MyGifts extends StatelessWidget {
@@ -145,11 +145,10 @@ class _MyGiftsContentState extends State<MyGiftsContent>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: widget.showBackButton ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        backgroundColor: _cardBg,
-        body: BlocConsumer<GiftsBloc, GiftsState>(
+    
+    Widget scaffold = Scaffold(
+      backgroundColor: _cardBg,
+      body: BlocConsumer<GiftsBloc, GiftsState>(
           listener: (context, state) {
             if (state.isActivate) {
               _showActivationSuccessDialog(context, state, l10n);
@@ -259,7 +258,17 @@ class _MyGiftsContentState extends State<MyGiftsContent>
             );
           },
         ),
-      ),
+    );
+    
+    // Обёртываем в SwipeBackWrapper только когда есть кнопка назад
+    // (когда открыт из профиля, а не как вкладка навбара)
+    if (widget.showBackButton) {
+      scaffold = SwipeBackWrapper(child: scaffold);
+    }
+    
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: widget.showBackButton ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: scaffold,
     );
   }
 
@@ -321,20 +330,14 @@ class _MyGiftsContentState extends State<MyGiftsContent>
       child: Row(
         children: [
           if (widget.showBackButton)
-            GestureDetector(
+            LiquidGlassButton(
               onTap: () => Navigator.pop(context),
-              child: LiquidGlass.withOwnLayer(
-                settings: AppLiquidGlassSettings.button,
-                shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-                child: SizedBox(
-                  width: 44.w,
-                  height: 44.w,
-                  child: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                ),
+              width: 44.w,
+              height: 44.w,
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20.sp,
               ),
             )
           else

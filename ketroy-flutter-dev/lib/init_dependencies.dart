@@ -16,11 +16,6 @@ import 'package:ketroy_app/features/auth/domain/use_cases/sign_up_with_phone.dar
 import 'package:ketroy_app/features/auth/domain/use_cases/sms_auth.dart';
 import 'package:ketroy_app/features/auth/domain/use_cases/update_user.dart';
 import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:ketroy_app/features/bonus/data/data_source/bonus_data_source.dart';
-import 'package:ketroy_app/features/bonus/data/repository/bonus_repository_impl.dart';
-import 'package:ketroy_app/features/bonus/domain/repository/bonus_repository.dart';
-import 'package:ketroy_app/features/bonus/domain/usecases/get_bonuses.dart';
-import 'package:ketroy_app/features/bonus/presentation/bloc/bonus_bloc.dart';
 import 'package:ketroy_app/features/certificates/presentation/bloc/certificate_bloc.dart';
 import 'package:ketroy_app/features/discount/data/data_source/discount_data_source.dart';
 import 'package:ketroy_app/features/discount/data/repository/discount_repository_impl.dart';
@@ -109,7 +104,6 @@ Future<void> initDependencies() async {
   initPartners();
   initNotification();
   initAi();
-  initBonuses();
 }
 
 void initAuth() {
@@ -318,15 +312,3 @@ void initAi() {
         ));
 }
 
-void initBonuses() {
-  //DataSource
-  serviceLocator
-    ..registerFactory<BonusDataSource>(() => BonusDataSourceImpl())
-    //Repository
-    ..registerFactory<BonusRepository>(
-        () => BonusRepositoryImpl(serviceLocator()))
-    //Usecase
-    ..registerFactory(() => GetBonuses(serviceLocator()))
-    //bloc
-    ..registerLazySingleton(() => BonusBloc(getBonuses: serviceLocator()));
-}
