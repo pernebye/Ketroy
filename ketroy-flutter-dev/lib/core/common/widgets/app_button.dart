@@ -165,6 +165,34 @@ class _AppButtonState extends State<AppButton>
 // Использует библиотеку liquid_glass_renderer для аутентичного эффекта
 // ============================================================================
 
+/// Стандартные настройки для LiquidGlass эффектов в приложении
+/// Используется везде для консистентного Apple-like вида
+class AppLiquidGlassSettings {
+  static const LiquidGlassSettings standard = LiquidGlassSettings(
+    thickness: 12,
+    blur: 8,
+    glassColor: Color(0x28FFFFFF),
+    lightIntensity: 1.2,
+    saturation: 1.15,
+  );
+  
+  static const LiquidGlassSettings button = LiquidGlassSettings(
+    thickness: 10,
+    blur: 6,
+    glassColor: Color(0x22FFFFFF),
+    lightIntensity: 1.0,
+    saturation: 1.1,
+  );
+  
+  static const LiquidGlassSettings navBar = LiquidGlassSettings(
+    thickness: 15,
+    blur: 10,
+    glassColor: Color(0x30FFFFFF),
+    lightIntensity: 1.3,
+    saturation: 1.2,
+  );
+}
+
 class GlassMorphism extends StatelessWidget {
   const GlassMorphism({
     super.key,
@@ -196,6 +224,7 @@ class GlassMorphism extends StatelessWidget {
           minHeight: height ?? 53.h,
         ),
         child: LiquidGlass.withOwnLayer(
+          settings: AppLiquidGlassSettings.button,
           shape: LiquidRoundedSuperellipse(borderRadius: borderRadius.r),
           child: Padding(
             padding: padding,

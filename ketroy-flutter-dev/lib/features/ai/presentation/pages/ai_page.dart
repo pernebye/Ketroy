@@ -160,7 +160,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                     color: _accentGreen.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.camera_alt, color: _primaryGreen),
+                  child: const Icon(Icons.camera_alt, color: _primaryGreen),
                 ),
                 title: Text(l10n.takePhoto),
                 onTap: () {
@@ -176,7 +176,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                     color: _accentGreen.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.photo_library, color: _primaryGreen),
+                  child: const Icon(Icons.photo_library, color: _primaryGreen),
                 ),
                 title: Text(l10n.chooseFromGallery),
                 onTap: () {
@@ -201,7 +201,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
         imageQuality: 85,
       );
 
-      if (photo != null) {
+      if (photo != null && mounted) {
         final l10n = AppLocalizations.of(context)!;
         context.read<AiBloc>().add(SendChatImage(
               imageFile: File(photo.path),
@@ -474,7 +474,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
   Widget _buildChatHeader(AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.fromLTRB(8.w, 8.h, 20.w, 12.h),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -496,9 +496,9 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
           Container(
             width: 40.w,
             height: 40.w,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [_accentGreen, _lightGreen],
@@ -534,7 +534,7 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
                     Container(
                       width: 6.w,
                       height: 6.w,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: _accentGreen,
                       ),
@@ -666,9 +666,9 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     return Container(
       width: 32.w,
       height: 32.w,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [_lightGreen, _primaryGreen],
         ),
       ),

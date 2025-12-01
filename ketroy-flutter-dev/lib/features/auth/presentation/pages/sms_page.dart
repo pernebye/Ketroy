@@ -82,6 +82,18 @@ class _SmsBodyState extends State<SmsBody> {
   bool _isNavigating = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Сбрасываем состояние авторизации при входе на страницу
+    // Это исправляет баг с зависшим состоянием ошибки после 401
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthBloc>().add(const AuthResetState());
+      }
+    });
+  }
+
+  @override
   void dispose() {
     smsCodeController.dispose();
     super.dispose();

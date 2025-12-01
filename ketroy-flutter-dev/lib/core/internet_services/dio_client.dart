@@ -16,6 +16,14 @@ class DioClient {
   }
 
   static final instance = DioClient._();
+  
+  /// Stream для оповещения о 401 ошибках авторизации
+  /// Подписчики могут сбросить состояние авторизации при получении события
+  static final StreamController<void> _authErrorController = 
+      StreamController<void>.broadcast();
+  
+  /// Stream для прослушивания ошибок авторизации (401)
+  static Stream<void> get onAuthError => _authErrorController.stream;
 
   late final Dio _dio;
 
@@ -50,6 +58,8 @@ class DioClient {
           // Токен истёк - очищаем данные
           await UserDataManager.clearUserData();
           debugPrint('⚠️ Token expired, user data cleared');
+          // Оповещаем о необходимости сброса состояния авторизации
+          _authErrorController.add(null);
         }
         return handler.next(error);
       },
@@ -106,10 +116,12 @@ class DioClient {
   }
 
   /// GET запрос (возвращает List)
+  /// [listKey] - ключ для извлечения списка из Map ответа (например, 'data' или 'cities')
   Future<List<dynamic>> getList(
     String path, {
     Map<String, dynamic>? queryParameters,
     bool needToken = false,
+    String? listKey,
   }) async {
     final token = await UserDataManager.getToken();
     try {
@@ -120,7 +132,30 @@ class DioClient {
             Options(headers: _getHeaders(needToken: needToken, token: token)),
       );
       if (response.statusCode == 200) {
-        return response.data;
+        final data = response.data;
+        // Если ответ уже List - возвращаем как есть
+        if (data is List) {
+          return data;
+        }
+        // Если ответ Map - извлекаем список по ключу
+        if (data is Map<String, dynamic>) {
+          if (listKey != null && data.containsKey(listKey)) {
+            return data[listKey] as List<dynamic>;
+          }
+          // Автоопределение: если Map с одним ключом-списком
+          final listEntries = data.entries.where((e) => e.value is List);
+          if (listEntries.length == 1) {
+            return listEntries.first.value as List<dynamic>;
+          }
+          throw DioException(
+            requestOptions: response.requestOptions,
+            message: 'Ответ API - Map, но listKey не указан или не найден',
+          );
+        }
+        throw DioException(
+          requestOptions: response.requestOptions,
+          message: 'Неожиданный формат ответа: ${data.runtimeType}',
+        );
       }
       throw DioException(
         requestOptions: response.requestOptions,

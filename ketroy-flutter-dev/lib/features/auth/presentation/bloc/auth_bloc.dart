@@ -46,16 +46,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _cityNames = cityNames,
         _postPromoCode = postPromoCode,
         super(const AuthState()) {
-    on<AuthEvent>((_, emit) => emit(state.copyWith(
-        status: AuthStatus.initial,
-        profileStatus: ProfileStatus.loading,
-        verifyCodeStatus: VerifyCodeStatus.initial)));
+    on<AuthResetState>(_resetState);
     on<AuthSendVerifyCode>(_sendVerifyCodeFetch);
     on<AuthLoginSendCode>(_loginSendCodeFetch);
     on<AuthSmsSend>(_authSmsSendFetch);
     on<AuthSignUpWithPhone>(_authSignUpWithPhoneFetch);
     on<CountryCodesFetch>(_countryCodesFetch);
     on<CityNamesFetch>(_cityNamesFetch);
+  }
+
+  /// Сброс состояния авторизации
+  /// Используется при повторной попытке авторизации после ошибки
+  void _resetState(AuthResetState event, Emitter<AuthState> emit) {
+    emit(const AuthState());
   }
 
   void _authSignUpWithPhoneFetch(

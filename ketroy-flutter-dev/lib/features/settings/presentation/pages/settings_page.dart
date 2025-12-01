@@ -9,6 +9,7 @@ import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart'
 import 'package:ketroy_app/features/settings/presentation/pages/language_settings_page.dart';
 import 'package:ketroy_app/services/localization/localization_service.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:provider/provider.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 
@@ -125,6 +126,7 @@ class _SettingsPageState extends State<SettingsPage>
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

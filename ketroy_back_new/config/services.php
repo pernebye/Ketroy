@@ -70,11 +70,11 @@ return [
         'base_url' => env('ONE_C_BASE_URL'),
         'username' => env('ONE_C_USERNAME'),
         'password' => env('ONE_C_PASSWORD'),
-        'token' => env('ONE_C_TOKEN'),
+        'token' => env('API_1C_TOKEN') ?? env('ONE_C_TOKEN'), // API_1C_TOKEN используется в middleware
         'timeout' => env('ONE_C_TIMEOUT', 30),
         'retry_times' => env('ONE_C_RETRY_TIMES', 3),
         'retry_sleep' => env('ONE_C_RETRY_SLEEP', 1000), // миллисекунды
-        'webhook_secret' => env('ONE_C_WEBHOOK_SECRET'), // Секрет для проверки webhook-ов от 1С
+        'webhook_secret' => env('API_1C_TOKEN') ?? env('ONE_C_WEBHOOK_SECRET') ?? env('ONE_C_TOKEN'), // Секрет для проверки webhook-ов от 1С
     ],
 
 ];

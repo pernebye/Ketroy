@@ -9,10 +9,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ketroy_app/core/common/widgets/bonus_card.dart';
 import 'package:ketroy_app/core/constants/shop_contacts.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:ketroy_app/core/util/launch_url.dart';
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
+import 'package:ketroy_app/features/auth/presentation/bloc/auth_bloc.dart' hide GetProfileUserFetch;
 import 'package:ketroy_app/features/auth/presentation/pages/login_page.dart';
 import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
@@ -395,6 +397,7 @@ class _ProfilePageState extends State<ProfilePage>
     return GestureDetector(
       onTap: onTap,
       child: LiquidGlass.withOwnLayer(
+        settings: AppLiquidGlassSettings.button,
         shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
         child: SizedBox(
           width: 44.w,
@@ -1211,6 +1214,9 @@ class _ProfilePageState extends State<ProfilePage>
     sharedService.passed = false;
     sharedService.profilePassed = false;
     sharedService.deviceTokenPassed = false;
+    
+    // Сбрасываем состояние авторизации для чистого входа
+    context.read<AuthBloc>().add(const AuthResetState());
 
     if (mounted) {
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
@@ -1224,6 +1230,9 @@ class _ProfilePageState extends State<ProfilePage>
     sharedService.passed = false;
     sharedService.profilePassed = false;
     sharedService.deviceTokenPassed = false;
+    
+    // Сбрасываем состояние авторизации для чистого входа
+    context.read<AuthBloc>().add(const AuthResetState());
     context.read<ProfileBloc>().add(LogOutFetch());
 
     if (mounted) {

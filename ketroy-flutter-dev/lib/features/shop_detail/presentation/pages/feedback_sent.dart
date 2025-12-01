@@ -9,6 +9,7 @@ import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bl
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 
 class FeedbackSent extends StatefulWidget {
   final int id;
@@ -121,6 +122,7 @@ class _FeedbackSentState extends State<FeedbackSent>
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

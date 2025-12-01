@@ -17,7 +17,15 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class SignUpPage extends StatefulWidget {
   final List<Menu> codes;
-  const SignUpPage({super.key, required this.codes});
+  final String? initialPhone;
+  final int? initialCountryCode;
+  
+  const SignUpPage({
+    super.key, 
+    required this.codes,
+    this.initialPhone,
+    this.initialCountryCode,
+  });
 
   static Route route({required List<Menu> codes}) {
     return MaterialPageRoute(builder: (context) {
@@ -53,6 +61,31 @@ class _SignUpPageState extends State<SignUpPage> {
     super.initState();
     phoneController.addListener(_onPhoneChanged);
     _loadPhoneVerificationStatus();
+    
+    // Сбрасываем состояние авторизации при входе на страницу
+    // Это исправляет баг с зависшим состоянием ошибки после 401
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthBloc>().add(const AuthResetState());
+      }
+    });
+    
+    // Инициализация начальных значений если переданы
+    if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
+      // Форматируем номер для маски (###) ###-##-##
+      final phone = widget.initialPhone!;
+      if (phone.length >= 10) {
+        final formatted = '(${phone.substring(0, 3)}) ${phone.substring(3, 6)}-${phone.substring(6, 8)}-${phone.substring(8)}';
+        phoneController.text = formatted;
+        maskFormatter.formatEditUpdate(
+          const TextEditingValue(text: ''),
+          TextEditingValue(text: formatted),
+        );
+      }
+    }
+    if (widget.initialCountryCode != null) {
+      selectedValue = widget.initialCountryCode!;
+    }
   }
 
   Future<void> _loadPhoneVerificationStatus() async {

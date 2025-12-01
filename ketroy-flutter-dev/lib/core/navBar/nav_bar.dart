@@ -1355,6 +1355,7 @@ class _NavBarState extends State<NavBar> {
       ),
       height: NavBar.navBarHeight.h,
       child: LiquidGlass.withOwnLayer(
+        settings: AppLiquidGlassSettings.navBar,
         shape: LiquidRoundedSuperellipse(borderRadius: 36.r),
         child: Stack(
           clipBehavior: Clip.none,
@@ -1740,6 +1741,7 @@ class _LiquidGlassNotificationButtonState
     return GestureDetector(
       onTap: widget.onTap,
       child: LiquidGlass.withOwnLayer(
+        settings: AppLiquidGlassSettings.button,
         shape: LiquidRoundedSuperellipse(borderRadius: 16.r),
         child: SizedBox(
           width: 44.w,

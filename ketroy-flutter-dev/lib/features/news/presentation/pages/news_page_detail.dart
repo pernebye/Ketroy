@@ -17,6 +17,7 @@ import 'package:ketroy_app/features/news/presentation/widgets/video_player_widge
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:video_player/video_player.dart';
 
 class NewsPageDetail extends StatefulWidget {
@@ -811,6 +812,7 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton> {
     return GestureDetector(
       onTap: widget.onTap,
       child: LiquidGlass.withOwnLayer(
+        settings: AppLiquidGlassSettings.button,
         shape: LiquidRoundedSuperellipse(borderRadius: 14.r),
         child: SizedBox(
           width: 44.w,
@@ -981,6 +983,7 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
             ],
           ),
           child: LiquidGlass.withOwnLayer(
+            settings: AppLiquidGlassSettings.button,
             shape: LiquidRoundedSuperellipse(borderRadius: 30.r),
             child: SizedBox(
               width: 60.w,

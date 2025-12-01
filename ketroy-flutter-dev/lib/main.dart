@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chottu_link/chottu_link.dart';
+import 'package:ketroy_app/core/internet_services/dio_client.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -277,10 +278,33 @@ class _SplashWrapperState extends State<SplashWrapper> {
   }
 }
 
-class KetroyApp extends StatelessWidget {
+class KetroyApp extends StatefulWidget {
   const KetroyApp({
     super.key,
   });
+
+  @override
+  State<KetroyApp> createState() => _KetroyAppState();
+}
+
+class _KetroyAppState extends State<KetroyApp> {
+  late final StreamSubscription<void> _authErrorSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Слушаем ошибки авторизации (401) и сбрасываем состояние AuthBloc
+    _authErrorSubscription = DioClient.onAuthError.listen((_) {
+      debugPrint('🔄 Auth error detected, resetting AuthBloc state');
+      serviceLocator<AuthBloc>().add(const AuthResetState());
+    });
+  }
+
+  @override
+  void dispose() {
+    _authErrorSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

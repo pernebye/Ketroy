@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/bonus/presentation/bloc/bonus_bloc.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 
 class BonusPage extends StatefulWidget {
   const BonusPage({super.key});
@@ -98,6 +99,7 @@ class _BonusPageState extends State<BonusPage>
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

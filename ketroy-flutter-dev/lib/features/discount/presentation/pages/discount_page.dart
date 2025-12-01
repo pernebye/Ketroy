@@ -7,6 +7,7 @@ import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dar
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:share_plus/share_plus.dart';
 
 class DiscountPage extends StatefulWidget {
@@ -156,6 +157,7 @@ class _DiscountPageState extends State<DiscountPage>
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

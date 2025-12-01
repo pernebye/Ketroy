@@ -75,3 +75,9 @@ final class UpdateUserFetch extends AuthEvent {
 }
 
 final class GetProfileUserFetch extends AuthEvent {}
+
+/// Событие для сброса состояния авторизации
+/// Используется при повторной попытке авторизации после ошибки 401
+final class AuthResetState extends AuthEvent {
+  const AuthResetState();
+}

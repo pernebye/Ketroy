@@ -45,6 +45,18 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    // Сбрасываем состояние авторизации при входе на страницу
+    // Это исправляет баг с зависшим состоянием ошибки после 401
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthBloc>().add(const AuthResetState());
+      }
+    });
+  }
+
+  @override
   void dispose() {
     super.dispose();
     controller.dispose();

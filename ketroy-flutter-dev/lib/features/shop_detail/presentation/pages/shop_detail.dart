@@ -12,6 +12,7 @@ import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bl
 import 'package:ketroy_app/features/shop_detail/presentation/pages/feedback_sent.dart';
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 
 class ShopDetail extends StatefulWidget {
   const ShopDetail({super.key, required this.userId, required this.shopData});
@@ -244,6 +245,7 @@ class _ShopDetailState extends State<ShopDetail>
           child: GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

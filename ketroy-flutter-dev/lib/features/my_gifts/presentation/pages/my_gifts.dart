@@ -11,6 +11,7 @@ import 'package:ketroy_app/features/my_gifts/presentation/pages/gift_selection_p
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/notification_services.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:provider/provider.dart';
 
 class MyGifts extends StatelessWidget {
@@ -279,6 +280,7 @@ class _MyGiftsContentState extends State<MyGiftsContent>
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: LiquidGlass.withOwnLayer(
+                settings: AppLiquidGlassSettings.button,
                 shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
                 child: SizedBox(
                   width: 44.w,

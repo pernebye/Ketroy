@@ -15,6 +15,7 @@ import 'package:ketroy_app/features/profile/presentation/pages/city_selection_pa
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 import 'package:ketroy_app/l10n/app_localizations.dart';
 
 class ProfileDetailPage extends StatefulWidget {
@@ -151,6 +152,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: LiquidGlass.withOwnLayer(
+              settings: AppLiquidGlassSettings.button,
               shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
               child: SizedBox(
                 width: 44.w,

@@ -11,6 +11,7 @@ import 'package:ketroy_app/features/shop_detail/presentation/pages/shop_detail.d
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
 
 class ShopPage extends StatefulWidget {
   final bool pop;
@@ -215,6 +216,7 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: LiquidGlass.withOwnLayer(
+                settings: AppLiquidGlassSettings.button,
                 shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
                 child: SizedBox(
                   width: 44.w,
