@@ -580,6 +580,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get send => 'Gönder';
 
   @override
+  String get photoPreview => 'Önizleme';
+
+  @override
   String get error => 'Hata';
 
   @override

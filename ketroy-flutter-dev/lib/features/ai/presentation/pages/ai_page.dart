@@ -10,8 +10,10 @@ import 'package:ketroy_app/core/widgets/loader.dart';
 import 'package:ketroy_app/features/ai/data/models/chat_message_model.dart';
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
 import 'package:ketroy_app/features/ai/presentation/pages/label_scanner_sheet.dart';
+import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
+import 'package:ketroy_app/services/localization/localization_service.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
 
 class AiPage extends StatefulWidget {
@@ -32,6 +34,11 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final ImagePicker _imagePicker = ImagePicker();
+
+  // Кэшированное состояние авторизации
+  bool? _isLoggedIn;
+  bool _isCheckingAuth = true;
+  int _lastAuthVersion = -1;
 
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
@@ -77,6 +84,21 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     });
 
     _messageController.forward();
+    
+    // Проверяем авторизацию при инициализации
+    _checkAuth();
+  }
+
+  /// Проверка авторизации с кэшированием результата
+  Future<void> _checkAuth() async {
+    final isLoggedIn = await UserDataManager.isUserLoggedIn();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = isLoggedIn;
+        _isCheckingAuth = false;
+        _lastAuthVersion = UserDataManager.authStateNotifier.value;
+      });
+    }
   }
 
   @override
@@ -119,10 +141,14 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    final l10n = AppLocalizations.of(context)!;
+    // Получаем правильный код языка для AI напрямую из LocalizationService singleton
+    final locService = serviceLocator<LocalizationService>();
+    final languageCode = locService.getLanguageCodeForAI();
+    debugPrint('💬 AiPage: Sending message with language: $languageCode');
+    
     context.read<AiBloc>().add(SendChatMessage(
           message: text,
-          languageCode: l10n.localeName,
+          languageCode: languageCode,
         ));
 
     _textController.clear();
@@ -203,9 +229,14 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
 
       if (photo != null && mounted) {
         final l10n = AppLocalizations.of(context)!;
+        // Получаем правильный код языка для AI напрямую из LocalizationService singleton
+        final locService = serviceLocator<LocalizationService>();
+        final languageCode = locService.getLanguageCodeForAI();
+        debugPrint('📷 AiPage: Capturing image with language: $languageCode');
+        
         context.read<AiBloc>().add(SendChatImage(
               imageFile: File(photo.path),
-              languageCode: l10n.localeName,
+              languageCode: languageCode,
               message: l10n.analyzeThisLabel,
             ));
         _scrollToBottom();
@@ -245,64 +276,67 @@ class _AiPageState extends State<AiPage> with TickerProviderStateMixin {
         body: ValueListenableBuilder<int>(
           valueListenable: UserDataManager.authStateNotifier,
           builder: (context, authVersion, _) {
-            return FutureBuilder<bool>(
-              key: ValueKey('auth_check_$authVersion'),
-              future: UserDataManager.isUserLoggedIn(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Loader();
+            // Проверяем авторизацию только если версия изменилась
+            if (authVersion != _lastAuthVersion && !_isCheckingAuth) {
+              // Запускаем проверку асинхронно, не блокируя UI
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _checkAuth();
+              });
+            }
+
+            // Показываем загрузку только при первой проверке
+            if (_isCheckingAuth && _isLoggedIn == null) {
+              return const Loader();
+            }
+
+            final isLoggedIn = _isLoggedIn ?? false;
+
+            if (!isLoggedIn) {
+              return _buildLoginDialog(context, l10n);
+            }
+
+            return BlocConsumer<AiBloc, AiState>(
+              listener: (context, state) {
+                if (state.isFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message ?? l10n.errorOccurred),
+                      backgroundColor: Colors.red.shade700,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
                 }
-
-                final isLoggedIn = snapshot.data ?? false;
-
-                if (!isLoggedIn) {
-                  return _buildLoginDialog(context, l10n);
+                if (state.chatMessages.isNotEmpty) {
+                  _scrollToBottom();
                 }
-
-                return BlocConsumer<AiBloc, AiState>(
-                  listener: (context, state) {
-                    if (state.isFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.message ?? l10n.errorOccurred),
-                          backgroundColor: Colors.red.shade700,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
-                    }
-                    if (state.chatMessages.isNotEmpty) {
-                      _scrollToBottom();
-                    }
-                    
-                    // Управление видимостью навбара при изменении состояния чата
-                    NavScreen.globalKey.currentState?.setNavBarVisibility(!state.isChatActive);
-                    
-                    // Анимация перехода к чату
-                    if (state.isChatActive && _transitionController.value == 0) {
-                      _transitionController.forward();
-                    }
-                    
-                    // Сброс анимации при закрытии чата
-                    if (!state.isChatActive && _transitionController.value > 0) {
-                      _transitionController.reset();
-                    }
-                  },
-                  builder: (context, state) {
-                    return Stack(
-                      children: [
-                        _buildBackground(),
-                        SafeArea(
-                          bottom: false,
-                          child: state.isChatActive
-                              ? _buildChatMode(state, l10n)
-                              : _buildInitialMode(state, l10n),
-                        ),
-                      ],
-                    );
-                  },
+                
+                // Управление видимостью навбара при изменении состояния чата
+                NavScreen.globalKey.currentState?.setNavBarVisibility(!state.isChatActive);
+                
+                // Анимация перехода к чату
+                if (state.isChatActive && _transitionController.value == 0) {
+                  _transitionController.forward();
+                }
+                
+                // Сброс анимации при закрытии чата
+                if (!state.isChatActive && _transitionController.value > 0) {
+                  _transitionController.reset();
+                }
+              },
+              builder: (context, state) {
+                return Stack(
+                  children: [
+                    _buildBackground(),
+                    SafeArea(
+                      bottom: false,
+                      child: state.isChatActive
+                          ? _buildChatMode(state, l10n)
+                          : _buildInitialMode(state, l10n),
+                    ),
+                  ],
                 );
               },
             );

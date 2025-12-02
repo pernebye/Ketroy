@@ -581,6 +581,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get send => 'Отправить';
 
   @override
+  String get photoPreview => 'Предпросмотр';
+
+  @override
   String get error => 'Ошибка';
 
   @override

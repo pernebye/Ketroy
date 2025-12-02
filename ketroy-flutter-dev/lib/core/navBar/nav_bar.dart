@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -1291,16 +1292,21 @@ class _NavBarState extends State<NavBar> {
           as RenderRepaintBoundary?;
       if (boundary == null || !boundary.hasSize) return;
       
-      // Проверяем, что рендеринг завершён
-      if (boundary.debugNeedsPaint) return;
+      // На iOS не проверяем debugNeedsPaint - может блокировать анализ
+      // На Android оставляем проверку для оптимизации
+      if (!Platform.isIOS && boundary.debugNeedsPaint) return;
 
+      // iOS требует более высокий pixelRatio для корректного захвата
+      final pixelRatio = Platform.isIOS ? 0.2 : 0.1;
+      
       // Захватываем изображение области под навбаром
-      final image = await boundary.toImage(
-          pixelRatio: 0.1); // Низкое разрешение для скорости
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
-      if (byteData == null) return;
+      if (byteData == null) {
+        image.dispose();
+        return;
+      }
 
       // Анализируем только нижнюю часть изображения (где NavBar)
       final width = image.width;
@@ -1327,6 +1333,8 @@ class _NavBarState extends State<NavBar> {
         }
       }
 
+      image.dispose();
+      
       if (pixelCount == 0) return;
 
       final avgLuminance = totalLuminance / pixelCount;
@@ -1338,10 +1346,8 @@ class _NavBarState extends State<NavBar> {
           _isDarkBackground = isDark;
         });
       }
-
-      image.dispose();
     } catch (e) {
-      // Игнорируем ошибки захвата (может произойти во время анимаций)
+      // Логируем ошибки для диагностики
       debugPrint('NavBar luminance analysis error: $e');
     }
   }
@@ -1703,14 +1709,19 @@ class _LiquidGlassNotificationButtonState
           as RenderRepaintBoundary?;
       if (boundary == null || !boundary.hasSize) return;
       
-      // Проверяем, что рендеринг завершён
-      if (boundary.debugNeedsPaint) return;
+      // На iOS не проверяем debugNeedsPaint - может блокировать анализ
+      if (!Platform.isIOS && boundary.debugNeedsPaint) return;
 
-      final image = await boundary.toImage(pixelRatio: 0.1);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      // iOS требует более высокий pixelRatio для корректного захвата
+      final pixelRatio = Platform.isIOS ? 0.2 : 0.1;
+      
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
-      if (byteData == null) return;
+      if (byteData == null) {
+        image.dispose();
+        return;
+      }
 
       final width = image.width;
       final height = image.height;
@@ -1737,6 +1748,8 @@ class _LiquidGlassNotificationButtonState
         }
       }
 
+      image.dispose();
+      
       if (pixelCount == 0) return;
 
       final avgLuminance = totalLuminance / pixelCount;
@@ -1747,8 +1760,6 @@ class _LiquidGlassNotificationButtonState
           _isDarkBackground = isDark;
         });
       }
-
-      image.dispose();
     } catch (e) {
       debugPrint('Notification button luminance analysis error: $e');
     }

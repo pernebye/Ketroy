@@ -577,6 +577,9 @@ class AppLocalizationsKk extends AppLocalizations {
   String get send => 'Жіберу';
 
   @override
+  String get photoPreview => 'Алдын ала қарау';
+
+  @override
   String get error => 'Қате';
 
   @override

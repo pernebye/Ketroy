@@ -15,6 +15,8 @@ Future<bool?> showQrScannerSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     useRootNavigator: true, // Открываем поверх навбара
+    isDismissible: true,
+    enableDrag: true,
     builder: (context) => const QrScannerSheet(),
   );
 }
@@ -53,8 +55,10 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
   @override
   void dispose() {
+    _pulseController.stop();
     _subscription?.cancel();
-    // QRViewController self-disposes when un-mounted
+    qrViewController?.pauseCamera();
+    qrViewController?.dispose();
     _pulseController.dispose();
     super.dispose();
   }
@@ -88,20 +92,59 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     HapticFeedback.lightImpact();
   }
 
+  Future<void> _cleanupResources() async {
+    // Останавливаем анимацию
+    _pulseController.stop();
+    
+    // Отменяем подписку
+    await _subscription?.cancel();
+    _subscription = null;
+    
+    // Останавливаем камеру
+    await qrViewController?.pauseCamera();
+    qrViewController?.dispose();
+    qrViewController = null;
+  }
+
+  Future<void> _closeSheet() async {
+    await _cleanupResources();
+    
+    // Закрываем шторку
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return BlocListener<ProfileBloc, ProfileState>(
-      listener: (context, state) {
-        if (state.isQrSuccess) {
-          Navigator.pop(context, true);
-          showSnackBar(context, AppLocalizations.of(context)!.qrCodeScannedSuccess);
-        } else if (state.isQrFailure) {
-          Navigator.pop(context, false);
-          showSnackBar(context, state.message ?? 'Ошибка сканирования');
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (!didPop) {
+          await _cleanupResources();
+          if (mounted) {
+            Navigator.pop(context);
+          }
         }
       },
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) async {
+          if (state.isQrSuccess) {
+            await _cleanupResources();
+            if (mounted) {
+              Navigator.pop(context, true);
+              showSnackBar(context, AppLocalizations.of(context)!.qrCodeScannedSuccess);
+            }
+          } else if (state.isQrFailure) {
+            await _cleanupResources();
+            if (mounted) {
+              Navigator.pop(context, false);
+              showSnackBar(context, state.message ?? 'Ошибка сканирования');
+            }
+          }
+        },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: BoxDecoration(
@@ -126,6 +169,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
             _buildBottomBar(bottomPadding),
           ],
         ),
+      ),
       ),
     );
   }
@@ -190,7 +234,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
           ),
           // Кнопка закрытия
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _closeSheet,
             child: Container(
               width: 36.w,
               height: 36.w,

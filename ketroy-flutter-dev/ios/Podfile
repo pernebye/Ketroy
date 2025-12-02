@@ -37,7 +37,42 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  # Получаем команду разработчика из основного проекта Runner
+  runner_project_path = File.join(File.dirname(File.realpath(__FILE__)), 'Runner.xcodeproj', 'project.pbxproj')
+  development_team = nil
+  
+  if File.exist?(runner_project_path)
+    runner_project_content = File.read(runner_project_path)
+    # Ищем команду разработчика в Debug конфигурации Runner
+    match = runner_project_content.match(/97C147061CF9000F007C117D.*?DEVELOPMENT_TEAM = ([A-Z0-9]+);/m)
+    development_team = match[1] if match
+    
+    # Если не нашли, используем YUR96P457N как fallback (команда с Apple Developer аккаунтом)
+    development_team ||= 'YUR96P457N'
+  else
+    development_team = 'YUR96P457N'
+  end
+  
+  # Устанавливаем настройки для всех pods
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+      # Отключаем подпись для Pods - они не требуют подписи
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+      # Убираем команду разработчика для Pods
+      config.build_settings.delete('DEVELOPMENT_TEAM')
+      config.build_settings.delete('CODE_SIGN_IDENTITY')
+      config.build_settings.delete('CODE_SIGN_STYLE')
+    end
+  end
+  
+  # Убеждаемся, что основной проект Runner использует правильную команду
+  if File.exist?(runner_project_path)
+    runner_project_content = File.read(runner_project_path)
+    # Заменяем все команды на найденную команду
+    runner_project_content.gsub!(/DEVELOPMENT_TEAM = [A-Z0-9]+;/, "DEVELOPMENT_TEAM = #{development_team};")
+    File.write(runner_project_path, runner_project_content)
   end
 end

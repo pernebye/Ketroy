@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:ketroy_app/features/ai/data/data_sources/ai_data_source.dart';
@@ -30,37 +31,51 @@ class AiBloc extends Bloc<AiEvent, AiState> {
   /// Обработка первичного анализа изображения
   void _sendImageToServerFetch(
       SendImageToServerFetch event, Emitter<AiState> emit) async {
+    debugPrint('🚀 AiBloc: Starting image analysis...');
     emit(state.copyWith(status: AiStatus.loading));
 
     final languageCode = event.languageCode ?? 'en';
+    debugPrint('🌐 AiBloc: Language code: $languageCode');
 
-    final res = await _getAiResponse(
-      AiParams(imageFile: event.imageFile, languageCode: languageCode),
-      null,
-    );
+    try {
+      final res = await _getAiResponse(
+        AiParams(imageFile: event.imageFile, languageCode: languageCode),
+        null,
+      );
 
-    res.fold(
-      (failure) => emit(
-        state.copyWith(status: AiStatus.failure, message: failure.message),
-      ),
-      (analyzeData) {
-        // Создаём начальные сообщения чата
-        final userMessage = ChatMessage.user(
-          content: event.userMessage ?? 'Analyze this label',
-          imageFile: event.imageFile,
-        );
-        final assistantMessage = ChatMessage.assistant(
-          content: analyzeData.analysis,
-        );
+      res.fold(
+        (failure) {
+          debugPrint('❌ AiBloc: Failure - ${failure.message}');
+          emit(
+            state.copyWith(status: AiStatus.failure, message: failure.message),
+          );
+        },
+        (analyzeData) {
+          debugPrint('✅ AiBloc: Success - Analysis received');
+          // Создаём начальные сообщения чата
+          final userMessage = ChatMessage.user(
+            content: event.userMessage ?? 'Analyze this label',
+            imageFile: event.imageFile,
+          );
+          final assistantMessage = ChatMessage.assistant(
+            content: analyzeData.analysis,
+          );
 
-        emit(state.copyWith(
-          status: AiStatus.success,
-          analyzeResult: analyzeData,
-          chatMessages: [userMessage, assistantMessage],
-          isChatActive: true,
-        ));
-      },
-    );
+          emit(state.copyWith(
+            status: AiStatus.success,
+            analyzeResult: analyzeData,
+            chatMessages: [userMessage, assistantMessage],
+            isChatActive: true,
+          ));
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ AiBloc: Uncaught exception - $e');
+      emit(state.copyWith(
+        status: AiStatus.failure, 
+        message: 'Ошибка: $e',
+      ));
+    }
   }
 
   /// Отправка текстового сообщения в чат
@@ -68,6 +83,7 @@ class AiBloc extends Bloc<AiEvent, AiState> {
     if (event.message.trim().isEmpty) return;
 
     final languageCode = event.languageCode ?? 'en';
+    debugPrint('💬 AiBloc: Sending chat message with language: $languageCode');
 
     // Добавляем сообщение пользователя
     final userMessage = ChatMessage.user(content: event.message);
@@ -117,6 +133,7 @@ class AiBloc extends Bloc<AiEvent, AiState> {
   void _sendChatImage(SendChatImage event, Emitter<AiState> emit) async {
     final languageCode = event.languageCode ?? 'en';
     final messageText = event.message ?? 'Проанализируй эту этикетку';
+    debugPrint('📷 AiBloc: Sending chat image with language: $languageCode');
 
     // Добавляем сообщение пользователя с изображением
     final userMessage = ChatMessage.user(

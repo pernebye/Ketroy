@@ -578,6 +578,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get send => 'Send';
 
   @override
+  String get photoPreview => 'Preview';
+
+  @override
   String get error => 'Error';
 
   @override

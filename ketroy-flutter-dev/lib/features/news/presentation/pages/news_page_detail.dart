@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -785,14 +786,19 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
           as RenderRepaintBoundary?;
       if (boundary == null || !boundary.hasSize) return;
       
-      // Проверяем, что рендеринг завершён
-      if (boundary.debugNeedsPaint) return;
+      // На iOS не проверяем debugNeedsPaint - может блокировать анализ
+      if (!Platform.isIOS && boundary.debugNeedsPaint) return;
 
-      final image = await boundary.toImage(pixelRatio: 0.1);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      // iOS требует более высокий pixelRatio для корректного захвата
+      final pixelRatio = Platform.isIOS ? 0.2 : 0.1;
+      
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
-      if (byteData == null) return;
+      if (byteData == null) {
+        image.dispose();
+        return;
+      }
 
       final width = image.width;
       final height = image.height;
@@ -819,6 +825,8 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
         }
       }
 
+      image.dispose();
+      
       if (pixelCount == 0) return;
 
       final avgLuminance = totalLuminance / pixelCount;
@@ -829,8 +837,6 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
           _isDarkBackground = isDark;
         });
       }
-
-      image.dispose();
     } catch (e) {
       debugPrint('Back button luminance analysis error: $e');
     }
@@ -978,14 +984,19 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
           as RenderRepaintBoundary?;
       if (boundary == null || !boundary.hasSize) return;
       
-      // Проверяем, что рендеринг завершён
-      if (boundary.debugNeedsPaint) return;
+      // На iOS не проверяем debugNeedsPaint - может блокировать анализ
+      if (!Platform.isIOS && boundary.debugNeedsPaint) return;
 
-      final image = await boundary.toImage(pixelRatio: 0.1);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      // iOS требует более высокий pixelRatio для корректного захвата
+      final pixelRatio = Platform.isIOS ? 0.2 : 0.1;
+      
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
-      if (byteData == null) return;
+      if (byteData == null) {
+        image.dispose();
+        return;
+      }
 
       final width = image.width;
       final height = image.height;
@@ -1012,6 +1023,8 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
         }
       }
 
+      image.dispose();
+      
       if (pixelCount == 0) return;
 
       final avgLuminance = totalLuminance / pixelCount;
@@ -1022,8 +1035,6 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
           _isDarkBackground = isDark;
         });
       }
-
-      image.dispose();
     } catch (e) {
       debugPrint('WhatsApp FAB luminance analysis error: $e');
     }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:ketroy_app/core/internet_services/error/exceptions.dart';
 import 'package:ketroy_app/core/internet_services/error/failure.dart';
@@ -15,7 +16,10 @@ class AiRepositoryImpl implements AiRepository {
   @override
   Future<Either<Failure, AiEntity>> getAiResponse(File imageFile, {String? languageCode}) async {
     return await _getAiResponse(
-        () async => await aiDataSource.getAiResponseData(imageFile: imageFile));
+        () async => await aiDataSource.getAiResponseData(
+          imageFile: imageFile,
+          languageCode: languageCode ?? 'en',
+        ));
   }
 
   Future<Either<Failure, AiEntity>> _getAiResponse(
@@ -25,6 +29,10 @@ class AiRepositoryImpl implements AiRepository {
       return right(result);
     } on ServerException catch (e) {
       return left(Failure(e.message));
+    } catch (e) {
+      // Ловим все остальные исключения
+      debugPrint('❌ AI Repository: Unexpected error: $e');
+      return left(Failure('Непредвиденная ошибка: $e'));
     }
   }
 }

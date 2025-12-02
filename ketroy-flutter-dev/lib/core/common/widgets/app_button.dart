@@ -185,8 +185,8 @@ class AppLiquidGlassSettings {
   );
   
   static const LiquidGlassSettings navBar = LiquidGlassSettings(
-    thickness: 5,
-    blur: 3,
+    thickness: 10,
+    blur: 5,
     glassColor: Color.fromARGB(17, 226, 226, 226),
     lightIntensity: 1.3,
     saturation: 1.1,

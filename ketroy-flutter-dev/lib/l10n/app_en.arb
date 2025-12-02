@@ -218,6 +218,7 @@
   "sendError": "An error occurred while sending",
   "retake": "Retake",
   "send": "Send",
+  "photoPreview": "Preview",
   "error": "Error",
   "allNotificationsMarkedRead": "All notifications marked as read",
   

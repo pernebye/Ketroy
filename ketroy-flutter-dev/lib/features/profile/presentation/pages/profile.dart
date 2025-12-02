@@ -58,6 +58,9 @@ class _ProfilePageState extends State<ProfilePage>
   
   // Подписка на события обновления бонусов
   StreamSubscription<BonusUpdateEvent>? _bonusUpdateSubscription;
+  
+  // PageController для свайп-навигации между вкладками
+  late PageController _pageController;
 
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
@@ -77,6 +80,9 @@ class _ProfilePageState extends State<ProfilePage>
     // Если showBonusTab = true, показываем вкладку "Бонусы" (account = false)
     // Иначе показываем вкладку "Аккаунт" (account = true)
     account = !widget.showBonusTab;
+    
+    // Инициализируем PageController с начальной страницей
+    _pageController = PageController(initialPage: account ? 0 : 1);
     
     _initializeProfile();
     _setupBonusUpdateListener();
@@ -133,6 +139,7 @@ class _ProfilePageState extends State<ProfilePage>
     _bonusUpdateSubscription?.cancel();
     _headerAnimController.dispose();
     _menuAnimController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -267,30 +274,48 @@ class _ProfilePageState extends State<ProfilePage>
                         if (hasUserData) ...[
                           _buildTabSwitcher(),
                           SizedBox(height: 24.h),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            switchInCurve: Curves.easeOut,
-                            switchOutCurve: Curves.easeIn,
-                            child: account
-                                ? KeyedSubtree(
-                                    key: const ValueKey('profile-menu'),
-                                    child: _buildMenuCard(state),
-                                  )
-                                : KeyedSubtree(
-                                    key: const ValueKey('profile-card'),
-                                    child: _buildTabContent(state),
+                          // PageView для свайп-навигации между вкладками
+                          SizedBox(
+                            // Высота для контента вкладок
+                            height: _calculateTabContentHeight(state),
+                            child: PageView(
+                              controller: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  account = index == 0;
+                                });
+                              },
+                              children: [
+                                // Страница 0: Аккаунт
+                                SingleChildScrollView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  child: Column(
+                                    children: [
+                                      _buildMenuCard(state),
+                                      SizedBox(height: 24.h),
+                                      _buildSocialLinks(state),
+                                    ],
                                   ),
+                                ),
+                                // Страница 1: Бонусы
+                                SingleChildScrollView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  child: Column(
+                                    children: [
+                                      _buildTabContent(state),
+                                      SizedBox(height: 24.h),
+                                      _buildPromotionsSection(state),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ] else ...[
                           _buildMenuCard(state),
+                          SizedBox(height: 24.h),
+                          _buildSocialLinks(state),
                         ],
-                        SizedBox(height: 24.h),
-                        // Соц.сети показываем только во вкладке "Аккаунт"
-                        // Акции показываем во вкладке "Бонусы"
-                        if (account || !hasUserData)
-                          _buildSocialLinks(state)
-                        else
-                          _buildPromotionsSection(state),
                         SizedBox(height: 32.h),
                         _buildFooter(),
                         SizedBox(height: NavBar.getBottomPadding(context)),
@@ -717,7 +742,14 @@ class _ProfilePageState extends State<ProfilePage>
               icon: Icons.person_outline_rounded,
               isActive: account,
               onTap: () {
-                if (!account) setState(() => account = true);
+                if (!account) {
+                  setState(() => account = true);
+                  _pageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
               },
             ),
           ),
@@ -727,7 +759,14 @@ class _ProfilePageState extends State<ProfilePage>
               icon: Icons.card_giftcard_rounded,
               isActive: !account,
               onTap: () {
-                if (account) setState(() => account = false);
+                if (account) {
+                  setState(() => account = false);
+                  _pageController.animateToPage(
+                    1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
               },
             ),
           ),
@@ -930,6 +969,34 @@ class _ProfilePageState extends State<ProfilePage>
         ),
       ),
     );
+  }
+
+  /// Вычисляет высоту контента для PageView
+  /// Возвращает достаточную высоту для обеих вкладок
+  double _calculateTabContentHeight(ProfileState state) {
+    // Примерное количество пунктов меню в аккаунте (6-7 пунктов)
+    const menuItemCount = 7;
+    // Высота одного пункта меню + padding
+    final menuItemHeight = 70.h;
+    // Высота меню карточки (items + padding)
+    final menuCardHeight = (menuItemCount * menuItemHeight) + 40.h;
+    // Высота соцсетей (заголовок + иконки + padding)
+    final socialLinksHeight = 140.h;
+    // Общая высота для вкладки "Аккаунт"
+    final accountHeight = menuCardHeight + socialLinksHeight + 24.h;
+    
+    // Высота бонусной карточки
+    final bonusCardHeight = 240.h;
+    // Высота секции акций (заголовок + примерно 2-3 акции)
+    final promotionsCount = state.promotions?.length ?? 0;
+    final promotionsHeight = promotionsCount > 0 
+        ? (80.h + (promotionsCount.clamp(0, 5) * 140.h)) 
+        : 100.h;
+    // Общая высота для вкладки "Бонусы"
+    final bonusHeight = bonusCardHeight + promotionsHeight + 24.h;
+    
+    // Возвращаем максимальную высоту + запас
+    return (accountHeight > bonusHeight ? accountHeight : bonusHeight) + 80.h;
   }
 
   Widget _buildTabContent(ProfileState state) {

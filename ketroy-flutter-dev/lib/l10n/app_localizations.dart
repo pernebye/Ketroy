@@ -1212,6 +1212,12 @@ abstract class AppLocalizations {
   /// **'Отправить'**
   String get send;
 
+  /// No description provided for @photoPreview.
+  ///
+  /// In ru, this message translates to:
+  /// **'Предпросмотр'**
+  String get photoPreview;
+
   /// No description provided for @error.
   ///
   /// In ru, this message translates to:

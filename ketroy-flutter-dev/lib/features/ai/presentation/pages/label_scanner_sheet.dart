@@ -6,7 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
+import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/services/localization/localization_service.dart';
 
 /// Показать сканер этикеток как нижнюю шторку
 Future<bool?> showLabelScannerSheet(BuildContext context) {
@@ -89,8 +91,9 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
       final XFile photo = await controller!.takePicture();
       _showPhotoPreview(photo);
     } catch (e) {
-      debugPrint('Ошибка при съемке: $e');
-      _showSnackBar('Ошибка при съемке фото', isError: true);
+      debugPrint('Error taking photo: $e');
+      final l10n = AppLocalizations.of(context)!;
+      _showSnackBar(l10n.photoError, isError: true);
     }
   }
 
@@ -116,10 +119,12 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
 
     try {
       final file = File(photo.path);
-      // Получаем текущий язык приложения
-      final locale = Localizations.localeOf(context);
-      final languageCode = locale.languageCode;
+      // Получаем правильный код языка для AI напрямую из LocalizationService singleton
+      final locService = serviceLocator<LocalizationService>();
+      final languageCode = locService.getLanguageCodeForAI();
       final l10n = AppLocalizations.of(context)!;
+      
+      debugPrint('📤 LabelScannerSheet: Uploading photo with language: $languageCode');
       
       context.read<AiBloc>().add(
         SendImageToServerFetch(
@@ -130,7 +135,8 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
       );
     } catch (e) {
       setState(() => isLoading = false);
-      _showSnackBar('Ошибка при загрузке фото', isError: true);
+      final l10n = AppLocalizations.of(context)!;
+      _showSnackBar(l10n.photoLoadError, isError: true);
     }
   }
 
@@ -164,14 +170,16 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
+    final l10n = AppLocalizations.of(context)!;
+    
     return BlocListener<AiBloc, AiState>(
       listener: (context, state) {
         if (state.isSuccess) {
           Navigator.pop(context, true);
-          _showSnackBar('Изображение отправлено на анализ!');
+          _showSnackBar(l10n.imageSentForAnalysis);
         } else if (state.isFailure) {
           setState(() => isLoading = false);
-          _showSnackBar(state.message ?? 'Ошибка отправки', isError: true);
+          _showSnackBar(state.message ?? l10n.sendError, isError: true);
         }
       },
       child: Container(
@@ -651,6 +659,8 @@ class _PhotoPreviewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.all(20.w),
@@ -674,7 +684,7 @@ class _PhotoPreviewDialog extends StatelessWidget {
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    'Предпросмотр',
+                    l10n.photoPreview,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18.sp,
@@ -719,7 +729,7 @@ class _PhotoPreviewDialog extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            'Переснять',
+                            l10n.retake,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15.sp,
@@ -753,7 +763,7 @@ class _PhotoPreviewDialog extends StatelessWidget {
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                'Отправить',
+                                l10n.send,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15.sp,

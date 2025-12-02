@@ -5,7 +5,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:ketroy_app/features/ai/presentation/bloc/ai_bloc.dart';
+import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/services/localization/localization_service.dart';
 
 class CameraPhotoPage extends StatefulWidget {
   const CameraPhotoPage({super.key});
@@ -71,8 +73,9 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
       final XFile photo = await controller!.takePicture();
       _showPhotoPreview(photo);
     } catch (e) {
-      debugPrint('Ошибка при съемке: $e');
-      _showErrorSnackBar('Ошибка при съемке фото');
+      debugPrint('Error taking photo: $e');
+      final l10n = AppLocalizations.of(context)!;
+      _showErrorSnackBar(l10n.photoError);
     }
   }
 
@@ -97,9 +100,10 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
       // Преобразуем XFile в File
       final file = File(photo.path);
 
-      // Получаем текущий язык приложения
-      final locale = Localizations.localeOf(context);
-      final languageCode = locale.languageCode;
+      // Получаем правильный код языка для AI напрямую из LocalizationService singleton
+      final locService = serviceLocator<LocalizationService>();
+      final languageCode = locService.getLanguageCodeForAI();
+      debugPrint('📤 CameraPhotoPage: Uploading photo with language: $languageCode');
 
       // Отправляем через BLoC с языком
       context.read<AiBloc>().add(
@@ -107,8 +111,9 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
       );
     } catch (e) {
       // Показываем ошибку
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при загрузке фото: $e')),
+        SnackBar(content: Text(l10n.photoLoadError)),
       );
     }
   }
@@ -168,6 +173,8 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: Colors.black,
       body: BlocConsumer<AiBloc, AiState>(
@@ -176,8 +183,8 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
             // Успешная отправка - возвращаемся назад
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Изображение успешно отправлено на анализ!'),
+              SnackBar(
+                content: Text(l10n.imageSentForAnalysis),
                 backgroundColor: Colors.green,
               ),
             );
@@ -185,7 +192,7 @@ class _CameraPhotoPageState extends State<CameraPhotoPage> {
             // Ошибка - показываем сообщение
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message ?? 'Произошла ошибка при отправке'),
+                content: Text(state.message ?? l10n.sendError),
                 backgroundColor: Colors.red,
               ),
             );
@@ -446,6 +453,8 @@ class PhotoPreviewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Dialog(
       backgroundColor: Colors.black,
       insetPadding: const EdgeInsets.all(20),
@@ -455,9 +464,9 @@ class PhotoPreviewDialog extends StatelessWidget {
           // Заголовок
           Container(
             padding: const EdgeInsets.all(16),
-            child: const Text(
-              'Предпросмотр фото',
-              style: TextStyle(
+            child: Text(
+              l10n.photoPreview,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -492,7 +501,7 @@ class PhotoPreviewDialog extends StatelessWidget {
                       vertical: 12,
                     ),
                   ),
-                  child: const Text('Переснять'),
+                  child: Text(l10n.retake),
                 ),
                 TextButton(
                   onPressed: onConfirm,
@@ -504,7 +513,7 @@ class PhotoPreviewDialog extends StatelessWidget {
                       vertical: 12,
                     ),
                   ),
-                  child: const Text('Отправить'),
+                  child: Text(l10n.send),
                 ),
               ],
             ),

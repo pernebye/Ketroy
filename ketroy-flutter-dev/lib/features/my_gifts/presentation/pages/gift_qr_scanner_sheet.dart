@@ -15,6 +15,8 @@ Future<bool?> showGiftQrScannerSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     useRootNavigator: true,
+    isDismissible: true,
+    enableDrag: true,
     builder: (context) => const GiftQrScannerSheet(),
   );
 }
@@ -54,7 +56,10 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
 
   @override
   void dispose() {
+    _pulseController.stop();
     _subscription?.cancel();
+    qrViewController?.pauseCamera();
+    qrViewController?.dispose();
     _pulseController.dispose();
     super.dispose();
   }
@@ -87,7 +92,10 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
 
       if (result.hasPendingGifts && result.gifts.isNotEmpty && result.giftGroupId != null) {
         // Есть подарки для выбора - открываем экран выбора
-        Navigator.pop(context); // Закрываем scanner
+        await _cleanupResources();
+        if (mounted) {
+          Navigator.pop(context); // Закрываем scanner
+        }
 
         final selected = await Navigator.push<bool>(
           context,
@@ -104,14 +112,21 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
         }
       } else if (result.hasPendingGifts && result.giftGroupId == null) {
         // Ошибка: есть подарки, но нет giftGroupId
-        Navigator.pop(context, false);
-        showSnackBar(context, AppLocalizations.of(context)!.giftDataError);
+        await _cleanupResources();
+        if (mounted) {
+          Navigator.pop(context, false);
+          showSnackBar(context, AppLocalizations.of(context)!.giftDataError);
+        }
       } else {
         // Нет подарков для активации
-        Navigator.pop(context, false);
-        showSnackBar(context, result.message);
+        await _cleanupResources();
+        if (mounted) {
+          Navigator.pop(context, false);
+          showSnackBar(context, result.message);
+        }
       }
     } catch (e) {
+      await _cleanupResources();
       if (mounted) {
         Navigator.pop(context, false);
         showSnackBar(context, AppLocalizations.of(context)!.giftActivationError);
@@ -125,11 +140,44 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
     HapticFeedback.lightImpact();
   }
 
+  Future<void> _cleanupResources() async {
+    // Останавливаем анимацию
+    _pulseController.stop();
+    
+    // Отменяем подписку
+    await _subscription?.cancel();
+    _subscription = null;
+    
+    // Останавливаем камеру
+    await qrViewController?.pauseCamera();
+    await qrViewController?.dispose();
+    qrViewController = null;
+  }
+
+  Future<void> _closeSheet() async {
+    await _cleanupResources();
+    
+    // Закрываем шторку
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Container(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (!didPop) {
+          await _cleanupResources();
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        }
+      },
+      child: Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: Colors.black,
@@ -145,6 +193,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
           Expanded(child: _buildScanner()),
           _buildBottomBar(bottomPadding),
         ],
+      ),
       ),
     );
   }
@@ -204,7 +253,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
             ),
           ),
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _closeSheet,
             child: Container(
               width: 36.w,
               height: 36.w,
