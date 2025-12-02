@@ -903,8 +903,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# dakika önce',
-      one: 'bir dakika önce',
+      other: '$count dakika önce',
+      one: '1 dakika önce',
     );
     return '$_temp0';
   }
@@ -914,8 +914,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# saat önce',
-      one: 'bir saat önce',
+      other: '$count saat önce',
+      one: '1 saat önce',
     );
     return '$_temp0';
   }
@@ -933,8 +933,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# hafta önce',
-      one: 'bir hafta önce',
+      other: '$count hafta önce',
+      one: '1 hafta önce',
     );
     return '$_temp0';
   }
@@ -944,8 +944,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# ay önce',
-      one: 'bir ay önce',
+      other: '$count ay önce',
+      one: '1 ay önce',
     );
     return '$_temp0';
   }
@@ -955,8 +955,8 @@ class AppLocalizationsTr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# yıl önce',
-      one: 'bir yıl önce',
+      other: '$count yıl önce',
+      one: '1 yıl önce',
     );
     return '$_temp0';
   }

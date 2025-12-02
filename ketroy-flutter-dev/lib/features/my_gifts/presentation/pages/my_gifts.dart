@@ -551,9 +551,8 @@ class _MyGiftsContentState extends State<MyGiftsContent>
               padding: EdgeInsets.only(bottom: index < state.pendingGroups.length - 1 ? 10.h : 0),
               child: GestureDetector(
                 onTap: () async {
-                  // Открываем экран выбора подарка напрямую
-                  final selected = await Navigator.push<bool>(
-                    context,
+                  // Открываем экран выбора подарка поверх NavBar (rootNavigator: true)
+                  final selected = await Navigator.of(context, rootNavigator: true).push<bool>(
                     MaterialPageRoute(
                       builder: (context) => GiftSelectionPage(
                         giftGroupId: group.giftGroupId,

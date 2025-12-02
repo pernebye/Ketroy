@@ -220,6 +220,19 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
+  /// Синхронизирует позицию PageController с текущим состоянием вкладки
+  void _syncPageControllerWithTabState() {
+    if (!_pageController.hasClients) return;
+    
+    final targetPage = account ? 0 : 1;
+    final currentPage = _pageController.page?.round() ?? 0;
+    
+    // Если PageController не на правильной странице - перепрыгиваем без анимации
+    if (currentPage != targetPage) {
+      _pageController.jumpToPage(targetPage);
+    }
+  }
+
   // Минимальная высота градиента
   static double get _minGradientHeight => 180.h;
 
@@ -234,8 +247,11 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _buildContent(ProfileState state) {
     final hasUserData = state.token != null && _hasUserData(state);
 
-    // Измеряем хедер после каждого билда
-    WidgetsBinding.instance.addPostFrameCallback((_) => _measureHeaderHeight());
+    // Измеряем хедер и синхронизируем PageController после каждого билда
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measureHeaderHeight();
+      _syncPageControllerWithTabState();
+    });
 
     return Stack(
       children: [

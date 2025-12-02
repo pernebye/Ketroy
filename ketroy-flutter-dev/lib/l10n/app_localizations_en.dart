@@ -900,8 +900,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# minutes ago',
-      one: 'a minute ago',
+      other: '$count minutes ago',
+      one: '1 minute ago',
     );
     return '$_temp0';
   }
@@ -911,8 +911,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# hours ago',
-      one: 'an hour ago',
+      other: '$count hours ago',
+      one: '1 hour ago',
     );
     return '$_temp0';
   }
@@ -930,8 +930,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# weeks ago',
-      one: 'a week ago',
+      other: '$count weeks ago',
+      one: '1 week ago',
     );
     return '$_temp0';
   }
@@ -941,8 +941,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# months ago',
-      one: 'a month ago',
+      other: '$count months ago',
+      one: '1 month ago',
     );
     return '$_temp0';
   }
@@ -952,8 +952,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# years ago',
-      one: 'a year ago',
+      other: '$count years ago',
+      one: '1 year ago',
     );
     return '$_temp0';
   }

@@ -906,9 +906,9 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'минут назад',
-      few: 'минуты назад',
-      one: 'минуту назад',
+      other: '$count минут назад',
+      few: '$count минуты назад',
+      one: '$count минуту назад',
     );
     return '$_temp0';
   }
@@ -918,9 +918,9 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'часов назад',
-      few: 'часа назад',
-      one: 'час назад',
+      other: '$count часов назад',
+      few: '$count часа назад',
+      one: '$count час назад',
     );
     return '$_temp0';
   }
@@ -938,9 +938,9 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'недель назад',
-      few: 'недели назад',
-      one: 'неделю назад',
+      other: '$count недель назад',
+      few: '$count недели назад',
+      one: '$count неделю назад',
     );
     return '$_temp0';
   }
@@ -950,9 +950,9 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'месяцев назад',
-      few: 'месяца назад',
-      one: 'месяц назад',
+      other: '$count месяцев назад',
+      few: '$count месяца назад',
+      one: '$count месяц назад',
     );
     return '$_temp0';
   }
@@ -962,9 +962,9 @@ class AppLocalizationsRu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'лет назад',
-      few: 'года назад',
-      one: 'год назад',
+      other: '$count лет назад',
+      few: '$count года назад',
+      one: '$count год назад',
     );
     return '$_temp0';
   }

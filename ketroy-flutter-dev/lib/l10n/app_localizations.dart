@@ -1809,13 +1809,13 @@ abstract class AppLocalizations {
   /// No description provided for @timeMinutesAgo.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{минуту назад} few{минуты назад} other{минут назад}}'**
+  /// **'{count, plural, one{{count} минуту назад} few{{count} минуты назад} other{{count} минут назад}}'**
   String timeMinutesAgo(int count);
 
   /// No description provided for @timeHoursAgo.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{час назад} few{часа назад} other{часов назад}}'**
+  /// **'{count, plural, one{{count} час назад} few{{count} часа назад} other{{count} часов назад}}'**
   String timeHoursAgo(int count);
 
   /// No description provided for @timeYesterday.
@@ -1833,19 +1833,19 @@ abstract class AppLocalizations {
   /// No description provided for @timeWeeksAgo.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{неделю назад} few{недели назад} other{недель назад}}'**
+  /// **'{count, plural, one{{count} неделю назад} few{{count} недели назад} other{{count} недель назад}}'**
   String timeWeeksAgo(int count);
 
   /// No description provided for @timeMonthsAgo.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{месяц назад} few{месяца назад} other{месяцев назад}}'**
+  /// **'{count, plural, one{{count} месяц назад} few{{count} месяца назад} other{{count} месяцев назад}}'**
   String timeMonthsAgo(int count);
 
   /// No description provided for @timeYearsAgo.
   ///
   /// In ru, this message translates to:
-  /// **'{count, plural, one{год назад} few{года назад} other{лет назад}}'**
+  /// **'{count, plural, one{{count} год назад} few{{count} года назад} other{{count} лет назад}}'**
   String timeYearsAgo(int count);
 
   /// No description provided for @weekdayMonday.

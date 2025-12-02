@@ -58,7 +58,8 @@ class LotteryService {
     String giftGroupId,
     List<GiftOption> gifts,
   ) {
-    Navigator.of(context).push(
+    // rootNavigator: true для открытия поверх NavBar
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => GiftSelectionPage(
           giftGroupId: giftGroupId,
