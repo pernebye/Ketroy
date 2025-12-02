@@ -353,10 +353,25 @@ class _KetroyAppState extends State<KetroyApp> {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final sharedService = serviceLocator<SharedPreferencesService>();
 
-  MyApp({super.key});
+  @override
+  void initState() {
+    super.initState();
+    // После построения виджета проверяем pending push-уведомления
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint('📱 MyApp built, processing pending initial message...');
+      NotificationServices.instance.processPendingInitialMessage();
+    });
+  }
 
   // This widget is the root of your application.
   @override

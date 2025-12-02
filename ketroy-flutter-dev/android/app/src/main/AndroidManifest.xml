@@ -1,5 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 <uses-permission android:name="android.permission.INTERNET" />
+<!-- Push уведомления для Android 13+ -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<!-- Чтобы приложение могло запускаться при нажатии на уведомление -->
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:label="Ketroy"
         android:name="${applicationName}"
@@ -26,6 +31,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            
+            <!-- FCM: Открытие приложения при нажатии на push-уведомление -->
+            <intent-filter>
+                <action android:name="FLUTTER_NOTIFICATION_CLICK"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
 
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true"/>

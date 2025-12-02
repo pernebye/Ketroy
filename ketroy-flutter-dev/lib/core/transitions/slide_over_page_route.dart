@@ -1,5 +1,45 @@
 import 'package:flutter/material.dart';
 
+/// Простой Slide Route - страница выезжает справа налево (iOS-style)
+/// Полностью закрывает предыдущий экран
+class SlideRightRoute<T> extends PageRouteBuilder<T> {
+  final Widget page;
+
+  SlideRightRoute({
+    required this.page,
+    super.settings,
+  }) : super(
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionDuration: const Duration(milliseconds: 300),
+          reverseTransitionDuration: const Duration(milliseconds: 250),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            // Кривая анимации - как в iOS
+            final curvedAnimation = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
+
+            // Slide from right to left
+            final slideAnimation = Tween<Offset>(
+              begin: const Offset(1.0, 0.0), // Начинаем справа за экраном
+              end: Offset.zero,
+            ).animate(curvedAnimation);
+
+            return SlideTransition(
+              position: slideAnimation,
+              child: child,
+            );
+          },
+        );
+
+  @override
+  bool get opaque => true;
+  
+  @override
+  bool get maintainState => true;
+}
+
 /// Slide Over Page Route - эффект как в Instagram Direct
 /// Новый экран выезжает справа поверх текущего контента
 /// с лёгким затемнением фона и закруглёнными углами

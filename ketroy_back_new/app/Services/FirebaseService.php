@@ -42,32 +42,45 @@ class FirebaseService
         try {
             $accessToken = $this->getAccessToken();
 
+            // КРИТИЧЕСКИ ВАЖНО: Всегда добавляем data payload для работы getInitialMessage()
+            // На Android без data payload приложение не получит данные при клике
+            $dataPayload = array_merge([
+                'type' => $label,
+                'label' => $label,
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            ], $data);
+            
+            // Добавляем source_id если есть
+            if ($sourceId !== null) {
+                $dataPayload['source_id'] = (string) $sourceId;
+            }
+
             $message = [
                 'token' => $deviceToken,
                 'notification' => [
                     'title' => $title,
                     'body' => $body,
                 ],
+                // ОБЯЗАТЕЛЬНО: data payload для навигации при клике
+                'data' => array_map('strval', $dataPayload),
                 'apns' => [
                     'payload' => [
                         'aps' => [
                             'badge' => $badge,
                             'sound' => 'default',
+                            'mutable-content' => 1,
                         ],
                     ],
                 ],
                 'android' => [
+                    'priority' => 'high',
                     'notification' => [
                         'sound' => 'default',
                         'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'channel_id' => 'high_importance_channel',
                     ],
                 ],
             ];
-            
-            // Добавляем data только если есть данные (Firebase требует объект, не массив)
-            if (!empty($data)) {
-                $message['data'] = array_map('strval', $data);
-            }
             
             $payload = ['message' => $message];
 
@@ -290,7 +303,8 @@ class FirebaseService
             'test',
             $deviceToken,
             'Тестовое уведомление',
-            'Это тестовое уведомление от Ketroy'
+            'Это тестовое уведомление от Ketroy',
+            ['type' => 'test'] // Обязательно передаём data
         );
     }
 }

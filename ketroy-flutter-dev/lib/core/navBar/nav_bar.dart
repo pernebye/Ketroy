@@ -29,6 +29,7 @@ import 'package:ketroy_app/features/profile/presentation/pages/profile.dart';
 import 'package:ketroy_app/features/profile/presentation/pages/qr_scanner_sheet.dart';
 import 'package:ketroy_app/features/shop/presentation/pages/shop.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
+import 'package:ketroy_app/services/notification_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/features/lottery/lottery_service.dart';
@@ -41,6 +42,8 @@ class NavScreen extends StatefulWidget {
   final int initialTab;
   /// Показать анимацию приветствия после авторизации/регистрации
   final bool showWelcomeAnimation;
+  /// Показать вкладку "Бонусы" на экране профиля
+  final bool showBonusTab;
   
   const NavScreen({
     super.key,
@@ -48,6 +51,7 @@ class NavScreen extends StatefulWidget {
     this.withToken = true,
     this.initialTab = 0,
     this.showWelcomeAnimation = false,
+    this.showBonusTab = false,
   });
 
   static final GlobalKey<NavScreenState> globalKey = GlobalKey();
@@ -172,7 +176,7 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
       NavModel(
           page: NewsPage(onScrollModeChanged: _handleMainPageScrollModeChange),
           navKey: homeNavKey),
-      NavModel(page: const ProfilePage(), navKey: profileNavKey),
+      NavModel(page: ProfilePage(showBonusTab: widget.showBonusTab), navKey: profileNavKey),
       NavModel(
           page: const ShopPage(
             pop: false,
@@ -187,12 +191,16 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
     }
     _loadNotificationBadgeCount();
     
-    // Проверяем активную лотерею после построения экрана
-    if (widget.withToken) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    // После построения экрана
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Обрабатываем pending push-уведомление (если приложение было закрыто)
+      NotificationServices.instance.processPendingInitialMessage();
+      
+      // Проверяем активную лотерею
+      if (widget.withToken) {
         _checkForActiveLottery();
-      });
-    }
+      }
+    });
   }
 
   /// Проверка активной лотереи при входе в приложение

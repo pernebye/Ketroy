@@ -74,6 +74,7 @@ class _NotificationPageState extends State<NotificationPage>
   }
 
   void _loadNotifications() {
+    debugPrint('📋 _loadNotifications called');
     context.read<NotificationBloc>().add(GetNotificationListFetch());
   }
 

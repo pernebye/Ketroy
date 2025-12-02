@@ -57,14 +57,41 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   void _notificationIsReadFetch(
       NotificatioIsReadFetch event, Emitter<NotificationState> emit) async {
     try {
-      emit(state.copyWith(status: NotificationStatus.loading));
+      // НЕ меняем статус на loading чтобы не вызвать rebuild списка
+      // Это позволяет навигации работать корректно
       await _notificationRead(NotificationReadParams(id: event.id), null);
-
-      emit(state.copyWith(status: NotificationStatus.success));
+      
+      // Обновляем локально состояние уведомления без полной перезагрузки
+      final updatedList = state.notificationList.map((notification) {
+        if (notification.id == event.id) {
+          return NotificationEntity(
+            id: notification.id,
+            userId: notification.userId,
+            title: notification.title,
+            body: notification.body,
+            isRead: true, // Помечаем как прочитанное
+            createdAt: notification.createdAt,
+            updatedAt: notification.updatedAt,
+            label: notification.label,
+            sourceId: notification.sourceId,
+          );
+        }
+        return notification;
+      }).toList();
+      
+      final notReadList = updatedList.where((e) => !e.isRead).toList();
+      
+      emit(state.copyWith(
+        notificationList: updatedList,
+        notificationListNotRead: notReadList,
+        notificationListNotReadLength: notReadList.length,
+        // Сохраняем текущий статус success
+      ));
+      
+      debugPrint('✅ Notification ${event.id} marked as read');
     } catch (e) {
-      // Обработка ошибки
+      // Обработка ошибки - НЕ меняем состояние при ошибке
       debugPrint('Error marking notification as read: $e');
-      // Можно добавить emit с ошибкой, если нужно
     }
   }
 

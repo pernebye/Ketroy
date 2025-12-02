@@ -11,12 +11,9 @@ import 'package:ketroy_app/core/navBar/nav_bar.dart';
 import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/features/certificates/presentation/pages/certificate_page.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
-import 'package:ketroy_app/features/my_gifts/presentation/pages/gifts_page.dart';
-import 'package:ketroy_app/features/my_gifts/presentation/pages/my_gifts.dart';
 import 'package:ketroy_app/features/news/presentation/pages/news_page_detail.dart';
 import 'package:ketroy_app/features/notification/domain/entities/notification_entity.dart';
 import 'package:ketroy_app/features/notification/presentation/pages/notification_page.dart';
-import 'package:ketroy_app/features/profile/presentation/pages/profile.dart';
 import 'package:ketroy_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -96,6 +93,9 @@ class NotificationServices {
   bool _isFlutterNotificationsInitialized = false;
   String? _fcmToken;
   int _badgeCount = 0;
+  
+  // Сохраняем initial message для обработки после инициализации навигатора
+  RemoteMessage? _pendingInitialMessage;
 
   // Stream для событий новых подарков
   final _newGiftController = StreamController<NewGiftEvent>.broadcast();
@@ -110,6 +110,18 @@ class NotificationServices {
   Stream<BonusUpdateEvent> get onBonusUpdate => _bonusUpdateController.stream;
 
   String? get fcmToken => _fcmToken;
+  
+  /// Проверяет и обрабатывает pending initial message
+  /// Вызывается из NavScreen после инициализации навигатора
+  void processPendingInitialMessage() {
+    if (_pendingInitialMessage != null) {
+      debugPrint('📨 Processing pending initial message');
+      final message = _pendingInitialMessage!;
+      _pendingInitialMessage = null;
+      clearBadge();
+      _navigateBasedOnData(message.data);
+    }
+  }
   int get badgeCount => _badgeCount;
   
   /// Уведомить о новом подарке
@@ -387,14 +399,35 @@ class NotificationServices {
         _handleBackgroundMessage(message);
       });
 
-      //opened app
+      //opened app - когда приложение было полностью закрыто
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
-        debugPrint('📨 Initial message: ${initialMessage.messageId}');
-        // Задержка для завершения инициализации приложения
-        Future.delayed(const Duration(seconds: 1), () {
-          _handleBackgroundMessage(initialMessage);
+        debugPrint('📨 Initial message found: ${initialMessage.messageId}');
+        debugPrint('📊 Initial message data: ${initialMessage.data}');
+        debugPrint('📱 Initial message title: ${initialMessage.notification?.title}');
+        
+        // Сохраняем сообщение для обработки после инициализации навигатора
+        _pendingInitialMessage = initialMessage;
+        debugPrint('💾 Initial message saved as pending');
+        
+        // Пробуем обработать с увеличенной задержкой (backup вариант)
+        // Даём Flutter больше времени на инициализацию всех виджетов
+        Future.delayed(const Duration(seconds: 2), () {
+          if (_pendingInitialMessage != null) {
+            debugPrint('⏰ Delayed handler triggered for initial message (2s)');
+            _handleInitialMessage(initialMessage);
+          }
         });
+        
+        // Дополнительная попытка через 4 секунды
+        Future.delayed(const Duration(seconds: 4), () {
+          if (_pendingInitialMessage != null) {
+            debugPrint('⏰ Second delayed handler triggered for initial message (4s)');
+            _handleInitialMessage(initialMessage);
+          }
+        });
+      } else {
+        debugPrint('📭 No initial message found');
       }
       debugPrint('✅ Message handlers set up');
     } catch (e) {
@@ -434,6 +467,46 @@ class NotificationServices {
     }
   }
 
+  /// Обработка сообщения когда приложение было полностью закрыто
+  /// и открылось через нажатие на push-уведомление
+  void _handleInitialMessage(RemoteMessage message) {
+    try {
+      debugPrint('🚀 Handling initial message (app was terminated)');
+      debugPrint('📊 Data: ${message.data}');
+
+      // Очищаем pending если это то же сообщение
+      _pendingInitialMessage = null;
+      
+      // Проверяем готовность навигатора с несколькими попытками
+      _navigateWithRetry(message.data, maxRetries: 5);
+    } catch (e) {
+      debugPrint('❌ Error handling initial message: $e');
+    }
+  }
+
+  /// Пытается выполнить навигацию с несколькими попытками
+  void _navigateWithRetry(Map<String, dynamic> data, {int maxRetries = 10, int attempt = 1}) {
+    debugPrint('🔄 Navigation attempt $attempt/$maxRetries');
+    
+    final navigator = navigatorKey.currentState;
+    if (navigator != null && navigator.mounted) {
+      debugPrint('✅ Navigator ready and mounted, proceeding with navigation');
+      clearBadge();
+      _navigateBasedOnData(data);
+    } else if (attempt < maxRetries) {
+      // Увеличиваем задержку с каждой попыткой
+      final delay = Duration(milliseconds: 300 + (attempt * 100));
+      debugPrint('⏳ Navigator not ready, retrying in ${delay.inMilliseconds}ms...');
+      Future.delayed(delay, () {
+        _navigateWithRetry(data, maxRetries: maxRetries, attempt: attempt + 1);
+      });
+    } else {
+      debugPrint('❌ Navigator still not ready after $maxRetries attempts');
+      // Fallback: сохраняем data для последующей обработки
+      debugPrint('📝 Data that could not be processed: $data');
+    }
+  }
+
   void handleMessageOpenedApp(BuildContext context) {
     _messaging.getInitialMessage().then((remoteMessage) {
       if (remoteMessage != null) {
@@ -441,8 +514,8 @@ class NotificationServices {
           return;
         }
         clearBadge();
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const GiftsPage()));
+        // Обрабатываем данные из сообщения для правильной навигации
+        _navigateBasedOnData(remoteMessage.data);
       }
     });
   }
@@ -583,21 +656,15 @@ class NotificationServices {
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
 
-      // Переходим к главному экрану на вкладку профиля
+      // Переходим к NavScreen с вкладкой профиля и открытой вкладкой "Бонусы"
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(
             builder: (context) => const NavScreen(
                   initialTab: 1, // Профиль
+                  showBonusTab: true, // Открыть вкладку "Бонусы"
                 )),
-        (route) => route.isFirst,
+        (route) => false, // Удаляем все предыдущие экраны
       );
-
-      // Затем открываем профиль с вкладкой "Бонусы"
-      Future.delayed(const Duration(milliseconds: 100), () {
-        navigator.push(
-          SlideOverPageRoute(page: const ProfilePage(showBonusTab: true)),
-        );
-      });
 
       debugPrint('✅ Navigated to profile bonus tab');
     });
@@ -609,21 +676,14 @@ class NotificationServices {
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
 
-      // Переходим к главному экрану на вкладку профиля
+      // Переходим к NavScreen с вкладкой "Мои подарки" (индекс 4)
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(
             builder: (context) => const NavScreen(
-                  initialTab: 1, // Профиль
+                  initialTab: 4, // Мои подарки
                 )),
-        (route) => route.isFirst,
+        (route) => false, // Удаляем все предыдущие экраны
       );
-
-      // Затем открываем страницу подарков
-      Future.delayed(const Duration(milliseconds: 100), () {
-        navigator.push(
-          SlideOverPageRoute(page: const MyGifts()),
-        );
-      });
 
       debugPrint('✅ Navigated to gifts page');
     });
@@ -635,20 +695,22 @@ class NotificationServices {
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
 
-      // Переходим к главному экрану на вкладку профиля
+      // Переходим к NavScreen на вкладку профиля
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(
             builder: (context) => const NavScreen(
                   initialTab: 1, // Профиль
                 )),
-        (route) => route.isFirst,
+        (route) => false,
       );
 
       // Затем открываем страницу сертификатов
-      Future.delayed(const Duration(milliseconds: 100), () {
-        navigator.push(
-          SlideOverPageRoute(page: const CertificatePage()),
-        );
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (navigator.mounted) {
+          navigator.push(
+            SlideOverPageRoute(page: const CertificatePage()),
+          );
+        }
       });
 
       debugPrint('✅ Navigated to certificate page');
@@ -661,20 +723,22 @@ class NotificationServices {
       final navigator = navigatorKey.currentState;
       if (navigator == null) return;
 
-      // Переходим к главному экрану на вкладку профиля
+      // Переходим к NavScreen на вкладку профиля
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(
             builder: (context) => const NavScreen(
                   initialTab: 1, // Профиль
                 )),
-        (route) => route.isFirst,
+        (route) => false,
       );
 
       // Затем открываем страницу скидок
-      Future.delayed(const Duration(milliseconds: 100), () {
-        navigator.push(
-          SlideOverPageRoute(page: const DiscountPage()),
-        );
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (navigator.mounted) {
+          navigator.push(
+            SlideOverPageRoute(page: const DiscountPage()),
+          );
+        }
       });
 
       debugPrint('✅ Navigated to discount page');

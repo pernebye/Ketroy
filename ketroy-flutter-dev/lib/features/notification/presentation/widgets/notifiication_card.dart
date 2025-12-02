@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/features/certificates/presentation/pages/certificate_page.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
-import 'package:ketroy_app/features/my_gifts/presentation/pages/gifts_page.dart';
+import 'package:ketroy_app/features/my_gifts/presentation/pages/my_gifts.dart';
 import 'package:ketroy_app/features/news/presentation/pages/news_page_detail.dart';
 import 'package:ketroy_app/features/notification/domain/entities/notification_entity.dart';
 import 'package:ketroy_app/features/notification/presentation/bloc/notification_bloc.dart';
@@ -234,6 +235,16 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
   }
 
   void _handleNotificationTap(BuildContext context) async {
+    debugPrint('🔔 Notification tapped: label=${notification.label}, title=${notification.title}');
+    
+    // Сначала выполняем навигацию (до любых изменений состояния)
+    debugPrint('🧭 Navigating to destination for label: ${notification.label}');
+    final didNavigate = await _navigateToDestination(context);
+    debugPrint('✅ Navigation completed: $didNavigate');
+    
+    // Только после возврата с экрана отмечаем как прочитанное и обновляем
+    if (!context.mounted) return;
+    
     // Отмечаем как прочитанное если еще не прочитано
     if (!notification.isRead) {
       context
@@ -242,69 +253,94 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
 
       // Уменьшаем badge count
       await NotificationServices.instance.decrementBadge();
-      if (!context.mounted) {
-        return;
-      }
     }
 
-    // Выполняем навигацию и ждем возврата
-    await _navigateToDestination(context);
-
     // Обновляем страницу при возврате
-    onNavigationReturn();
+    if (context.mounted) {
+      onNavigationReturn();
+    }
   }
 
-  Future<void> _navigateToDestination(BuildContext context) async {
+  /// Выполняет навигацию на соответствующий экран.
+  /// Возвращает true если навигация была выполнена, false если нет.
+  Future<bool> _navigateToDestination(BuildContext context) async {
     final labelType = _getNotificationLabelType(notification.label);
+    debugPrint('🏷️ Label type resolved: $labelType (from label: ${notification.label})');
+    
+    // Проверяем context перед навигацией
+    if (!context.mounted) {
+      debugPrint('❌ Context not mounted, skipping navigation');
+      return false;
+    }
+    
+    // Получаем navigator
+    final navigator = Navigator.of(context);
 
-    switch (labelType) {
-      case NotificationLabelType.gift:
-        // Подарки → Страница подарков
-        await Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => const GiftsPage()),
-        );
-        break;
-      case NotificationLabelType.bonus:
-      case NotificationLabelType.birthday:
-      case NotificationLabelType.loyalty:
-        // Бонусы, ДР, лояльность → Профиль, вкладка "Бонусы"
-        await Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => const ProfilePage(showBonusTab: true)),
-        );
-        break;
-      case NotificationLabelType.news:
-        // Новости → Детальная страница новости или список
-        if (notification.sourceId != null) {
-          await Navigator.of(context, rootNavigator: true).push(
-            NewsDetailPageRoute(
-              newsId: notification.sourceId!,
-              newsTitle: notification.body,
-            ),
+    try {
+      switch (labelType) {
+        case NotificationLabelType.gift:
+          // Подарки → Страница подарков
+          debugPrint('🎁 Opening gifts page...');
+          await navigator.push(
+            SlideRightRoute(page: const MyGifts()),
           );
-        }
-        // Если sourceId нет — остаёмся на странице уведомлений
-        break;
-      case NotificationLabelType.certificate:
-        // Сертификаты → Страница сертификатов
-        await Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => const CertificatePage()),
-        );
-        break;
-      case NotificationLabelType.discount:
-      case NotificationLabelType.promo:
-      case NotificationLabelType.referral:
-        // Скидки, промокоды, реферальная программа → Страница скидок
-        await Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(builder: (context) => const DiscountPage()),
-        );
-        break;
-      case NotificationLabelType.info:
-      case NotificationLabelType.reminder:
-      case NotificationLabelType.system:
-      case NotificationLabelType.test:
-      case NotificationLabelType.customPush:
-        // Информационные и системные уведомления — без навигации
-        break;
+          return true;
+          
+        case NotificationLabelType.bonus:
+        case NotificationLabelType.birthday:
+        case NotificationLabelType.loyalty:
+          // Бонусы, ДР, лояльность → Профиль, вкладка "Бонусы"
+          debugPrint('💰 Opening profile with bonus tab...');
+          await navigator.push(
+            SlideRightRoute(page: const ProfilePage(showBonusTab: true)),
+          );
+          return true;
+          
+        case NotificationLabelType.news:
+          // Новости → Детальная страница новости или список
+          if (notification.sourceId != null) {
+            debugPrint('📰 Opening news detail page...');
+            await navigator.push(
+              NewsDetailPageRoute(
+                newsId: notification.sourceId!,
+                newsTitle: notification.body,
+              ),
+            );
+            return true;
+          }
+          debugPrint('📰 News without sourceId, staying on notifications');
+          return false;
+          
+        case NotificationLabelType.certificate:
+          // Сертификаты → Страница сертификатов
+          debugPrint('🎫 Opening certificate page...');
+          await navigator.push(
+            SlideRightRoute(page: const CertificatePage()),
+          );
+          return true;
+          
+        case NotificationLabelType.discount:
+        case NotificationLabelType.promo:
+        case NotificationLabelType.referral:
+          // Скидки, промокоды, реферальная программа → Страница скидок
+          debugPrint('🏷️ Opening discount page...');
+          await navigator.push(
+            SlideRightRoute(page: const DiscountPage()),
+          );
+          return true;
+          
+        case NotificationLabelType.info:
+        case NotificationLabelType.reminder:
+        case NotificationLabelType.system:
+        case NotificationLabelType.test:
+        case NotificationLabelType.customPush:
+          // Информационные и системные уведомления — без навигации
+          debugPrint('ℹ️ Info/System notification, no navigation needed');
+          return false;
+      }
+    } catch (e) {
+      debugPrint('❌ Navigation error: $e');
+      return false;
     }
   }
 
