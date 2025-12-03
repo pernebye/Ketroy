@@ -97,8 +97,8 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
           Navigator.pop(context); // Закрываем scanner
         }
 
-        // rootNavigator: true для открытия поверх NavBar
-        final selected = await Navigator.of(context, rootNavigator: true).push<bool>(
+        final selected = await Navigator.push<bool>(
+          context,
           MaterialPageRoute(
             builder: (context) => GiftSelectionPage(
               giftGroupId: result.giftGroupId!,
@@ -150,7 +150,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
     
     // Останавливаем камеру
     await qrViewController?.pauseCamera();
-    // dispose() is deprecated and returns void, no await needed
+    qrViewController?.dispose();
     qrViewController = null;
   }
 
@@ -443,5 +443,3 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
     );
   }
 }
-
-

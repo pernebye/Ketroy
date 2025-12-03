@@ -426,4 +426,3 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     );
   }
 }
-
