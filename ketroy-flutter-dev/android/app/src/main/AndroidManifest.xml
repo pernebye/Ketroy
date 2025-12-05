@@ -41,12 +41,23 @@
 
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true"/>
 
+            <!-- Deep Link для собственного домена app.ketroy-shop.kz -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
-                <!-- Change "yourapp.chottu.link" to the special domain you set up for your ChottuLink URLs -->
+                <data 
+                    android:scheme="https"
+                    android:host="app.ketroy-shop.kz"/>
+            </intent-filter>
+            
+            <!-- Fallback для старых ссылок ChottuLink (можно удалить позже) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
                 <data 
                     android:scheme="https"
                     android:host="ketroy-shop.chottu.link"/>

@@ -1350,6 +1350,12 @@ abstract class AppLocalizations {
   /// **'Приглашение в Ketroy Shop'**
   String get ketroyInvitation;
 
+  /// No description provided for @downloadKetroyApp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачайте приложение Ketroy Shop и получайте эксклюзивные скидки!'**
+  String get downloadKetroyApp;
+
   /// No description provided for @systemLanguageHint.
   ///
   /// In ru, this message translates to:

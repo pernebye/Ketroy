@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:chottu_link/chottu_link.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:ketroy_app/main.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
 import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
+import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
 
 class DeepLinkManager {
   // ✅ Синглтон паттерн
@@ -21,7 +22,12 @@ class DeepLinkManager {
   String? originalLink;
   String? shortUrl;
   String? refParameter;
-  StreamSubscription<String>? _linkSubscription;
+  
+  // ✅ Поддерживаемые домены
+  static const List<String> _supportedDomains = [
+    'app.ketroy-shop.kz',      // Новый основной домен
+    'ketroy-shop.chottu.link', // Старый домен (для обратной совместимости)
+  ];
   
   // ✅ Стрим для уведомления о входящих deep links (для навигации)
   final StreamController<String> _deepLinkController =
@@ -35,18 +41,54 @@ class DeepLinkManager {
 
   Stream<String?> get refParameterStream => _refParameterController.stream;
 
+  // ✅ Method channel для получения initial link
+  static const _channel = MethodChannel('ketroy.app/deep_link');
+
   void initialize() {
-    if (!ChottuLink.isInitialized()) {
-      debugPrint('❌ ChottuLink не инициализован');
-      return;
+    debugPrint('🔗 Initializing DeepLinkManager...');
+    
+    // Слушаем deep links через Flutter's native handling
+    _setupDeepLinkHandling();
+    
+    debugPrint('✅ Deep link listener activated for domains: $_supportedDomains');
+  }
+  
+  void _setupDeepLinkHandling() {
+    // Получаем initial link (если приложение было запущено через deep link)
+    _getInitialLink();
+    
+    // Примечание: Flutter автоматически обрабатывает deep links через
+    // flutter_deeplinking_enabled в AndroidManifest.xml и Associated Domains в iOS.
+    // DeepLinkManager получает ссылки через handleLink() вызываемый из main.dart
+  }
+  
+  Future<void> _getInitialLink() async {
+    try {
+      // Пробуем получить initial link через method channel
+      final String? initialLink = await _channel.invokeMethod('getInitialLink');
+      if (initialLink != null && initialLink.isNotEmpty) {
+        debugPrint('🔗 Got initial link: $initialLink');
+        _handleIncomingLink(initialLink);
+      }
+    } catch (e) {
+      // Method channel может быть не настроен - это нормально
+      debugPrint('⚠️ Could not get initial link: $e');
     }
-
-    _linkSubscription = ChottuLink.onLinkReceived.listen(
-      _handleIncomingLink,
-      onError: _handleLinkError,
-    );
-
-    debugPrint('✅ Deep link listener activated');
+  }
+  
+  /// Проверяет, является ли URL deep link'ом для нашего приложения
+  bool _isDeepLink(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return _supportedDomains.contains(uri.host);
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  /// Публичный метод для обработки входящих ссылок (можно вызвать извне)
+  void handleLink(String link) {
+    _handleIncomingLink(link);
   }
 
   void _handleIncomingLink(String link) {
@@ -57,16 +99,13 @@ class DeepLinkManager {
     // Извлекаем ref параметр из URL
     _extractRefParameter(link);
 
-    if (_isChottuLink(link)) {
+    // Сохраняем ссылку
+    if (_isChottuLink(link) || _isKetroyAppLink(link)) {
       shortUrl = link;
-      debugPrint('💾 Saved short link: $shortUrl');
+      debugPrint('💾 Saved deep link: $shortUrl');
     }
 
-    if (_isAppStoreLink(link)) {
-      _resolveOriginalLink(link);
-    } else {
-      originalLink = link;
-    }
+    originalLink = link;
 
     log(link);
     
@@ -210,47 +249,32 @@ class DeepLinkManager {
   // ✅ Проверка наличия ref параметра
   bool get hasRefParameter => refParameter != null && refParameter!.isNotEmpty;
 
-  void _handleLinkError(dynamic error) {
-    debugPrint('❌ Link reception error: $error');
-    receivedLink = 'Error: $error';
-  }
-
-  void _resolveOriginalLink(String fallbackUrl) {
-    debugPrint('🔍 Attempting to resolve original link for: $fallbackUrl');
-
-    if (shortUrl != null) {
-      _getAppLinkDataFromUrl(shortUrl!);
-    }
-  }
-
-  void _getAppLinkDataFromUrl(String shortUrl) {
-    debugPrint('🔗 Getting data for short link: $shortUrl');
-
-    ChottuLink.getAppLinkDataFromUrl(
-      shortUrl: shortUrl,
-      onSuccess: (resolvedLink) {
-        debugPrint(
-            '✅ Successfully retrieved original link: ${resolvedLink.link}');
-        debugPrint('✅ Short link: ${resolvedLink.shortLink}');
-        originalLink = resolvedLink.link ?? resolvedLink.shortLink;
-      },
-      onError: (error) {
-        debugPrint('❌ Error retrieving original link: ${error.message}');
-        originalLink = 'Retrieval error: ${error.message}';
-      },
-    );
-  }
-
+  /// Проверяет, является ли ссылка от ChottuLink (для обратной совместимости)
   bool _isChottuLink(String link) {
     return link.contains('chottu.link') && !link.contains('apps.apple.com');
   }
+  
+  /// Проверяет, является ли ссылка от Ketroy (новый домен)
+  bool _isKetroyAppLink(String link) {
+    return link.contains(DeepLinkConstants.domain);
+  }
 
+  /// Проверяет, является ли ссылка на App Store
   bool _isAppStoreLink(String link) {
     return link.contains('apps.apple.com');
   }
+  
+  /// Проверяет, является ли ссылка на Play Store
+  bool _isPlayStoreLink(String link) {
+    return link.contains('play.google.com');
+  }
+  
+  /// Проверяет, является ли ссылка ссылкой на магазин приложений
+  bool _isStoreLink(String link) {
+    return _isAppStoreLink(link) || _isPlayStoreLink(link);
+  }
 
   void dispose() {
-    _linkSubscription?.cancel();
     _refParameterController.close();
     _deepLinkController.close();
   }

@@ -657,6 +657,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ketroyInvitation => 'Приглашение в Ketroy Shop';
 
   @override
+  String get downloadKetroyApp =>
+      'Скачайте приложение Ketroy Shop и получайте эксклюзивные скидки!';
+
+  @override
   String get systemLanguageHint =>
       'Выберите \"Системный язык\" для автоматического определения языка устройства';
 

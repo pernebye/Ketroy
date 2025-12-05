@@ -332,7 +332,7 @@ class _ProfilePageState extends State<ProfilePage>
                           SizedBox(height: 24.h),
                           _buildSocialLinks(state),
                         ],
-                        SizedBox(height: 32.h),
+                        SizedBox(height: 16.h),
                         _buildFooter(),
                         SizedBox(height: NavBar.getBottomPadding(context)),
                       ],
@@ -1011,8 +1011,8 @@ class _ProfilePageState extends State<ProfilePage>
     // Общая высота для вкладки "Бонусы"
     final bonusHeight = bonusCardHeight + promotionsHeight + 24.h;
     
-    // Возвращаем максимальную высоту + запас
-    return (accountHeight > bonusHeight ? accountHeight : bonusHeight) + 80.h;
+    // Возвращаем максимальную высоту + минимальный запас
+    return (accountHeight > bonusHeight ? accountHeight : bonusHeight) + 20.h;
   }
 
   Widget _buildTabContent(ProfileState state) {

@@ -49,6 +49,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   final sharedService = serviceLocator<SharedPreferencesService>();
   bool _isProcessing = false;
   final bool _hasNavigatedBack = false;
+  
+  // Флаг для предотвращения повторной инициализации контроллеров
+  bool _controllersInitialized = false;
 
   late AnimationController _animController;
 
@@ -97,8 +100,13 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
               if (state.avatarImage != null) {
                 selectedImage = File(state.avatarImage!);
               }
-              nameController.text = state.name ?? '';
-              surnameController.text = state.surname ?? '';
+              // Инициализируем контроллеры только один раз при первой загрузке данных
+              // Это предотвращает сброс пользовательского ввода при нажатии "Done" на клавиатуре iOS/Android
+              if (!_controllersInitialized) {
+                nameController.text = state.name ?? '';
+                surnameController.text = state.surname ?? '';
+                _controllersInitialized = true;
+              }
               return _buildContent(state);
             }
             return const Center(child: Loader());

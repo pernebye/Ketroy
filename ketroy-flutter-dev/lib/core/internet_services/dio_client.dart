@@ -55,11 +55,19 @@ class DioClient {
       },
       onError: (error, handler) async {
         if (error.response?.statusCode == 401) {
-          // Токен истёк - очищаем данные
-          await UserDataManager.clearUserData();
-          debugPrint('⚠️ Token expired, user data cleared');
-          // Оповещаем о необходимости сброса состояния авторизации
-          _authErrorController.add(null);
+          // Проверяем, был ли токен отправлен с этим запросом
+          final hadToken = error.requestOptions.headers['Authorization'] != null;
+          
+          if (hadToken) {
+            // Токен был отправлен, но сервер вернул 401 = токен истёк/невалиден
+            await UserDataManager.clearUserData();
+            debugPrint('⚠️ Token expired, user data cleared');
+            // Оповещаем о необходимости сброса состояния авторизации
+            _authErrorController.add(null);
+          } else {
+            // Токен НЕ был отправлен - просто эндпоинт требует авторизации
+            debugPrint('ℹ️ Endpoint requires authentication, but no token was sent');
+          }
         }
         return handler.next(error);
       },

@@ -653,6 +653,10 @@ class AppLocalizationsKk extends AppLocalizations {
   String get ketroyInvitation => 'Ketroy Shop шақыруы';
 
   @override
+  String get downloadKetroyApp =>
+      'Ketroy Shop қолданбасын жүктеп алыңыз және эксклюзивті жеңілдіктер алыңыз!';
+
+  @override
   String get systemLanguageHint =>
       'Құрылғы тілін автоматты түрде анықтау үшін \"Жүйелік тіл\" таңдаңыз';
 

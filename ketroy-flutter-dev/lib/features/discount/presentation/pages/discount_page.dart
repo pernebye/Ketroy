@@ -8,7 +8,6 @@ import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dar
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
-import 'package:share_plus/share_plus.dart';
 import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
 class DiscountPage extends StatefulWidget {
@@ -60,25 +59,34 @@ class _DiscountPageState extends State<DiscountPage>
     showSnackBar(context, l10n.promocodeCopied);
   }
 
-  void _sharePromo(String promocode, AppLocalizations l10n) {
-    KetroyDynamicLinksCallback.createInviteLink(
-      referralCode: promocode,
-      onSuccess: (link) async {
-        final shareText = l10n.joinKetroy(link);
-        SharePlus.instance.share(ShareParams(
-          text: shareText,
-          subject: l10n.ketroyInvitation,
-        ));
-      },
-      onError: (error) {
+  Future<void> _sharePromo(String promocode, AppLocalizations l10n) async {
+    try {
+      // Используем новый сервис шаринга с собственным доменом
+      await KetroyShareService.shareReferralLink(
+        referralCode: promocode,
+        context: context,
+        onError: (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.error}: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Share error: $e');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${l10n.error}: $error'),
+            content: Text('${l10n.error}: $e'),
             backgroundColor: Colors.red,
           ),
         );
-      },
-    );
+      }
+    }
   }
 
   @override
@@ -311,9 +319,9 @@ class _DiscountPageState extends State<DiscountPage>
 
             // Кнопка поделиться
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 _copy(context, l10n);
-                _sharePromo(codeController.text, l10n);
+                await _sharePromo(codeController.text, l10n);
               },
               child: Container(
                 width: double.infinity,
