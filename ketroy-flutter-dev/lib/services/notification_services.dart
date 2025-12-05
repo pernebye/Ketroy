@@ -15,6 +15,7 @@ import 'package:ketroy_app/features/news/presentation/pages/news_page_detail.dar
 import 'package:ketroy_app/features/notification/domain/entities/notification_entity.dart';
 import 'package:ketroy_app/features/notification/presentation/pages/notification_page.dart';
 import 'package:ketroy_app/main.dart';
+import 'package:ketroy_app/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Событие нового подарка для обновления UI
@@ -51,8 +52,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     debugPrint('🔔 Background handler started: ${message.messageId}');
 
     // ✅ КРИТИЧЕСКИ ВАЖНО: Инициализируем Firebase в background handler
-    await Firebase.initializeApp();
-    debugPrint('✅ Firebase initialized in background handler');
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('✅ Firebase initialized in background handler');
+    } else {
+      debugPrint('✅ Firebase already initialized in background handler');
+    }
 
     // Инициализируем flutter_app_badger и увеличиваем badge
     await _incrementBadgeInBackground();

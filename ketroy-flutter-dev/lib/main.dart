@@ -39,6 +39,7 @@ import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:ketroy_app/services/splash/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final DeepLinkManager globalDeepLinkManager = DeepLinkManager();
@@ -90,7 +91,9 @@ Future<void> _initializeBasicServices() async {
 
     // ✅ Firebase инициализация (пропускаем для web, т.к. не настроен)
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       debugPrint('✅ Firebase initialized in main');
     } catch (e) {
       debugPrint('⚠️ Firebase initialization skipped (web not configured): $e');
@@ -211,9 +214,17 @@ class _SplashWrapperState extends State<SplashWrapper> {
   Future<void> _initializeServices() async {
     try {
       // Firebase инициализация (пропускаем для web)
+      // Примечание: Firebase уже инициализирован в _initializeBasicServices,
+      // но проверяем на случай если это не сработало
       try {
-        await Firebase.initializeApp();
-        debugPrint('✅ Firebase initialized');
+        if (Firebase.apps.isEmpty) {
+          await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          );
+          debugPrint('✅ Firebase initialized in services');
+        } else {
+          debugPrint('✅ Firebase already initialized');
+        }
       } catch (e) {
         debugPrint('⚠️ Firebase initialization skipped: $e');
       }
@@ -242,13 +253,27 @@ class _SplashWrapperState extends State<SplashWrapper> {
         Hive.registerAdapter(ActiveGiftModelAdapter());
       }
 
-      // Безопасное открытие боксов
+      // Безопасное открытие боксов с обработкой ошибок
       if (!Hive.isBoxOpen(activeGiftsBoxName)) {
-        await Hive.openBox<ActiveGiftModel>(activeGiftsBoxName);
+        try {
+          await Hive.openBox<ActiveGiftModel>(activeGiftsBoxName);
+        } catch (boxError) {
+          debugPrint('⚠️ Error opening Hive box, trying to delete and recreate: $boxError');
+          // Пытаемся удалить поврежденный бокс и создать новый
+          try {
+            await Hive.deleteBoxFromDisk(activeGiftsBoxName);
+            await Hive.openBox<ActiveGiftModel>(activeGiftsBoxName);
+            debugPrint('✅ Hive box recreated successfully');
+          } catch (deleteError) {
+            debugPrint('❌ Failed to recreate Hive box: $deleteError');
+            // Не бросаем ошибку - приложение может работать без этого бокса
+          }
+        }
       }
     } catch (e) {
       debugPrint('❌ Hive initialization error: $e');
-      rethrow;
+      // Не бросаем ошибку - приложение может работать без Hive
+      debugPrint('⚠️ Continuing without Hive storage');
     }
   }
 

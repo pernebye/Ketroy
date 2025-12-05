@@ -1,20 +1,44 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
+import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
+import 'package:ketroy_app/features/discount/presentation/bloc/discount_bloc.dart';
+import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
 import 'package:ketroy_app/features/profile/data/promotion_model.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/services/deep_link/create_dynamic_link.dart';
 
 /// Bottom Sheet с детальной информацией об акции
-class PromotionDetailSheet extends StatelessWidget {
+class PromotionDetailSheet extends StatefulWidget {
   final PromotionModel promotion;
 
   const PromotionDetailSheet({super.key, required this.promotion});
 
+  @override
+  State<PromotionDetailSheet> createState() => _PromotionDetailSheetState();
+}
+
+class _PromotionDetailSheetState extends State<PromotionDetailSheet> {
   // Цвета дизайна
   static const Color _primaryGreen = Color(0xFF3C4B1B);
   static const Color _lightGreen = Color(0xFF5A6F2B);
   static const Color _accentGreen = Color(0xFF8BC34A);
   static const Color _cardBg = Color(0xFFF5F7F0);
+
+  PromotionModel get promotion => widget.promotion;
+
+  @override
+  void initState() {
+    super.initState();
+    // Если это акция "Подари скидку другу", загружаем промокод
+    if (promotion.type == 'friend_discount') {
+      context.read<DiscountBloc>().add(GetPromoCodeFetch());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +96,11 @@ class PromotionDetailSheet extends StatelessWidget {
                       SizedBox(height: 16.h),
                     ],
                     _buildDatesSection(),
+                    // Секция с промокодом для акции "Подари скидку другу"
+                    if (promotion.type == 'friend_discount') ...[
+                      SizedBox(height: 20.h),
+                      _buildFriendDiscountSection(),
+                    ],
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -589,6 +618,197 @@ class PromotionDetailSheet extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [_lightGreen, _primaryGreen],
         );
+    }
+  }
+
+  /// Секция с промокодом для акции "Подари скидку другу"
+  Widget _buildFriendDiscountSection() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return BlocBuilder<DiscountBloc, DiscountState>(
+      builder: (context, state) {
+        final promoCode = state.promoCode ?? l10n.yourPromocode;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Заголовок секции
+            Row(
+              children: [
+                Icon(
+                  Icons.card_giftcard_rounded,
+                  size: 18.sp,
+                  color: _primaryGreen,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  l10n.yourPromocode,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: _primaryGreen,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            
+            // Поле с промокодом и кнопками
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+              ),
+              child: Row(
+                children: [
+                  // Поле с промокодом и кнопкой копирования
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _copyPromoCode(promoCode, l10n),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: _cardBg,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: _primaryGreen.withValues(alpha: 0.2),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                promoCode,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: _primaryGreen,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(
+                              Icons.copy_rounded,
+                              size: 18.w,
+                              color: _primaryGreen,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  // Кнопка Share
+                  GestureDetector(
+                    onTap: () => _sharePromoCode(promoCode, l10n),
+                    child: Container(
+                      width: 48.w,
+                      height: 48.w,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_lightGreen, _primaryGreen],
+                        ),
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryGreen.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.share_rounded,
+                        color: Colors.white,
+                        size: 22.w,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            SizedBox(height: 16.h),
+            
+            // Текстовая кнопка для перехода на экран акции
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  // Закрываем bottom sheet
+                  Navigator.pop(context);
+                  // Переходим на экран "Подари скидку другу"
+                  context.read<DiscountBloc>().add(GetPromoCodeFetch());
+                  Navigator.of(context, rootNavigator: true).push(
+                    SlideOverPageRoute(page: const DiscountPage()),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.shareDiscount,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: _primaryGreen,
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14.sp,
+                      color: _primaryGreen,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _copyPromoCode(String promoCode, AppLocalizations l10n) {
+    Clipboard.setData(ClipboardData(text: promoCode));
+    showSnackBar(context, l10n.promocodeCopied);
+  }
+
+  Future<void> _sharePromoCode(String promoCode, AppLocalizations l10n) async {
+    try {
+      await KetroyShareService.shareReferralLink(
+        referralCode: promoCode,
+        context: context,
+        onError: (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.error}: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Share error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

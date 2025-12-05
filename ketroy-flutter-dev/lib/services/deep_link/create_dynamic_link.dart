@@ -89,6 +89,28 @@ class KetroyDynamicLinksCallback {
 
 /// Сервис для шаринга ссылок и промокодов
 class KetroyShareService {
+  /// Получить позицию для sharePositionOrigin на iOS
+  /// Это обязательно для iPad и рекомендуется для iPhone
+  static Rect? _getSharePositionOrigin(BuildContext context) {
+    try {
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      if (box != null) {
+        final Offset position = box.localToGlobal(Offset.zero);
+        final Size size = box.size;
+        return Rect.fromLTWH(
+          position.dx,
+          position.dy,
+          size.width,
+          size.height,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ Could not get share position origin: $e');
+    }
+    // Fallback: центр экрана
+    return null;
+  }
+
   /// Поделиться реферальной ссылкой
   /// 
   /// [referralCode] - промокод пользователя
@@ -114,11 +136,15 @@ class KetroyShareService {
       
       debugPrint('📤 Sharing referral link: $link');
       
+      // Получаем позицию для iOS sharePositionOrigin
+      final sharePositionOrigin = _getSharePositionOrigin(context);
+      
       // Используем share_plus для шаринга
       final result = await SharePlus.instance.share(
         ShareParams(
           text: shareText,
           subject: l10n.ketroyInvitation,
+          sharePositionOrigin: sharePositionOrigin,
         ),
       );
       
@@ -134,12 +160,19 @@ class KetroyShareService {
   static Future<void> shareText({
     required String text,
     String? subject,
+    BuildContext? context,
   }) async {
     try {
+      Rect? sharePositionOrigin;
+      if (context != null) {
+        sharePositionOrigin = _getSharePositionOrigin(context);
+      }
+      
       await SharePlus.instance.share(
         ShareParams(
           text: text,
           subject: subject,
+          sharePositionOrigin: sharePositionOrigin,
         ),
       );
     } catch (e) {
@@ -156,10 +189,14 @@ class KetroyShareService {
       // Используем простой текст для шаринга приложения
       const text = '🛍️ Скачайте приложение Ketroy Shop и получайте эксклюзивные скидки!';
       
+      // Получаем позицию для iOS sharePositionOrigin
+      final sharePositionOrigin = _getSharePositionOrigin(context);
+      
       await SharePlus.instance.share(
         ShareParams(
           text: '$text\n$storeLink',
           subject: 'Ketroy Shop',
+          sharePositionOrigin: sharePositionOrigin,
         ),
       );
     } catch (e) {
