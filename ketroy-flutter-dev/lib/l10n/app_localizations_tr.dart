@@ -1051,6 +1051,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get qrCodeInStore => 'KETROY mağazasında QR kodu';
 
   @override
+  String get qrCodeEmpty => 'QR kodu boş veya hasarlı';
+
+  @override
+  String get invalidQrCode =>
+      'Geçersiz QR kodu. KETROY mağazasından QR kodunu kullanın';
+
+  @override
   String get giftReceivedSuccess => 'Hediye başarıyla alındı! 🎁';
 
   @override

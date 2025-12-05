@@ -2022,6 +2022,18 @@ abstract class AppLocalizations {
   /// **'QR-код в магазине KETROY'**
   String get qrCodeInStore;
 
+  /// No description provided for @qrCodeEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'QR-код пустой или повреждён'**
+  String get qrCodeEmpty;
+
+  /// No description provided for @invalidQrCode.
+  ///
+  /// In ru, this message translates to:
+  /// **'Неверный QR-код. Используйте QR-код из магазина KETROY'**
+  String get invalidQrCode;
+
   /// No description provided for @giftReceivedSuccess.
   ///
   /// In ru, this message translates to:

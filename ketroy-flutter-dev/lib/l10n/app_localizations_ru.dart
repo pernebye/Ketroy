@@ -1061,6 +1061,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get qrCodeInStore => 'QR-код в магазине KETROY';
 
   @override
+  String get qrCodeEmpty => 'QR-код пустой или повреждён';
+
+  @override
+  String get invalidQrCode =>
+      'Неверный QR-код. Используйте QR-код из магазина KETROY';
+
+  @override
   String get giftReceivedSuccess => 'Подарок успешно получен! 🎁';
 
   @override

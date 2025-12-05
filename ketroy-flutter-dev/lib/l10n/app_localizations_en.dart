@@ -1048,6 +1048,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrCodeInStore => 'QR code at KETROY store';
 
   @override
+  String get qrCodeEmpty => 'QR code is empty or damaged';
+
+  @override
+  String get invalidQrCode => 'Invalid QR code. Use QR code from KETROY store';
+
+  @override
   String get giftReceivedSuccess => 'Gift received successfully! 🎁';
 
   @override

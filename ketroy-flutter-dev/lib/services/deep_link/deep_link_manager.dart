@@ -3,6 +3,10 @@ import 'dart:developer';
 
 import 'package:chottu_link/chottu_link.dart';
 import 'package:flutter/material.dart';
+import 'package:ketroy_app/main.dart';
+import 'package:ketroy_app/core/navBar/nav_bar.dart';
+import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
+import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 
 class DeepLinkManager {
   // ✅ Синглтон паттерн
@@ -18,6 +22,12 @@ class DeepLinkManager {
   String? shortUrl;
   String? refParameter;
   StreamSubscription<String>? _linkSubscription;
+  
+  // ✅ Стрим для уведомления о входящих deep links (для навигации)
+  final StreamController<String> _deepLinkController =
+      StreamController<String>.broadcast();
+  
+  Stream<String> get deepLinkStream => _deepLinkController.stream;
 
   // ✅ Стрим для уведомления об изменениях
   final StreamController<String?> _refParameterController =
@@ -40,7 +50,7 @@ class DeepLinkManager {
   }
 
   void _handleIncomingLink(String link) {
-    debugPrint('🔗 Received link: $link');
+    debugPrint('🔗 Received deep link: $link');
 
     receivedLink = link;
 
@@ -59,6 +69,107 @@ class DeepLinkManager {
     }
 
     log(link);
+    
+    // ✅ ВАЖНО: Выполняем навигацию на основе deep link
+    _navigateBasedOnDeepLink(link);
+  }
+  
+  /// Навигация на основе deep link URL
+  void _navigateBasedOnDeepLink(String link) {
+    try {
+      final uri = Uri.parse(link);
+      final path = uri.path.toLowerCase();
+      
+      debugPrint('🧭 Navigating based on deep link path: $path');
+      
+      // Проверяем различные типы deep links
+      if (path.contains('scan-discount') || path.contains('discount')) {
+        _navigateToDiscount();
+      } else if (path.contains('invite') || uri.queryParameters.containsKey('ref')) {
+        // Реферальная ссылка - показываем страницу скидок с применённым рефералом
+        _navigateToDiscount();
+      } else if (path.contains('gift')) {
+        _navigateToGifts();
+      } else if (path.contains('profile') || path.contains('bonus')) {
+        _navigateToProfile();
+      } else {
+        // По умолчанию - на главную
+        debugPrint('📱 Unknown deep link, staying on current screen');
+      }
+      
+      // Уведомляем слушателей о deep link
+      _deepLinkController.add(link);
+    } catch (e) {
+      debugPrint('❌ Error navigating based on deep link: $e');
+    }
+  }
+  
+  void _navigateToDiscount() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+      
+      // Переходим к NavScreen на вкладку профиля
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const NavScreen(initialTab: 1),
+        ),
+        (route) => false,
+      );
+      
+      // Затем открываем страницу скидок
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (navigator.mounted) {
+          navigator.push(SlideOverPageRoute(page: const DiscountPage()));
+        }
+      });
+      
+      debugPrint('✅ Navigated to discount page via deep link');
+    });
+  }
+  
+  void _navigateToGifts() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+      
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const NavScreen(initialTab: 4),
+        ),
+        (route) => false,
+      );
+      
+      debugPrint('✅ Navigated to gifts page via deep link');
+    });
+  }
+  
+  void _navigateToProfile() {
+    _safeNavigate(() {
+      final navigator = navigatorKey.currentState;
+      if (navigator == null) return;
+      
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const NavScreen(initialTab: 1),
+        ),
+        (route) => false,
+      );
+      
+      debugPrint('✅ Navigated to profile via deep link');
+    });
+  }
+  
+  void _safeNavigate(VoidCallback navigationCallback) {
+    try {
+      if (navigatorKey.currentState != null) {
+        navigationCallback();
+      } else {
+        debugPrint('⚠️ Navigator not available for deep link navigation');
+      }
+    } catch (e) {
+      debugPrint('❌ Navigation error: $e');
+    }
   }
 
   String _extractRefParameter(String link) {
@@ -141,5 +252,6 @@ class DeepLinkManager {
   void dispose() {
     _linkSubscription?.cancel();
     _refParameterController.close();
+    _deepLinkController.close();
   }
 }

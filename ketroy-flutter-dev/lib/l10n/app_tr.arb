@@ -401,6 +401,8 @@
   "qrCodeScannedSuccess": "QR kodu başarıyla tarandı!",
   "pointCameraAtQr": "Kamerayı QR koduna yönlendirin",
   "qrCodeInStore": "KETROY mağazasında QR kodu",
+  "qrCodeEmpty": "QR kodu boş veya hasarlı",
+  "invalidQrCode": "Geçersiz QR kodu. KETROY mağazasından QR kodunu kullanın",
   
   "giftReceivedSuccess": "Hediye başarıyla alındı! 🎁",
   "giftDataError": "Hediye veri hatası. Lütfen tekrar deneyin.",

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -77,13 +78,69 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
       if (!mounted) return;
 
-      setState(() => isLoading = true);
-
       final code = scanData.code;
-      if (code != null) {
-        context.read<ProfileBloc>().add(ScanQrFetch(scanQrUrl: code));
+      if (code == null || code.isEmpty) {
+        await _cleanupResources();
+        if (mounted) {
+          Navigator.pop(context, false);
+          showSnackBar(context, 'QR-код пустой или повреждён');
+        }
+        return;
       }
+      
+      // Валидация URL - проверяем, что это правильный QR-код для скидки
+      if (!_isValidDiscountQrCode(code)) {
+        await _cleanupResources();
+        if (mounted) {
+          Navigator.pop(context, false);
+          showSnackBar(context, 'Неверный QR-код. Используйте QR-код из магазина KETROY');
+        }
+        return;
+      }
+
+      setState(() => isLoading = true);
+      context.read<ProfileBloc>().add(ScanQrFetch(scanQrUrl: code));
     });
+  }
+  
+  /// Проверяет, что URL является валидным QR-кодом для скидки Ketroy
+  bool _isValidDiscountQrCode(String code) {
+    try {
+      final uri = Uri.parse(code);
+      
+      // Проверяем, что это URL (а не просто текст)
+      if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
+        debugPrint('❌ QR код не является URL: $code');
+        return false;
+      }
+      
+      // Проверяем, что это URL Ketroy API или localhost/ngrok для dev
+      final host = uri.host.toLowerCase();
+      final isKetroyApi = host.contains('ketroy-shop.kz') || 
+                          host.contains('ketroy.kz') ||
+                          host.contains('ketroy.ngrok.app');
+      final isLocalDev = host == 'localhost' || 
+                         host == '127.0.0.1' || 
+                         host == '10.0.2.2';
+      
+      if (!isKetroyApi && !isLocalDev) {
+        debugPrint('❌ QR код не от Ketroy: $code');
+        return false;
+      }
+      
+      // Проверяем, что путь содержит scan-discount
+      final path = uri.path.toLowerCase();
+      if (!path.contains('scan-discount')) {
+        debugPrint('❌ QR код не для скидки: $code');
+        return false;
+      }
+      
+      debugPrint('✅ Валидный QR код для скидки: $code');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Ошибка парсинга QR кода: $e');
+      return false;
+    }
   }
 
   void _toggleFlash() async {

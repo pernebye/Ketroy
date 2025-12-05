@@ -401,6 +401,8 @@
   "qrCodeScannedSuccess": "QR code scanned successfully!",
   "pointCameraAtQr": "Point the camera at the QR code",
   "qrCodeInStore": "QR code at KETROY store",
+  "qrCodeEmpty": "QR code is empty or damaged",
+  "invalidQrCode": "Invalid QR code. Use QR code from KETROY store",
   
   "giftReceivedSuccess": "Gift received successfully! 🎁",
   "giftDataError": "Gift data error. Try again.",
