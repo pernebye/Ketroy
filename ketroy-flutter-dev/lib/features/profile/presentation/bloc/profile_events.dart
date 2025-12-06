@@ -65,6 +65,12 @@ class DeleteUserFetch extends ProfileEvent {}
 
 class ResetProfileState extends ProfileEvent {}
 
+/// Событие для мягкого обновления профиля (сохраняет скидку и QR статус)
+class SoftRefreshProfile extends ProfileEvent {}
+
+/// Событие для сброса статуса QR-сканирования
+class ResetQrStatus extends ProfileEvent {}
+
 class GetCityListFetch extends ProfileEvent {}
 
 class LoadCityShop extends ProfileEvent {}

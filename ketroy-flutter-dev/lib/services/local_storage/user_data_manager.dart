@@ -65,66 +65,96 @@ class UserDataManager {
   }
   
   /// Получить QR токен только если он действителен (не истёк)
+  /// ⚠️ ВАЖНО: Этот метод очищает токен если он невалиден!
+  /// Для проверки без очистки используйте isQrTokenValid() + getQrToken()
   static Future<String?> getValidQrToken() async {
+    // Сначала читаем токен
+    final token = await _secureStorage.read(key: _qrTokenKey);
+    if (token == null || token.isEmpty) {
+      debugPrint('🔍 getValidQrToken: no token found');
+      return null;
+    }
+    
+    // Проверяем валидность
     if (!await isQrTokenValid()) {
+      debugPrint('🔍 getValidQrToken: token invalid, clearing');
       await clearQrToken();
       return null;
     }
-    return await _secureStorage.read(key: _qrTokenKey);
+    
+    debugPrint('🔍 getValidQrToken: returning valid token');
+    return token;
   }
   
   /// Проверить, действителен ли QR токен (не прошло ли 10 минут)
   static Future<bool> isQrTokenValid() async {
-    // Сначала проверяем есть ли сам токен
-    final token = await _secureStorage.read(key: _qrTokenKey);
-    if (token == null || token.isEmpty) {
-      return false;
-    }
-    
-    final prefs = await SharedPreferences.getInstance();
-    final timestamp = prefs.getInt(_qrTokenTimestampKey);
-    
-    if (timestamp == null) {
-      // Токен есть, но нет timestamp - считаем валидным (для обратной совместимости)
-      // Но сразу устанавливаем timestamp
-      await prefs.setInt(_qrTokenTimestampKey, DateTime.now().millisecondsSinceEpoch);
+    try {
+      // Сначала проверяем есть ли сам токен
+      final token = await _secureStorage.read(key: _qrTokenKey);
+      if (token == null || token.isEmpty) {
+        debugPrint('🔐 QR token validity: no token');
+        return false;
+      }
+      
+      final prefs = await SharedPreferences.getInstance();
+      // ✅ Перезагружаем prefs чтобы получить актуальные данные
+      await prefs.reload();
+      final timestamp = prefs.getInt(_qrTokenTimestampKey);
+      
+      if (timestamp == null) {
+        // Токен есть, но нет timestamp - считаем валидным (для обратной совместимости)
+        // Но сразу устанавливаем timestamp
+        debugPrint('🔐 QR token validity: no timestamp, setting now');
+        await prefs.setInt(_qrTokenTimestampKey, DateTime.now().millisecondsSinceEpoch);
+        return true;
+      }
+      
+      final scanTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(scanTime);
+      
+      final isValid = difference < _qrTokenLifetime;
+      debugPrint('🔐 QR token validity check: $isValid (${difference.inSeconds}s elapsed, expires in ${(_qrTokenLifetime - difference).inSeconds}s)');
+      
+      return isValid;
+    } catch (e) {
+      debugPrint('❌ Error checking QR token validity: $e');
+      // При ошибке считаем токен валидным чтобы не сбрасывать скидку
       return true;
     }
-    
-    final scanTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final now = DateTime.now();
-    final difference = now.difference(scanTime);
-    
-    final isValid = difference < _qrTokenLifetime;
-    debugPrint('🔐 QR token validity check: $isValid (${difference.inSeconds}s elapsed)');
-    
-    return isValid;
   }
   
   /// Получить оставшееся время действия QR токена
   static Future<Duration?> getQrTokenRemainingTime() async {
-    // Сначала проверяем есть ли токен
-    final token = await _secureStorage.read(key: _qrTokenKey);
-    if (token == null || token.isEmpty) {
-      return null;
+    try {
+      // Сначала проверяем есть ли токен
+      final token = await _secureStorage.read(key: _qrTokenKey);
+      if (token == null || token.isEmpty) {
+        return null;
+      }
+      
+      final prefs = await SharedPreferences.getInstance();
+      // ✅ Перезагружаем prefs чтобы получить актуальные данные
+      await prefs.reload();
+      final timestamp = prefs.getInt(_qrTokenTimestampKey);
+      
+      if (timestamp == null) {
+        return _qrTokenLifetime; // Если нет timestamp, возвращаем полное время
+      }
+      
+      final scanTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final expiryTime = scanTime.add(_qrTokenLifetime);
+      final now = DateTime.now();
+      
+      if (now.isAfter(expiryTime)) {
+        return null;
+      }
+      
+      return expiryTime.difference(now);
+    } catch (e) {
+      debugPrint('❌ Error getting QR token remaining time: $e');
+      return _qrTokenLifetime; // При ошибке возвращаем полное время
     }
-    
-    final prefs = await SharedPreferences.getInstance();
-    final timestamp = prefs.getInt(_qrTokenTimestampKey);
-    
-    if (timestamp == null) {
-      return _qrTokenLifetime; // Если нет timestamp, возвращаем полное время
-    }
-    
-    final scanTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final expiryTime = scanTime.add(_qrTokenLifetime);
-    final now = DateTime.now();
-    
-    if (now.isAfter(expiryTime)) {
-      return null;
-    }
-    
-    return expiryTime.difference(now);
   }
   
   /// Очистить QR токен
@@ -153,6 +183,13 @@ class UserDataManager {
   static Future<String?> getPromoCode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_promoCodeKey);
+  }
+
+  /// Очистить сохраненный промокод
+  static Future<void> clearPromoCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_promoCodeKey);
+    debugPrint('🗑️ Cleared saved promo code');
   }
 
   /// Сохранить объект пользователя (RegisterUserEntity)

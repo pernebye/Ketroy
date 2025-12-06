@@ -176,7 +176,7 @@ class ProfileState extends Equatable {
       profileData: profileData ?? this.profileData,
       cityList: cityList ?? this.cityList,
       isCleaned: isCleaned ?? this.isCleaned,
-      discount: discount,
+      discount: discount ?? this.discount,
       scan: scan ?? this.scan,
       qrStatus: qrStatus ?? this.qrStatus,
       isUploadingAvatar: isUploadingAvatar ?? this.isUploadingAvatar,

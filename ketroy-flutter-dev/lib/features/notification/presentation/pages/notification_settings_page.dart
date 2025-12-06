@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 
@@ -171,20 +170,15 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          GestureDetector(
+          LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            borderRadius: 22.0,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
           Expanded(

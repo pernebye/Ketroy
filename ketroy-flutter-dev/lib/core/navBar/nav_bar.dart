@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -142,6 +143,11 @@ class NavScreenState extends State<NavScreen> with TickerProviderStateMixin {
       _showWelcomeAnimation = true;
     }
     _loadUser();
+
+    // ✅ Сбрасываем состояние ProfileBloc при новом входе
+    // Это предотвращает баг когда старое состояние isCleaned: true
+    // вызывает повторный logout после новой авторизации
+    context.read<ProfileBloc>().add(ResetProfileState());
 
     if (widget.withToken) {
       context.read<ProfileBloc>().add(GetProfileUserFetch());
@@ -1258,30 +1264,52 @@ class NavBar extends StatefulWidget {
   State<NavBar> createState() => _NavBarState();
 }
 
-class _NavBarState extends State<NavBar> {
+class _NavBarState extends State<NavBar> with WidgetsBindingObserver {
   bool _isDarkBackground = false; // По умолчанию считаем фон светлым
   Timer? _luminanceTimer;
+  bool _isAppActive = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Запускаем периодический анализ яркости
     _startLuminanceAnalysis();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _luminanceTimer?.cancel();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _isAppActive = true;
+      _startLuminanceAnalysis();
+    } else if (state == AppLifecycleState.paused || 
+               state == AppLifecycleState.inactive ||
+               state == AppLifecycleState.hidden) {
+      _isAppActive = false;
+      _luminanceTimer?.cancel();
+      _luminanceTimer = null;
+    }
+  }
+
   void _startLuminanceAnalysis() {
+    if (!_isAppActive) return;
+    _luminanceTimer?.cancel();
     // Анализируем каждые 200ms для плавной реакции
     _luminanceTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-      _analyzeLuminance();
+      if (_isAppActive) _analyzeLuminance();
     });
     // Первый анализ сразу
-    WidgetsBinding.instance.addPostFrameCallback((_) => _analyzeLuminance());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isAppActive) _analyzeLuminance();
+    });
   }
 
   Future<void> _analyzeLuminance() async {
@@ -1672,9 +1700,16 @@ class _LiquidGlassNotificationButton extends StatefulWidget {
 }
 
 class _LiquidGlassNotificationButtonState
-    extends State<_LiquidGlassNotificationButton> {
+    extends State<_LiquidGlassNotificationButton> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   bool _isDarkBackground = false;
   Timer? _luminanceTimer;
+  bool _isAppActive = true;
+  bool _isPressed = false;
+  
+  // ✅ iOS: Анимация для идеального тактильного отклика
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   // Цвета для светлого фона (тёмная иконка)
   static const Color _darkIconColor = Color(0xFF2D2D2D);
@@ -1685,20 +1720,82 @@ class _LiquidGlassNotificationButtonState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
+    // ✅ iOS: Настройка быстрой анимации
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 40),
+      reverseDuration: const Duration(milliseconds: 120),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
+    );
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.65).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
+    );
+    
     _startLuminanceAnalysis();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _luminanceTimer?.cancel();
+    _pressController.dispose();
     super.dispose();
+  }
+  
+  void _onTapDown(TapDownDetails details) {
+    if (!_isPressed) {
+      _isPressed = true;
+      _pressController.forward();
+      // ✅ iOS: Haptic feedback для мгновенного тактильного отклика
+      if (Platform.isIOS) {
+        HapticFeedback.lightImpact();
+      }
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+      widget.onTap();
+    }
+  }
+
+  void _onTapCancel() {
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _isAppActive = true;
+      _startLuminanceAnalysis();
+    } else if (state == AppLifecycleState.paused || 
+               state == AppLifecycleState.inactive ||
+               state == AppLifecycleState.hidden) {
+      _isAppActive = false;
+      _luminanceTimer?.cancel();
+      _luminanceTimer = null;
+    }
   }
 
   void _startLuminanceAnalysis() {
+    if (!_isAppActive) return;
+    _luminanceTimer?.cancel();
     _luminanceTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-      _analyzeLuminance();
+      if (_isAppActive) _analyzeLuminance();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _analyzeLuminance());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isAppActive) _analyzeLuminance();
+    });
   }
 
   Future<void> _analyzeLuminance() async {
@@ -1770,54 +1867,70 @@ class _LiquidGlassNotificationButtonState
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
-      child: LiquidGlass.withOwnLayer(
-        settings: AppLiquidGlassSettings.button,
-        shape: LiquidRoundedSuperellipse(borderRadius: 16.r),
-        child: SizedBox(
-          width: 44.w,
-          height: 44.h,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: SvgPicture.asset(
-                  'images/notif2.svg',
-                  key: ValueKey(_isDarkBackground),
-                  width: 24.w,
-                  colorFilter: ColorFilter.mode(
-                    _iconColor,
-                    BlendMode.srcIn,
+      behavior: HitTestBehavior.opaque, // ✅ iOS: Ловит тапы по всей области
+      excludeFromSemantics: true, // ✅ iOS: Избегаем конфликтов с accessibility
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _pressController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Opacity(
+              opacity: _opacityAnimation.value,
+              child: child,
+            ),
+          );
+        },
+        child: LiquidGlass.withOwnLayer(
+          settings: AppLiquidGlassSettings.button,
+          shape: LiquidRoundedSuperellipse(borderRadius: 16.r),
+          child: SizedBox(
+            width: 44.w,
+            height: 44.h,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: SvgPicture.asset(
+                    'images/notif2.svg',
+                    key: ValueKey(_isDarkBackground),
+                    width: 24.w,
+                    colorFilter: ColorFilter.mode(
+                      _iconColor,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
-              ),
-              if (widget.notificationCount > 0)
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    width: 16.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFAD1A1A),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.notificationCount > 9
-                            ? '9+'
-                            : '${widget.notificationCount}',
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                if (widget.notificationCount > 0)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Container(
+                      width: 16.w,
+                      height: 16.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFAD1A1A),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          widget.notificationCount > 9
+                              ? '9+'
+                              : '${widget.notificationCount}',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

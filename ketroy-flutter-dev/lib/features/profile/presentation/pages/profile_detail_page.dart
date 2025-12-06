@@ -11,12 +11,12 @@ import 'package:ketroy_app/core/constants/constants.dart';
 import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/core/widgets/loader.dart';
+import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:ketroy_app/features/profile/presentation/pages/city_selection_page.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/core/common/mixins/adaptive_header_mixin.dart';
 
@@ -87,12 +87,22 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
           body: BlocConsumer<ProfileBloc, ProfileState>(
           listener: (context, state) {
             if (state.isUpdateSuccess && !_hasNavigatedBack) {
+              _isProcessing = false;
               context.read<ProfileBloc>().add(ResetListener());
+              // Показываем toast об успешном сохранении
+              TopToast.showSuccess(
+                context,
+                message: AppLocalizations.of(context)!.profileUpdateSuccess,
+              );
+              // Возвращаемся на экран профиля
               if (mounted) Navigator.pop(context);
             }
-            if (state.isUpdateFailure && !_isProcessing) {
+            if (state.isUpdateFailure) {
               _isProcessing = false;
-              showSnackBar(context, state.message ?? 'error');
+              TopToast.showError(
+                context,
+                message: state.message ?? 'error',
+              );
             }
           },
           builder: (context, state) {
@@ -158,20 +168,15 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: [
-          GestureDetector(
+          LiquidGlassButton(
             onTap: () => Navigator.pop(context),
-            child: LiquidGlass.withOwnLayer(
-              settings: AppLiquidGlassSettings.button,
-              shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-              child: SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
+            width: 44.w,
+            height: 44.w,
+            borderRadius: 22.0,
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 20.sp,
             ),
           ),
           Expanded(
@@ -185,10 +190,50 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
               ),
             ),
           ),
-          SizedBox(width: 44.w),
+          // Кнопка сохранения в хедере
+          BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, state) {
+              return LiquidGlassButton(
+                onTap: () => _saveChanges(state),
+                width: 44.w,
+                height: 44.w,
+                borderRadius: 22.0,
+                enabled: !_isProcessing && !state.isLoading,
+                child: _isProcessing || state.isLoading
+                    ? SizedBox(
+                        width: 20.w,
+                        height: 20.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 22.sp,
+                      ),
+              );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  /// Общий метод для сохранения изменений
+  void _saveChanges(ProfileState state) {
+    if (_isProcessing || _hasNavigatedBack) return;
+    setState(() => _isProcessing = true);
+    context.read<ProfileBloc>().add(ProfileUpdateFetch(
+          height: _heightValue ?? state.height ?? '4',
+          clothingSize: _clothSizeValue ?? state.clotherSize ?? '48',
+          shoeSize: _shoeValue ?? state.shoeSize ?? '41',
+          city: city ?? state.city!,
+          name: nameController.text,
+          surname: surnameController.text,
+          birthDay: birthDate ?? state.birthDay!,
+        ));
   }
 
   Widget _buildFormWithProfile(ProfileState state) {
@@ -661,24 +706,15 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
     return GestureDetector(
       onTap: _isProcessing || state.isLoading
           ? null
-          : () {
-              if (_isProcessing || _hasNavigatedBack) return;
-              _isProcessing = true;
-              context.read<ProfileBloc>().add(ProfileUpdateFetch(
-                    height: _heightValue ?? state.height ?? '4',
-                    clothingSize: _clothSizeValue ?? state.clotherSize ?? '48',
-                    shoeSize: _shoeValue ?? state.shoeSize ?? '41',
-                    city: city ?? state.city!,
-                    name: nameController.text,
-                    surname: surnameController.text,
-                    birthDay: birthDate ?? state.birthDay!,
-                  ));
-            },
-      child: Container(
+          : () => _saveChanges(state),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 18.h),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [_lightGreen, _primaryGreen]),
+          gradient: _isProcessing || state.isLoading
+              ? LinearGradient(colors: [_lightGreen.withValues(alpha: 0.6), _primaryGreen.withValues(alpha: 0.6)])
+              : const LinearGradient(colors: [_lightGreen, _primaryGreen]),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
@@ -689,14 +725,23 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
           ],
         ),
         child: Center(
-          child: Text(
-            AppLocalizations.of(context)!.saveButton,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
+          child: _isProcessing || state.isLoading
+              ? SizedBox(
+                  width: 24.w,
+                  height: 24.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  AppLocalizations.of(context)!.saveButton,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
         ),
       ),
     );

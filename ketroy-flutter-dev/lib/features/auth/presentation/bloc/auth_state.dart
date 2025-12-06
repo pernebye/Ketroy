@@ -32,6 +32,15 @@ class AuthState extends Equatable {
   /// Флаг существования пользователя (null если не проверялся)
   final bool? userExists;
 
+  /// Примененный промокод (для показа диалога)
+  final String? appliedPromoCode;
+  
+  /// Флаг успешного применения промокода
+  final bool? promoCodeAppliedSuccessfully;
+  
+  /// Флаг что промокод уже был использован ранее
+  final bool? promoCodeAlreadyUsed;
+
   const AuthState(
       {this.status = AuthStatus.initial,
       this.verifyCodeStatus = VerifyCodeStatus.initial,
@@ -47,7 +56,10 @@ class AuthState extends Equatable {
       this.user,
       this.profileData,
       this.deviceToken,
-      this.userExists});
+      this.userExists,
+      this.appliedPromoCode,
+      this.promoCodeAppliedSuccessfully,
+      this.promoCodeAlreadyUsed});
 
   @override
   List<Object?> get props => [
@@ -64,7 +76,10 @@ class AuthState extends Equatable {
         user,
         profileData,
         deviceToken,
-        userExists
+        userExists,
+        appliedPromoCode,
+        promoCodeAppliedSuccessfully,
+        promoCodeAlreadyUsed,
       ];
 
   bool get isInitial => status == AuthStatus.initial;
@@ -112,7 +127,10 @@ class AuthState extends Equatable {
       SignUpEntity? user,
       AuthUserEntity? profileData,
       String? deviceToken,
-      bool? userExists}) {
+      bool? userExists,
+      String? appliedPromoCode,
+      bool? promoCodeAppliedSuccessfully,
+      bool? promoCodeAlreadyUsed}) {
     return AuthState(
         status: status ?? this.status,
         verifyCodeStatus: verifyCodeStatus ?? this.verifyCodeStatus,
@@ -128,6 +146,9 @@ class AuthState extends Equatable {
         user: user ?? this.user,
         profileData: profileData ?? this.profileData,
         deviceToken: deviceToken ?? this.deviceToken,
-        userExists: userExists);
+        userExists: userExists,
+        appliedPromoCode: appliedPromoCode,
+        promoCodeAppliedSuccessfully: promoCodeAppliedSuccessfully,
+        promoCodeAlreadyUsed: promoCodeAlreadyUsed);
   }
 }

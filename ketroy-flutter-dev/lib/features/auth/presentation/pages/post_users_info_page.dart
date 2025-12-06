@@ -14,6 +14,9 @@ import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/main.dart' show globalDeepLinkManager, navigatorKey;
 import 'package:ketroy_app/services/shared_preferences_service.dart';
+import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
+import 'package:ketroy_app/core/common/widgets/promo_code_success_dialog.dart';
+import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 
 class PostUsersInfoPage extends StatefulWidget {
   final String name;
@@ -70,9 +73,21 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
 
   @override
   void initState() {
-    refCode = globalDeepLinkManager.refParameter;
-    debugPrint('Ref from global: $refCode');
     super.initState();
+    _loadPromoCode();
+  }
+
+  Future<void> _loadPromoCode() async {
+    // Сначала проверяем промокод из deep link
+    refCode = globalDeepLinkManager.refParameter;
+    
+    // Если промокода нет в deep link, проверяем сохраненный промокод
+    if (refCode == null || refCode!.isEmpty) {
+      refCode = await UserDataManager.getPromoCode();
+      debugPrint('📦 Loaded saved promo code: $refCode');
+    } else {
+      debugPrint('🔗 Using promo code from deep link: $refCode');
+    }
   }
 
   bool _isFormValid() {
@@ -122,17 +137,40 @@ class _PostUsersInfoPageState extends State<PostUsersInfoPage> {
               // Переход на витрину с анимацией приветствия после регистрации
               sharedService.passed = true;
               sharedService.deviceTokenPassed = true;
-              // Используем глобальный navigatorKey для надёжной навигации на витрину
-              // НЕ используем NavScreen.globalKey чтобы создать свежий NavScreen
-              navigatorKey.currentState?.pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => const NavScreen(
-                    initialTab: 0, // Всегда на витрину
-                    showWelcomeAnimation: true, // Показываем анимацию приветствия
+              
+              // Функция навигации
+              void navigateToMain() {
+                navigatorKey.currentState?.pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const NavScreen(
+                      initialTab: 0, // Всегда на витрину
+                      showWelcomeAnimation: true, // Показываем анимацию приветствия
+                    ),
                   ),
-                ),
-                (route) => false,
-              );
+                  (route) => false,
+                );
+              }
+              
+              // ✅ Показываем диалог успешного применения промокода если он был применен
+              if (state.promoCodeAppliedSuccessfully == true &&
+                  state.appliedPromoCode != null &&
+                  state.appliedPromoCode!.isNotEmpty) {
+                // Сначала навигируем на главный экран
+                navigateToMain();
+                
+                // Показываем диалог с небольшой задержкой
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (navigatorKey.currentContext != null) {
+                    PromoCodeSuccessDialog.show(
+                      navigatorKey.currentContext!,
+                      promoCode: state.appliedPromoCode!,
+                    );
+                  }
+                });
+              } else {
+                // Просто навигируем если промокода не было
+                navigateToMain();
+              }
             } else if (state.isSignUpWithDataFailure) {
               showSnackBar(context, state.message ?? AppLocalizations.of(context)!.unknownError);
             }

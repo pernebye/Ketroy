@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -722,9 +723,11 @@ class _LiquidGlassBackButton extends StatefulWidget {
 }
 
 class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   bool _isDarkBackground = false;
   Timer? _luminanceTimer;
+  bool _isAppActive = true;
+  bool _isPressed = false;
   late AnimationController _pressController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -738,44 +741,80 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _pressController = AnimationController(
-      duration: const Duration(milliseconds: 80),
+      // ✅ iOS: Мгновенный отклик при нажатии, плавный при отпускании
+      duration: const Duration(milliseconds: 40),
+      reverseDuration: const Duration(milliseconds: 120),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
     );
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.75).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.65).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
     );
     _startLuminanceAnalysis();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _luminanceTimer?.cancel();
     _pressController.dispose();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _isAppActive = true;
+      _startLuminanceAnalysis();
+    } else if (state == AppLifecycleState.paused || 
+               state == AppLifecycleState.inactive ||
+               state == AppLifecycleState.hidden) {
+      _isAppActive = false;
+      _luminanceTimer?.cancel();
+      _luminanceTimer = null;
+    }
+  }
+
   void _onTapDown(TapDownDetails details) {
-    _pressController.forward();
+    if (!_isPressed) {
+      _isPressed = true;
+      _pressController.forward();
+      // ✅ iOS: Haptic feedback для мгновенного тактильного отклика
+      if (Platform.isIOS) {
+        HapticFeedback.lightImpact();
+      }
+    }
   }
 
   void _onTapUp(TapUpDetails details) {
-    _pressController.reverse();
-    widget.onTap();
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+      widget.onTap();
+    }
   }
 
   void _onTapCancel() {
-    _pressController.reverse();
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+    }
   }
 
   void _startLuminanceAnalysis() {
+    if (!_isAppActive) return;
+    _luminanceTimer?.cancel();
     _luminanceTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-      _analyzeLuminance();
+      if (_isAppActive) _analyzeLuminance();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _analyzeLuminance());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isAppActive) _analyzeLuminance();
+    });
   }
 
   Future<void> _analyzeLuminance() async {
@@ -848,6 +887,7 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+      excludeFromSemantics: true, // ✅ iOS: Избегаем конфликтов с accessibility
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
@@ -858,26 +898,27 @@ class _LiquidGlassBackButtonState extends State<_LiquidGlassBackButton>
             scale: _scaleAnimation.value,
             child: Opacity(
               opacity: _opacityAnimation.value,
-              child: LiquidGlass.withOwnLayer(
-                settings: AppLiquidGlassSettings.button,
-                shape: LiquidRoundedSuperellipse(borderRadius: 14.r),
-                child: SizedBox(
-                  width: 44.w,
-                  height: 44.h,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      key: ValueKey(_isDarkBackground),
-                      size: 20.sp,
-                      color: _iconColor,
-                    ),
-                  ),
-                ),
-              ),
+              child: child,
             ),
           );
         },
+        child: LiquidGlass.withOwnLayer(
+          settings: AppLiquidGlassSettings.button,
+          shape: LiquidRoundedSuperellipse(borderRadius: 14.r),
+          child: SizedBox(
+            width: 44.w,
+            height: 44.h,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                key: ValueKey(_isDarkBackground),
+                size: 20.sp,
+                color: _iconColor,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -902,9 +943,11 @@ class _LiquidGlassWhatsAppFAB extends StatefulWidget {
 }
 
 class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   bool _isDarkBackground = false;
   Timer? _luminanceTimer;
+  bool _isAppActive = true;
+  bool _isPressed = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   late AnimationController _pressController;
@@ -923,6 +966,7 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _startLuminanceAnalysis();
 
     // Анимация пульсации для привлечения внимания
@@ -935,45 +979,79 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    // Анимация нажатия
+    // ✅ iOS: Мгновенный отклик при нажатии, плавный при отпускании
     _pressController = AnimationController(
-      duration: const Duration(milliseconds: 80),
+      duration: const Duration(milliseconds: 40),
+      reverseDuration: const Duration(milliseconds: 120),
       vsync: this,
     );
-    _pressScaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    _pressScaleAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
     );
-    _pressOpacityAnimation = Tween<double>(begin: 1.0, end: 0.7).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    _pressOpacityAnimation = Tween<double>(begin: 1.0, end: 0.6).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
     );
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _luminanceTimer?.cancel();
     _pulseController.dispose();
     _pressController.dispose();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _isAppActive = true;
+      _startLuminanceAnalysis();
+    } else if (state == AppLifecycleState.paused || 
+               state == AppLifecycleState.inactive ||
+               state == AppLifecycleState.hidden) {
+      _isAppActive = false;
+      _luminanceTimer?.cancel();
+      _luminanceTimer = null;
+    }
+  }
+
   void _onTapDown(TapDownDetails details) {
-    _pressController.forward();
+    if (!_isPressed) {
+      _isPressed = true;
+      _pressController.forward();
+      // ✅ iOS: Haptic feedback для мгновенного тактильного отклика
+      if (Platform.isIOS) {
+        HapticFeedback.lightImpact();
+      }
+    }
   }
 
   void _onTapUp(TapUpDetails details) {
-    _pressController.reverse();
-    widget.onTap();
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+      widget.onTap();
+    }
   }
 
   void _onTapCancel() {
-    _pressController.reverse();
+    if (_isPressed) {
+      _isPressed = false;
+      _pressController.reverse();
+    }
   }
 
   void _startLuminanceAnalysis() {
+    if (!_isAppActive) return;
+    _luminanceTimer?.cancel();
     _luminanceTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-      _analyzeLuminance();
+      if (_isAppActive) _analyzeLuminance();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _analyzeLuminance());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isAppActive) _analyzeLuminance();
+    });
   }
 
   Future<void> _analyzeLuminance() async {
@@ -1044,22 +1122,23 @@ class _LiquidGlassWhatsAppFABState extends State<_LiquidGlassWhatsAppFAB>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_pulseAnimation, _pressController]),
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _pulseAnimation.value * _pressScaleAnimation.value,
-          child: Opacity(
-            opacity: _pressOpacityAnimation.value,
-            child: child,
-          ),
-        );
-      },
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+      excludeFromSemantics: true, // ✅ iOS: Избегаем конфликтов с accessibility
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_pulseAnimation, _pressController]),
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _pulseAnimation.value * _pressScaleAnimation.value,
+            child: Opacity(
+              opacity: _pressOpacityAnimation.value,
+              child: child,
+            ),
+          );
+        },
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,

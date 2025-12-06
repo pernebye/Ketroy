@@ -68,6 +68,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(signUpWithDataStatus: SignUpWithDataStatus.loading));
 
     try {
+      // Получаем промокод: сначала из события, потом из сохраненного
+      String? promoCodeToApply = event.promoCode;
+      if (promoCodeToApply == null || promoCodeToApply.isEmpty) {
+        promoCodeToApply = await UserDataManager.getPromoCode();
+        debugPrint('📦 Using saved promo code for registration: $promoCodeToApply');
+      }
+
       // Основная регистрация
       final res = await _signUpWithPhone(
           SignUpWithPhoneParams(
@@ -94,19 +101,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await UserDataManager.saveRegisterAnswerAndConvert(registerAnswer);
           }
 
+          // ✅ Применяем промокод если он есть
           String? promoMessage;
-          if (event.promoCode != null && event.promoCode!.isNotEmpty) {
+          String? appliedPromoCode;
+          bool promoCodeAppliedSuccessfully = false;
+          
+          if (promoCodeToApply != null && promoCodeToApply.isNotEmpty) {
+            appliedPromoCode = promoCodeToApply;
             final resPromo = await _postPromoCode(
-                PostPromoCodeParams(promoCode: event.promoCode!), null);
+                PostPromoCodeParams(promoCode: promoCodeToApply), null);
 
             // ✅ Обрабатываем результат промо-кода
             resPromo.fold((promoFailure) {
               debugPrint('⚠️ Promo code error: ${promoFailure.message}');
               promoMessage =
                   'Регистрация успешна, но промо-код не активирован: ${promoFailure.message}';
+              promoCodeAppliedSuccessfully = false;
             }, (promoSuccess) {
-              debugPrint('✅ Promo code applied successfully');
+              debugPrint('✅ Promo code applied successfully during registration');
               promoMessage = 'Регистрация успешна! Промо-код активирован.';
+              promoCodeAppliedSuccessfully = true;
+              // ✅ Очищаем сохраненный промокод после успешного применения
+              UserDataManager.clearPromoCode();
             });
           }
 
@@ -114,7 +130,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             emit(state.copyWith(
               signUpWithDataStatus: SignUpWithDataStatus.success,
               registerAnswer: registerAnswer,
-              message: promoMessage, // Добавляем сообщение о промо-коде
+              message: promoMessage,
+              appliedPromoCode: appliedPromoCode,
+              promoCodeAppliedSuccessfully: promoCodeAppliedSuccessfully,
             ));
           }
         } catch (e) {
@@ -152,6 +170,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final res = await _smsAuth(
         SmsAuthParams(code: event.code, phone: event.phone, sms: event.sms),
         null);
+    // Переменные для промокода - объявляем вне блока
+    String? appliedPromoCode;
+    bool promoCodeAppliedSuccessfully = false;
+    bool promoCodeAlreadyUsed = false;
+    
     await res.fold(
         (failure) async => emit(state.copyWith(
             status: AuthStatus.failure,
@@ -159,12 +182,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (userInfo.user != null) {
         await UserDataManager.saveToken(userInfo.token);
         await UserDataManager.saveUser(userInfo.user!);
-        // SessionController().saveToken(userInfo.token);
-        // SessionController().saveAuthUserInfo(userInfo.user!);
+        
+        // ✅ Проверяем и применяем промокод при авторизации
+        // Применяем только если у пользователя еще не был применен промокод
+        final user = userInfo.user!;
+        final hasUsedPromoCode = user.userPromoCode != null && user.userPromoCode! > 0;
+        
+        // Получаем сохраненный промокод
+        final savedPromoCode = await UserDataManager.getPromoCode();
+        
+        if (!hasUsedPromoCode) {
+          if (savedPromoCode != null && savedPromoCode.isNotEmpty) {
+            appliedPromoCode = savedPromoCode;
+            debugPrint('💎 Applying saved promo code during login: $savedPromoCode');
+            
+            // Применяем промокод
+            final resPromo = await _postPromoCode(
+                PostPromoCodeParams(promoCode: savedPromoCode), null);
+            
+            resPromo.fold((promoFailure) {
+              debugPrint('⚠️ Promo code error during login: ${promoFailure.message}');
+              promoCodeAppliedSuccessfully = false;
+            }, (promoSuccess) {
+              debugPrint('✅ Promo code applied successfully during login');
+              promoCodeAppliedSuccessfully = true;
+              // ✅ Очищаем сохраненный промокод после успешного применения
+              UserDataManager.clearPromoCode();
+            });
+          }
+        } else {
+          debugPrint('ℹ️ User already has used promo code, skipping application');
+          // Если был сохранённый промокод, значит пользователь пытался его применить
+          if (savedPromoCode != null && savedPromoCode.isNotEmpty) {
+            promoCodeAlreadyUsed = true;
+          }
+          // Очищаем сохраненный промокод даже если он не был применен
+          // (чтобы не пытаться применять его снова)
+          await UserDataManager.clearPromoCode();
+        }
       }
 
       emit(state.copyWith(
-          status: AuthStatus.success, authAnswerUserInfo: userInfo));
+          status: AuthStatus.success,
+          authAnswerUserInfo: userInfo,
+          appliedPromoCode: appliedPromoCode,
+          promoCodeAppliedSuccessfully: promoCodeAppliedSuccessfully,
+          promoCodeAlreadyUsed: promoCodeAlreadyUsed));
     });
   }
 

@@ -629,6 +629,31 @@ class AppLocalizationsKk extends AppLocalizations {
   String get great => 'Тамаша';
 
   @override
+  String get youReceived => 'Сіз алдыңыз';
+
+  @override
+  String get promoCodeFrom => 'Промокод кімнен';
+
+  @override
+  String personalDiscountBenefit(int percent) {
+    return 'Барлық сатып алуларға $percent% жеке жеңілдік';
+  }
+
+  @override
+  String bonusFromPurchasesBenefit(int percent, int count, String plural) {
+    return 'Алғашқы $count $plural $percent% бонус';
+  }
+
+  @override
+  String get purchaseSingular => 'сатып алудан';
+
+  @override
+  String get purchaseFew => 'сатып алудан';
+
+  @override
+  String get purchaseMany => 'сатып алудан';
+
+  @override
   String get promocodeNotFound => 'Промокод табылмады';
 
   @override
@@ -639,14 +664,29 @@ class AppLocalizationsKk extends AppLocalizations {
   String get enterAgain => 'Қайта енгізу';
 
   @override
+  String get promoCodeAlreadyUsedTitle => 'Промокод бұрын қолданылған';
+
+  @override
+  String get promoCodeAlreadyUsedMessage =>
+      'Сіз бұрын реферальды промокодты қолданғансыз. Қайта қолдану мүмкін емес.';
+
+  @override
+  String get promoCodeSavedTitle => 'Промокод сақталды';
+
+  @override
+  String promoCodeSavedMessage(String promoCode) {
+    return '$promoCode промокоды авторизациядан кейін қолданылады.';
+  }
+
+  @override
   String get giveDiscount => 'Жеңілдік сыйла';
 
   @override
   String get shareWithFriends => 'Достарыңызбен бөлісіңіз';
 
   @override
-  String joinKetroy(String link) {
-    return '🎁 Ketroy Shop-қа қосылыңыз!\nОсы сілтеме арқылы тіркелгенде 20% жеңілдік алыңыз:\n$link\n\n📱 Қолданбаны жүктеп, үнемдей бастаңыз!';
+  String joinKetroy(int discount, String link) {
+    return '🎁 Ketroy Shop-қа қосылыңыз!\nОсы сілтеме арқылы тіркелгенде $discount% жеңілдік алыңыз:\n$link\n\n📱 Қолданбаны жүктеп, үнемдей бастаңыз!';
   }
 
   @override
@@ -868,6 +908,9 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get saveButton => 'Өзгерістерді сақтау';
+
+  @override
+  String get profileUpdateSuccess => 'Өзгерістер сәтті сақталды';
 
   @override
   String get cancelButton => 'Болдырмау';

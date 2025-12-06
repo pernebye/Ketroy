@@ -629,6 +629,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get great => 'Great';
 
   @override
+  String get youReceived => 'You received';
+
+  @override
+  String get promoCodeFrom => 'Promo code from';
+
+  @override
+  String personalDiscountBenefit(int percent) {
+    return 'Personal discount $percent% on all purchases';
+  }
+
+  @override
+  String bonusFromPurchasesBenefit(int percent, int count, String plural) {
+    return '$percent% bonuses from the first $count $plural';
+  }
+
+  @override
+  String get purchaseSingular => 'purchase';
+
+  @override
+  String get purchaseFew => 'purchases';
+
+  @override
+  String get purchaseMany => 'purchases';
+
+  @override
   String get promocodeNotFound => 'Promo code not found';
 
   @override
@@ -639,14 +664,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterAgain => 'Enter again';
 
   @override
+  String get promoCodeAlreadyUsedTitle => 'Promo code already used';
+
+  @override
+  String get promoCodeAlreadyUsedMessage =>
+      'You have already used a referral promo code. Reuse is not possible.';
+
+  @override
+  String get promoCodeSavedTitle => 'Promo code saved';
+
+  @override
+  String promoCodeSavedMessage(String promoCode) {
+    return 'Promo code $promoCode will be applied after authorization.';
+  }
+
+  @override
   String get giveDiscount => 'Give discount';
 
   @override
   String get shareWithFriends => 'Share with friends';
 
   @override
-  String joinKetroy(String link) {
-    return '🎁 Join Ketroy Shop!\nGet 20% discount when registering with this link:\n$link\n\n📱 Download the app and start saving!';
+  String joinKetroy(int discount, String link) {
+    return '🎁 Join Ketroy Shop!\nGet $discount% discount when registering with this link:\n$link\n\n📱 Download the app and start saving!';
   }
 
   @override
@@ -867,6 +907,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveButton => 'Save Changes';
+
+  @override
+  String get profileUpdateSuccess => 'Changes saved successfully';
 
   @override
   String get cancelButton => 'Cancel';

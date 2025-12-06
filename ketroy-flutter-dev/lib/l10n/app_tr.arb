@@ -235,14 +235,55 @@
   "promocodeApplied": "Promosyon kodu uygulandı!",
   "promocodeAppliedDescription": "Artık KETROY mağazalarında kişisel %10 indiriminiz var.",
   "great": "Harika",
+  "youReceived": "Aldınız",
+  "promoCodeFrom": "Kimden promosyon kodu",
+  "personalDiscountBenefit": "Tüm alışverişlerde %{percent} kişisel indirim",
+  "@personalDiscountBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "bonusFromPurchasesBenefit": "İlk {count} {plural} %{percent} bonus",
+  "@bonusFromPurchasesBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseSingular": "alışverişten",
+  "purchaseFew": "alışverişten",
+  "purchaseMany": "alışverişten",
   "promocodeNotFound": "Promosyon kodu bulunamadı",
   "promocodeNotFoundDescription": "Girişi kontrol edin veya arkadaşınızdan kodu tekrar göndermesini isteyin.",
   "enterAgain": "Tekrar gir",
+  "promoCodeAlreadyUsedTitle": "Promosyon kodu zaten kullanıldı",
+  "promoCodeAlreadyUsedMessage": "Daha önce bir referans promosyon kodu kullandınız. Tekrar kullanım mümkün değil.",
+  "promoCodeSavedTitle": "Promosyon kodu kaydedildi",
+  "promoCodeSavedMessage": "{promoCode} promosyon kodu yetkilendirmeden sonra uygulanacak.",
+  "@promoCodeSavedMessage": {
+    "placeholders": {
+      "promoCode": {
+        "type": "String"
+      }
+    }
+  },
   "giveDiscount": "İndirim hediye et",
   "shareWithFriends": "Arkadaşlarınla paylaş",
-  "joinKetroy": "🎁 Ketroy Shop'a katılın!\nBu linkle kayıt olduğunuzda %20 indirim kazanın:\n{link}\n\n📱 Uygulamayı indirin ve tasarruf etmeye başlayın!",
+  "joinKetroy": "🎁 Ketroy Shop'a katılın!\nBu linkle kayıt olduğunuzda %{discount} indirim kazanın:\n{link}\n\n📱 Uygulamayı indirin ve tasarruf etmeye başlayın!",
   "@joinKetroy": {
     "placeholders": {
+      "discount": {
+        "type": "int"
+      },
       "link": {
         "type": "String"
       }
@@ -345,6 +386,7 @@
   "selectDatePlaceholder": "Tarih seçin",
   "selectCityPlaceholder": "Şehir seçin",
   "saveButton": "Değişiklikleri Kaydet",
+  "profileUpdateSuccess": "Değişiklikler başarıyla kaydedildi",
   "cancelButton": "İptal",
   "doneButton": "Tamam",
   "userPlaceholder": "Kullanıcı",

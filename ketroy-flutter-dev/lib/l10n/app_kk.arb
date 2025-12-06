@@ -235,14 +235,55 @@
   "promocodeApplied": "Промокод қолданылды!",
   "promocodeAppliedDescription": "Енді сізде KETROY дүкендерінде 10% жеке жеңілдік бар.",
   "great": "Тамаша",
+  "youReceived": "Сіз алдыңыз",
+  "promoCodeFrom": "Промокод кімнен",
+  "personalDiscountBenefit": "Барлық сатып алуларға {percent}% жеке жеңілдік",
+  "@personalDiscountBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "bonusFromPurchasesBenefit": "Алғашқы {count} {plural} {percent}% бонус",
+  "@bonusFromPurchasesBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseSingular": "сатып алудан",
+  "purchaseFew": "сатып алудан",
+  "purchaseMany": "сатып алудан",
   "promocodeNotFound": "Промокод табылмады",
   "promocodeNotFoundDescription": "Енгізуді тексеріңіз немесе досыңыздан промокодты қайта жіберуін сұраңыз.",
   "enterAgain": "Қайта енгізу",
+  "promoCodeAlreadyUsedTitle": "Промокод бұрын қолданылған",
+  "promoCodeAlreadyUsedMessage": "Сіз бұрын реферальды промокодты қолданғансыз. Қайта қолдану мүмкін емес.",
+  "promoCodeSavedTitle": "Промокод сақталды",
+  "promoCodeSavedMessage": "{promoCode} промокоды авторизациядан кейін қолданылады.",
+  "@promoCodeSavedMessage": {
+    "placeholders": {
+      "promoCode": {
+        "type": "String"
+      }
+    }
+  },
   "giveDiscount": "Жеңілдік сыйла",
   "shareWithFriends": "Достарыңызбен бөлісіңіз",
-  "joinKetroy": "🎁 Ketroy Shop-қа қосылыңыз!\nОсы сілтеме арқылы тіркелгенде 20% жеңілдік алыңыз:\n{link}\n\n📱 Қолданбаны жүктеп, үнемдей бастаңыз!",
+  "joinKetroy": "🎁 Ketroy Shop-қа қосылыңыз!\nОсы сілтеме арқылы тіркелгенде {discount}% жеңілдік алыңыз:\n{link}\n\n📱 Қолданбаны жүктеп, үнемдей бастаңыз!",
   "@joinKetroy": {
     "placeholders": {
+      "discount": {
+        "type": "int"
+      },
       "link": {
         "type": "String"
       }
@@ -345,6 +386,7 @@
   "selectDatePlaceholder": "Күнді таңдаңыз",
   "selectCityPlaceholder": "Қаланы таңдаңыз",
   "saveButton": "Өзгерістерді сақтау",
+  "profileUpdateSuccess": "Өзгерістер сәтті сақталды",
   "cancelButton": "Болдырмау",
   "doneButton": "Дайын",
   "userPlaceholder": "Пайдаланушы",

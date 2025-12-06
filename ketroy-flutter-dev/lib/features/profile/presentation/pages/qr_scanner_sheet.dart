@@ -4,13 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:ketroy_app/core/util/show_snackbar.dart';
+import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/main.dart' show navigatorKey;
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 /// Показать QR-сканер как нижнюю шторку
 Future<bool?> showQrScannerSheet(BuildContext context) {
+  // ✅ Сохраняем ссылку на ProfileBloc до открытия bottom sheet
+  final profileBloc = context.read<ProfileBloc>();
+  
+  // ✅ Сбрасываем статус QR перед открытием сканера
+  profileBloc.add(ResetQrStatus());
+  
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
@@ -18,7 +25,10 @@ Future<bool?> showQrScannerSheet(BuildContext context) {
     useRootNavigator: true, // Открываем поверх навбара
     isDismissible: true,
     enableDrag: true,
-    builder: (context) => const QrScannerSheet(),
+    builder: (sheetContext) => BlocProvider.value(
+      value: profileBloc,
+      child: const QrScannerSheet(),
+    ),
   );
 }
 
@@ -79,11 +89,24 @@ class _QrScannerSheetState extends State<QrScannerSheet>
       if (!mounted) return;
 
       final code = scanData.code;
+      final l10n = AppLocalizations.of(context);
+      
       if (code == null || code.isEmpty) {
         await _cleanupResources();
         if (mounted) {
           Navigator.pop(context, false);
-          showSnackBar(context, 'QR-код пустой или повреждён');
+          // Показываем TopToast после закрытия sheet
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final overlay = navigatorKey.currentState?.overlay;
+            final ctx = navigatorKey.currentContext;
+            if (overlay != null && ctx != null) {
+              TopToast.showError(
+                ctx,
+                message: l10n?.qrCodeEmpty ?? 'QR-код пустой или повреждён',
+                overlayState: overlay,
+              );
+            }
+          });
         }
         return;
       }
@@ -93,7 +116,18 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         await _cleanupResources();
         if (mounted) {
           Navigator.pop(context, false);
-          showSnackBar(context, 'Неверный QR-код. Используйте QR-код из магазина KETROY');
+          // Показываем TopToast после закрытия sheet
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final overlay = navigatorKey.currentState?.overlay;
+            final ctx = navigatorKey.currentContext;
+            if (overlay != null && ctx != null) {
+              TopToast.showWarning(
+                ctx,
+                message: l10n?.invalidQrCode ?? 'Неверный QR-код. Используйте QR-код из магазина KETROY',
+                overlayState: overlay,
+              );
+            }
+          });
         }
         return;
       }
@@ -187,18 +221,61 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         }
       },
       child: BlocListener<ProfileBloc, ProfileState>(
+        listenWhen: (previous, current) => 
+          previous.qrStatus != current.qrStatus &&
+          (current.isQrSuccess || current.isQrFailure),
         listener: (context, state) async {
           if (state.isQrSuccess) {
+            // ✅ Сохраняем сообщение для TopToast
+            final successMessage = AppLocalizations.of(context)!.qrCodeScannedSuccess;
+            
             await _cleanupResources();
+            
             if (mounted) {
+              // ✅ Сбрасываем статус QR перед закрытием
+              context.read<ProfileBloc>().add(ResetQrStatus());
+              
+              // ✅ Закрываем sheet
               Navigator.pop(context, true);
-              showSnackBar(context, AppLocalizations.of(context)!.qrCodeScannedSuccess);
+              
+              // ✅ Показываем TopToast успеха после закрытия
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                final overlay = navigatorKey.currentState?.overlay;
+                final ctx = navigatorKey.currentContext;
+                if (overlay != null && ctx != null) {
+                  TopToast.showSuccess(
+                    ctx,
+                    message: successMessage,
+                    overlayState: overlay,
+                  );
+                }
+              });
             }
           } else if (state.isQrFailure) {
+            // ✅ Сохраняем сообщение об ошибке (приходит с сервера)
+            final errorMessage = state.message ?? 'Ошибка сканирования';
+            
             await _cleanupResources();
+            
             if (mounted) {
+              // ✅ Сбрасываем статус QR перед закрытием
+              context.read<ProfileBloc>().add(ResetQrStatus());
+              
+              // ✅ Закрываем sheet
               Navigator.pop(context, false);
-              showSnackBar(context, state.message ?? 'Ошибка сканирования');
+              
+              // ✅ Показываем TopToast ошибки после закрытия
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                final overlay = navigatorKey.currentState?.overlay;
+                final ctx = navigatorKey.currentContext;
+                if (overlay != null && ctx != null) {
+                  TopToast.showError(
+                    ctx,
+                    message: errorMessage,
+                    overlayState: overlay,
+                  );
+                }
+              });
             }
           }
         },

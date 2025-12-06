@@ -235,14 +235,55 @@
   "promocodeApplied": "Promo code applied!",
   "promocodeAppliedDescription": "You now have a personal 10% discount on purchases at KETROY stores.",
   "great": "Great",
+  "youReceived": "You received",
+  "promoCodeFrom": "Promo code from",
+  "personalDiscountBenefit": "Personal discount {percent}% on all purchases",
+  "@personalDiscountBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "bonusFromPurchasesBenefit": "{percent}% bonuses from the first {count} {plural}",
+  "@bonusFromPurchasesBenefit": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseSingular": "purchase",
+  "purchaseFew": "purchases",
+  "purchaseMany": "purchases",
   "promocodeNotFound": "Promo code not found",
   "promocodeNotFoundDescription": "Check the entry or ask your friend to send the promo code again.",
   "enterAgain": "Enter again",
+  "promoCodeAlreadyUsedTitle": "Promo code already used",
+  "promoCodeAlreadyUsedMessage": "You have already used a referral promo code. Reuse is not possible.",
+  "promoCodeSavedTitle": "Promo code saved",
+  "promoCodeSavedMessage": "Promo code {promoCode} will be applied after authorization.",
+  "@promoCodeSavedMessage": {
+    "placeholders": {
+      "promoCode": {
+        "type": "String"
+      }
+    }
+  },
   "giveDiscount": "Give discount",
   "shareWithFriends": "Share with friends",
-  "joinKetroy": "🎁 Join Ketroy Shop!\nGet 20% discount when registering with this link:\n{link}\n\n📱 Download the app and start saving!",
+  "joinKetroy": "🎁 Join Ketroy Shop!\nGet {discount}% discount when registering with this link:\n{link}\n\n📱 Download the app and start saving!",
   "@joinKetroy": {
     "placeholders": {
+      "discount": {
+        "type": "int"
+      },
       "link": {
         "type": "String"
       }
@@ -345,6 +386,7 @@
   "selectDatePlaceholder": "Select date",
   "selectCityPlaceholder": "Select city",
   "saveButton": "Save Changes",
+  "profileUpdateSuccess": "Changes saved successfully",
   "cancelButton": "Cancel",
   "doneButton": "Done",
   "userPlaceholder": "User",

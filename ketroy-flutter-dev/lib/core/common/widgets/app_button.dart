@@ -1,4 +1,6 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
@@ -222,19 +224,22 @@ class _GlassMorphismState extends State<GlassMorphism>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 100),
+      // ✅ iOS: Быстрая анимация для мгновенного отклика
+      duration: const Duration(milliseconds: 50),
+      reverseDuration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.7).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.65).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
   }
 
@@ -245,26 +250,37 @@ class _GlassMorphismState extends State<GlassMorphism>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.onPressed != null) {
+    if (widget.onPressed != null && !_isPressed) {
+      _isPressed = true;
       _controller.forward();
+      // ✅ iOS: Haptic feedback для мгновенного тактильного отклика
+      if (Platform.isIOS) {
+        HapticFeedback.lightImpact();
+      }
     }
   }
 
   void _onTapUp(TapUpDetails details) {
-    if (widget.onPressed != null) {
+    if (widget.onPressed != null && _isPressed) {
+      _isPressed = false;
       _controller.reverse();
       widget.onPressed!();
     }
   }
 
   void _onTapCancel() {
-    _controller.reverse();
+    if (_isPressed) {
+      _isPressed = false;
+      _controller.reverse();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ✅ Ловит тапы по всей области
+      // ✅ iOS: excludeFromSemantics для избежания конфликтов с accessibility
+      excludeFromSemantics: true,
       onTapDown: widget.onPressed != null ? _onTapDown : null,
       onTapUp: widget.onPressed != null ? _onTapUp : null,
       onTapCancel: widget.onPressed != null ? _onTapCancel : null,
@@ -332,19 +348,22 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 80),
+      // ✅ iOS: Мгновенный отклик при нажатии, плавный при отпускании
+      duration: const Duration(milliseconds: 40),
+      reverseDuration: const Duration(milliseconds: 120),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.90).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.75).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.70).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
   }
 
@@ -355,26 +374,36 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.enabled) {
+    if (widget.enabled && !_isPressed) {
+      _isPressed = true;
       _controller.forward();
+      // ✅ iOS: Haptic feedback для идеального тактильного отклика
+      if (Platform.isIOS) {
+        HapticFeedback.lightImpact();
+      }
     }
   }
 
   void _onTapUp(TapUpDetails details) {
-    if (widget.enabled) {
+    if (widget.enabled && _isPressed) {
+      _isPressed = false;
       _controller.reverse();
       widget.onTap();
     }
   }
 
   void _onTapCancel() {
-    _controller.reverse();
+    if (_isPressed) {
+      _isPressed = false;
+      _controller.reverse();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ✅ Важно! Ловит тапы по всей области
+      excludeFromSemantics: true, // ✅ iOS: Избегаем конфликтов с accessibility
       onTapDown: widget.enabled ? _onTapDown : null,
       onTapUp: widget.enabled ? _onTapUp : null,
       onTapCancel: widget.enabled ? _onTapCancel : null,

@@ -8,8 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ketroy_app/core/common/widgets/bonus_card.dart';
 import 'package:ketroy_app/core/constants/shop_contacts.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
-import 'package:ketroy_app/core/common/widgets/app_button.dart' show AppLiquidGlassSettings;
+import 'package:ketroy_app/core/common/widgets/app_button.dart' show LiquidGlassButton;
 import 'package:ketroy_app/core/util/launch_url.dart';
 import 'package:ketroy_app/services/analytics/social_analytics_service.dart';
 import 'package:ketroy_app/core/util/show_snackbar.dart';
@@ -24,7 +23,6 @@ import 'package:ketroy_app/features/profile/presentation/pages/profile_detail_pa
 import 'package:ketroy_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:ketroy_app/features/shop/presentation/pages/shop.dart';
 import 'package:ketroy_app/init_dependencies.dart';
-import 'package:ketroy_app/select_page.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:ketroy_app/core/common/widgets/auth_required_dialog.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
@@ -143,13 +141,23 @@ class _ProfilePageState extends State<ProfilePage>
     super.dispose();
   }
 
-  void _initializeProfile() {
-    context.read<ProfileBloc>()
+  void _initializeProfile({bool skipDiscountIfExists = false}) {
+    final bloc = context.read<ProfileBloc>();
+    final hasDiscount = bloc.state.discount != null;
+    
+    bloc
       ..add(LoadUserInfo())
-      ..add(GetDiscountFetch())
       ..add(LoadCityShop()) // Загружаем магазин для соцсетей
       ..add(GetPromotionsFetch()) // Загружаем акции для вкладки бонусов
       ..add(const RefreshBonusFromServer()); // Обновляем бонусы с сервера
+    
+    // ✅ Загружаем скидку только если её нет или не пропускаем
+    if (!skipDiscountIfExists || !hasDiscount) {
+      bloc.add(GetDiscountFetch());
+    } else {
+      debugPrint('⏭️ Skipping GetDiscountFetch, discount already exists: ${bloc.state.discount?.discount}%');
+    }
+    
     // Проверяем доступность реферальной программы
     context.read<DiscountBloc>().add(CheckReferralAvailability());
   }
@@ -163,10 +171,14 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Future<void> _loadUserData(ProfileState state) async {
-    context.read<ProfileBloc>().add(ResetProfileState());
+    // ✅ Используем SoftRefreshProfile чтобы сохранить скидку при обновлении
+    context.read<ProfileBloc>().add(SoftRefreshProfile());
     await Future.delayed(const Duration(milliseconds: 100));
     if (!mounted) return;
-    _initializeProfile();
+    
+    // ✅ При refresh пропускаем загрузку скидки если она уже есть
+    _initializeProfile(skipDiscountIfExists: true);
+    
     if (state.token != null && _hasUserData(state)) {
       context.read<ProfileBloc>().add(GetProfileUserFetch());
     }
@@ -179,10 +191,21 @@ class _ProfilePageState extends State<ProfilePage>
       child: Scaffold(
         backgroundColor: _cardBg,
         body: BlocConsumer<ProfileBloc, ProfileState>(
+          // ✅ Слушаем только ИЗМЕНЕНИЯ состояния, не начальное значение
+          listenWhen: (previous, current) {
+            // Реагируем на isCleaned только когда оно меняется с false/null на true
+            final isCleanedChanged = previous.isCleaned != current.isCleaned && 
+                                     current.isCleaned == true;
+            // Реагируем на failure только когда статус меняется на failure
+            final isNewFailure = previous.status != current.status && 
+                                 current.isFailure;
+            return isCleanedChanged || isNewFailure;
+          },
           listener: (context, state) {
             if (state.isFailure) {
               showSnackBar(context, state.message ?? '');
-              _handleAuthenticationFailure();
+              // ✅ Не вызываем _handleAuthenticationFailure() автоматически
+              // Это может быть временная ошибка сети, а не проблема авторизации
             }
             if (state.isCleaned == true) {
               _handleAccountCleanup();
@@ -291,8 +314,10 @@ class _ProfilePageState extends State<ProfilePage>
                           _buildTabSwitcher(),
                           SizedBox(height: 24.h),
                           // PageView для свайп-навигации между вкладками
-                          SizedBox(
-                            // Высота для контента вкладок
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            // Высота адаптируется под активную вкладку
                             height: _calculateTabContentHeight(state),
                             child: PageView(
                               controller: _pageController,
@@ -486,20 +511,16 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildToolbarButton({required IconData icon, VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: LiquidGlass.withOwnLayer(
-        settings: AppLiquidGlassSettings.button,
-        shape: LiquidRoundedSuperellipse(borderRadius: 22.r),
-        child: SizedBox(
-          width: 44.w,
-          height: 44.w,
-          child: Icon(
-            icon,
-            size: 20.sp,
-            color: Colors.white,
-          ),
-        ),
+    return LiquidGlassButton(
+      onTap: onTap ?? () {},
+      width: 44.w,
+      height: 44.w,
+      borderRadius: 22.0,
+      enabled: onTap != null,
+      child: Icon(
+        icon,
+        size: 20.sp,
+        color: Colors.white,
       ),
     );
   }
@@ -988,7 +1009,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   /// Вычисляет высоту контента для PageView
-  /// Возвращает достаточную высоту для обеих вкладок
+  /// Возвращает высоту в зависимости от активной вкладки
   double _calculateTabContentHeight(ProfileState state) {
     // Примерное количество пунктов меню в аккаунте (6-7 пунктов)
     const menuItemCount = 7;
@@ -1004,15 +1025,16 @@ class _ProfilePageState extends State<ProfilePage>
     // Высота бонусной карточки
     final bonusCardHeight = 240.h;
     // Высота секции акций (заголовок + примерно 2-3 акции)
-    final promotionsCount = state.promotions?.length ?? 0;
+    final promotionsCount = state.promotions.length;
     final promotionsHeight = promotionsCount > 0 
         ? (80.h + (promotionsCount.clamp(0, 5) * 140.h)) 
         : 100.h;
     // Общая высота для вкладки "Бонусы"
     final bonusHeight = bonusCardHeight + promotionsHeight + 24.h;
     
-    // Возвращаем максимальную высоту + минимальный запас
-    return (accountHeight > bonusHeight ? accountHeight : bonusHeight) + 20.h;
+    // Возвращаем высоту в зависимости от активной вкладки
+    // account = true означает вкладка "Аккаунт", account = false означает вкладка "Бонусы"
+    return account ? accountHeight + 20.h : bonusHeight + 20.h;
   }
 
   Widget _buildTabContent(ProfileState state) {
@@ -1326,7 +1348,7 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             SizedBox(height: 4.h),
             Text(
-              'KETROY v2.0',
+              'KETROY v2.0.3',
               style: TextStyle(
                 fontSize: 11.sp,
                 color: Colors.black26,
@@ -1354,28 +1376,12 @@ class _ProfilePageState extends State<ProfilePage>
 
     if (mounted) {
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => SelectPage()),
-        (route) => route.isFirst,
-      );
-    }
-  }
-
-  void _handleAuthenticationFailure() {
-    sharedService.passed = false;
-    sharedService.profilePassed = false;
-    sharedService.deviceTokenPassed = false;
-    
-    // Сбрасываем состояние авторизации для чистого входа
-    context.read<AuthBloc>().add(const AuthResetState());
-    context.read<ProfileBloc>().add(LogOutFetch());
-
-    if (mounted) {
-      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => route.isFirst,
+        (route) => false, // Удаляем ВСЕ страницы из стека
       );
     }
   }
+
 }
 
 class _MenuItem {

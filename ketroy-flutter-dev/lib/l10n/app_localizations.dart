@@ -1308,6 +1308,48 @@ abstract class AppLocalizations {
   /// **'Отлично'**
   String get great;
 
+  /// No description provided for @youReceived.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы получили'**
+  String get youReceived;
+
+  /// No description provided for @promoCodeFrom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промокод от'**
+  String get promoCodeFrom;
+
+  /// No description provided for @personalDiscountBenefit.
+  ///
+  /// In ru, this message translates to:
+  /// **'Персональная скидка {percent}% на все покупки'**
+  String personalDiscountBenefit(int percent);
+
+  /// No description provided for @bonusFromPurchasesBenefit.
+  ///
+  /// In ru, this message translates to:
+  /// **'{percent}% бонусов с первых {count} {plural}'**
+  String bonusFromPurchasesBenefit(int percent, int count, String plural);
+
+  /// No description provided for @purchaseSingular.
+  ///
+  /// In ru, this message translates to:
+  /// **'покупки'**
+  String get purchaseSingular;
+
+  /// No description provided for @purchaseFew.
+  ///
+  /// In ru, this message translates to:
+  /// **'покупок'**
+  String get purchaseFew;
+
+  /// No description provided for @purchaseMany.
+  ///
+  /// In ru, this message translates to:
+  /// **'покупок'**
+  String get purchaseMany;
+
   /// No description provided for @promocodeNotFound.
   ///
   /// In ru, this message translates to:
@@ -1326,6 +1368,30 @@ abstract class AppLocalizations {
   /// **'Ввести заново'**
   String get enterAgain;
 
+  /// No description provided for @promoCodeAlreadyUsedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промокод уже использован'**
+  String get promoCodeAlreadyUsedTitle;
+
+  /// No description provided for @promoCodeAlreadyUsedMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы уже применяли реферальный промокод ранее. Повторное использование невозможно.'**
+  String get promoCodeAlreadyUsedMessage;
+
+  /// No description provided for @promoCodeSavedTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промокод сохранён'**
+  String get promoCodeSavedTitle;
+
+  /// No description provided for @promoCodeSavedMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Промокод {promoCode} будет применён после авторизации.'**
+  String promoCodeSavedMessage(String promoCode);
+
   /// No description provided for @giveDiscount.
   ///
   /// In ru, this message translates to:
@@ -1341,8 +1407,8 @@ abstract class AppLocalizations {
   /// No description provided for @joinKetroy.
   ///
   /// In ru, this message translates to:
-  /// **'🎁 Присоединяйтесь к Ketroy Shop!\nПолучите скидку в 20% при регистрации по этой ссылке:\n{link}\n\n📱 Скачайте приложение и начните экономить!'**
-  String joinKetroy(String link);
+  /// **'🎁 Присоединяйтесь к Ketroy Shop!\nПолучите скидку {discount}% при регистрации по этой ссылке:\n{link}\n\n📱 Скачайте приложение и начните экономить!'**
+  String joinKetroy(int discount, String link);
 
   /// No description provided for @ketroyInvitation.
   ///
@@ -1751,6 +1817,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Сохранить изменения'**
   String get saveButton;
+
+  /// No description provided for @profileUpdateSuccess.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменения успешно сохранены'**
+  String get profileUpdateSuccess;
 
   /// No description provided for @cancelButton.
   ///

@@ -632,6 +632,31 @@ class AppLocalizationsTr extends AppLocalizations {
   String get great => 'Harika';
 
   @override
+  String get youReceived => 'Aldınız';
+
+  @override
+  String get promoCodeFrom => 'Kimden promosyon kodu';
+
+  @override
+  String personalDiscountBenefit(int percent) {
+    return 'Tüm alışverişlerde %$percent kişisel indirim';
+  }
+
+  @override
+  String bonusFromPurchasesBenefit(int percent, int count, String plural) {
+    return 'İlk $count $plural %$percent bonus';
+  }
+
+  @override
+  String get purchaseSingular => 'alışverişten';
+
+  @override
+  String get purchaseFew => 'alışverişten';
+
+  @override
+  String get purchaseMany => 'alışverişten';
+
+  @override
   String get promocodeNotFound => 'Promosyon kodu bulunamadı';
 
   @override
@@ -642,14 +667,29 @@ class AppLocalizationsTr extends AppLocalizations {
   String get enterAgain => 'Tekrar gir';
 
   @override
+  String get promoCodeAlreadyUsedTitle => 'Promosyon kodu zaten kullanıldı';
+
+  @override
+  String get promoCodeAlreadyUsedMessage =>
+      'Daha önce bir referans promosyon kodu kullandınız. Tekrar kullanım mümkün değil.';
+
+  @override
+  String get promoCodeSavedTitle => 'Promosyon kodu kaydedildi';
+
+  @override
+  String promoCodeSavedMessage(String promoCode) {
+    return '$promoCode promosyon kodu yetkilendirmeden sonra uygulanacak.';
+  }
+
+  @override
   String get giveDiscount => 'İndirim hediye et';
 
   @override
   String get shareWithFriends => 'Arkadaşlarınla paylaş';
 
   @override
-  String joinKetroy(String link) {
-    return '🎁 Ketroy Shop\'a katılın!\nBu linkle kayıt olduğunuzda %20 indirim kazanın:\n$link\n\n📱 Uygulamayı indirin ve tasarruf etmeye başlayın!';
+  String joinKetroy(int discount, String link) {
+    return '🎁 Ketroy Shop\'a katılın!\nBu linkle kayıt olduğunuzda %$discount indirim kazanın:\n$link\n\n📱 Uygulamayı indirin ve tasarruf etmeye başlayın!';
   }
 
   @override
@@ -870,6 +910,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get saveButton => 'Değişiklikleri Kaydet';
+
+  @override
+  String get profileUpdateSuccess => 'Değişiklikler başarıyla kaydedildi';
 
   @override
   String get cancelButton => 'İptal';

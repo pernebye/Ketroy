@@ -74,6 +74,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<LogOutFetch>(_logOutFetch);
     on<DeleteUserFetch>(_deleteUserFetch);
     on<ResetProfileState>(_resetProfileState);
+    on<SoftRefreshProfile>(_softRefreshProfile);
+    on<ResetQrStatus>(_resetQrStatus);
     on<GetCityListFetch>(_cityListFetch);
     on<LoadCityShop>(_loadCityShop);
     on<GetPromotionsFetch>(_getPromotionsFetch);
@@ -82,6 +84,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   void _resetProfileState(ResetProfileState event, Emitter<ProfileState> emit) {
     emit(const ProfileState()); // Полностью сбрасываем состояние
+  }
+
+  /// Мягкий сброс для refresh - сбрасывает статусы но сохраняет важные данные
+  void _softRefreshProfile(SoftRefreshProfile event, Emitter<ProfileState> emit) {
+    // ✅ Используем copyWith чтобы сохранить все данные, сбрасываем только статусы
+    emit(state.copyWith(
+      status: ProfileStatus.initial,
+      profileDetailStatus: ProfileDetailedStatus.initial,
+      updateStatus: UpdateStatus.initial,
+      promotionsStatus: PromotionsStatus.initial,
+      // discount, scan, qrStatus - сохраняются автоматически через copyWith
+    ));
+  }
+
+  /// Сбрасывает статус QR-сканирования в initial
+  void _resetQrStatus(ResetQrStatus event, Emitter<ProfileState> emit) {
+    emit(state.copyWith(qrStatus: QrStatus.initial));
   }
 
   void _uploadProfileImage(
@@ -304,12 +323,35 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   void _getDiscountFetch(
       GetDiscountFetch event, Emitter<ProfileState> emit) async {
-    // Получаем валидный QR токен (если не истёк)
-    final token = await UserDataManager.getValidQrToken();
+    // ✅ Сначала проверяем, есть ли уже скидка в state
+    final currentDiscount = state.discount;
     
+    // Проверяем валидность токена БЕЗ очистки (для диагностики)
+    final isValid = await UserDataManager.isQrTokenValid();
+    debugPrint('🔍 GetDiscountFetch: current discount = ${currentDiscount?.discount}%, token valid = $isValid');
+    
+    // Если токен невалидный
+    if (!isValid) {
+      // Проверяем, есть ли оставшееся время
+      final remaining = await UserDataManager.getQrTokenRemainingTime();
+      
+      if (remaining == null) {
+        // Токен действительно истёк или отсутствует
+        debugPrint('⏰ QR token expired or missing, clearing discount');
+        if (currentDiscount != null) {
+          emit(state.copyWith(discount: null));
+        }
+      } else {
+        // Токен должен быть валидным, но isQrTokenValid вернул false - не сбрасываем
+        debugPrint('⚠️ Token should be valid (${remaining.inSeconds}s remaining), keeping current discount');
+      }
+      return;
+    }
+    
+    // Получаем токен для запроса
+    final token = await UserDataManager.getQrToken();
     if (token == null) {
-      // Токен отсутствует или истёк
-      emit(state.copyWith(discount: null));
+      debugPrint('⚠️ Token is null but was valid, keeping current discount');
       return;
     }
     
@@ -317,7 +359,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     res.fold((failure) {
       debugPrint('❌ GetDiscount failed: ${failure.message}');
-      emit(state.copyWith(discount: null));
+      // При ошибке сервера НЕ сбрасываем скидку если она уже есть
+      if (currentDiscount == null) {
+        emit(state.copyWith(discount: null));
+      } else {
+        debugPrint('⚠️ Keeping existing discount due to server error');
+      }
     }, (discount) {
       debugPrint('✅ Discount received: ${discount.discount}%');
       emit(state.copyWith(discount: discount));

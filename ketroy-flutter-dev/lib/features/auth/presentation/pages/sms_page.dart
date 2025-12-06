@@ -14,6 +14,8 @@ import 'package:ketroy_app/init_dependencies.dart';
 import 'package:ketroy_app/main.dart' show navigatorKey;
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
+import 'package:ketroy_app/core/common/widgets/promo_code_success_dialog.dart';
+import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 
@@ -356,6 +358,10 @@ class _SmsBodyState extends State<SmsBody> {
 
         if (isLoggedIn) {
           if (mounted) {
+            // Сохраняем данные о промокоде до навигации
+            final appliedPromoCode = state.appliedPromoCode;
+            final promoCodeAppliedSuccessfully = state.promoCodeAppliedSuccessfully;
+            
             // Используем addPostFrameCallback для безопасной навигации
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // Используем глобальный navigatorKey для надёжной навигации на витрину
@@ -370,6 +376,33 @@ class _SmsBodyState extends State<SmsBody> {
                 ),
                 (route) => false,
               );
+              
+              // ✅ Показываем диалог успешного применения промокода если он был применен
+              if (promoCodeAppliedSuccessfully == true &&
+                  appliedPromoCode != null &&
+                  appliedPromoCode.isNotEmpty) {
+                // Показываем диалог с небольшой задержкой после навигации
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (navigatorKey.currentContext != null) {
+                    PromoCodeSuccessDialog.show(
+                      navigatorKey.currentContext!,
+                      promoCode: appliedPromoCode,
+                    );
+                  }
+                });
+              } else if (state.promoCodeAlreadyUsed == true) {
+                // ✅ Показываем тост что промокод уже был использован ранее
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (navigatorKey.currentContext != null) {
+                    final l10n = AppLocalizations.of(navigatorKey.currentContext!);
+                    TopToast.showWarning(
+                      navigatorKey.currentContext!,
+                      title: l10n?.promoCodeAlreadyUsedTitle ?? 'Промокод уже использован',
+                      message: l10n?.promoCodeAlreadyUsedMessage ?? 'Вы уже применяли реферальный промокод ранее. Повторное использование невозможно.',
+                    );
+                  }
+                });
+              }
             });
           }
         } else {

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
+import 'package:ketroy_app/init_dependencies.dart';
+import 'package:ketroy_app/features/discount/domain/repository/discount_repository.dart';
 
 /// Константы для deep links
 class DeepLinkConstants {
@@ -128,11 +130,27 @@ class KetroyShareService {
         return;
       }
 
+      // Загружаем условия реферальной программы с бэкенда
+      int discountPercent = 10; // Значение по умолчанию
+      try {
+        final discountRepository = serviceLocator<DiscountRepository>();
+        final result = await discountRepository.getReferralInfo();
+        result.fold(
+          (failure) => debugPrint('⚠️ Failed to load referral info: ${failure.message}'),
+          (info) {
+            discountPercent = info.newUserDiscountPercent;
+            debugPrint('✅ Loaded discount percent: $discountPercent%');
+          },
+        );
+      } catch (e) {
+        debugPrint('⚠️ Error loading referral info: $e');
+      }
+
       // Создаем ссылку
       final link = '${DeepLinkConstants.baseUrl}/invite?ref=$referralCode';
       
-      // Формируем текст для шаринга
-      final shareText = l10n.joinKetroy(link);
+      // Формируем текст для шаринга с реальной скидкой
+      final shareText = l10n.joinKetroy(discountPercent, link);
       
       debugPrint('📤 Sharing referral link: $link');
       
