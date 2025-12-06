@@ -387,6 +387,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final sharedService = serviceLocator<SharedPreferencesService>();
+  
+  // ✅ Флаг для предотвращения повторного создания главного экрана
+  // После первого успешного определения экрана - больше не меняем
+  bool _homeScreenDecided = false;
+  Widget? _cachedHomeScreen;
 
   @override
   void initState() {
@@ -440,34 +445,57 @@ class _MyAppState extends State<MyApp> {
             debugPrint('NewsBloc error: ${state.error}');
           }
         },
+        // ✅ Не ребилдим если уже определили главный экран
+        buildWhen: (previous, current) {
+          // Если экран уже определён — не ребилдим (предотвращает бесконечный цикл)
+          if (_homeScreenDecided) {
+            return false;
+          }
+          return true;
+        },
         builder: (context, state) {
+          // ✅ Если экран уже закэширован - возвращаем его
+          if (_homeScreenDecided && _cachedHomeScreen != null) {
+            return _cachedHomeScreen!;
+          }
+          
           // Проверяем статус вместо содержимого списка
           if (state.isInitial || state.isLoading) {
             return const _BrandedLoadingScreen();
           } else if (state.isSuccess) {
+            // ✅ Определяем экран и кэшируем результат
+            Widget homeScreen;
+            
             // Ищем приветственную группу (с is_welcome = true)
             if (state.actuals.isEmpty) {
-              return const MainScreen();
-            }
-            
-            // Ищем приветственную группу (ТОЛЬКО с is_welcome = true)
-            // Если ни одна группа не помечена как приветственная - сразу MainScreen
-            ActualsEntity? welcomeGroup;
-            for (final actual in state.actuals) {
-              if (actual.isWelcome) {
-                welcomeGroup = actual;
-                break;
+              homeScreen = const MainScreen();
+            } else {
+              // Ищем приветственную группу (ТОЛЬКО с is_welcome = true)
+              // Если ни одна группа не помечена как приветственная - сразу MainScreen
+              ActualsEntity? welcomeGroup;
+              for (final actual in state.actuals) {
+                if (actual.isWelcome) {
+                  welcomeGroup = actual;
+                  break;
+                }
+              }
+              
+              // Если нет приветственной группы или в ней нет историй - сразу MainScreen
+              if (welcomeGroup == null || welcomeGroup.stories.isEmpty) {
+                homeScreen = const MainScreen();
+              } else {
+                // Показываем приветственные истории
+                homeScreen = StoriesScreen(
+                    stories: welcomeGroup.stories, firstLaunch: true);
               }
             }
             
-            // Если нет приветственной группы или в ней нет историй - сразу MainScreen
-            if (welcomeGroup == null || welcomeGroup.stories.isEmpty) {
-              return const MainScreen();
-            }
+            // ✅ Кэшируем экран и помечаем что решение принято
+            _homeScreenDecided = true;
+            _cachedHomeScreen = homeScreen;
+            debugPrint('🏠 Home screen decided and cached');
             
-            // Показываем приветственные истории
-            return StoriesScreen(
-                stories: welcomeGroup.stories, firstLaunch: true);
+            return homeScreen;
           } else if (state.isFailure) {
             final l10n = AppLocalizations.of(context);
             return ErrorScreen(
