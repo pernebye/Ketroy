@@ -160,17 +160,9 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          _quickCleanup();
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-      },
-      child: Container(
+    // Убрали PopScope - пусть sheet закрывается свободно,
+    // камера освободится в dispose()
+    return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: Colors.black,
@@ -186,7 +178,6 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
           Expanded(child: _buildScanner()),
           _buildBottomBar(bottomPadding),
         ],
-      ),
       ),
     );
   }

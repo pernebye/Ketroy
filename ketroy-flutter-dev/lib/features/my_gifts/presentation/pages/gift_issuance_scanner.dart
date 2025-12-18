@@ -319,34 +319,25 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          _quickCleanup();
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-      },
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28.r),
-            topRight: Radius.circular(28.r),
-          ),
+    // Убрали PopScope - пусть sheet закрывается свободно,
+    // камера освободится в dispose()
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28.r),
+          topRight: Radius.circular(28.r),
         ),
-        child: Column(
-          children: [
-            _buildHandle(),
-            _buildHeader(),
-            _buildGiftInfo(),
-            Expanded(child: _buildScanner()),
-            _buildBottomBar(bottomPadding),
-          ],
-        ),
+      ),
+      child: Column(
+        children: [
+          _buildHandle(),
+          _buildHeader(),
+          _buildGiftInfo(),
+          Expanded(child: _buildScanner()),
+          _buildBottomBar(bottomPadding),
+        ],
       ),
     );
   }

@@ -206,17 +206,9 @@ class _QrScannerSheetState extends State<QrScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          _quickCleanup();
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-      },
-      child: BlocListener<ProfileBloc, ProfileState>(
+    // Убрали PopScope - пусть sheet закрывается свободно,
+    // камера освободится в dispose()
+    return BlocListener<ProfileBloc, ProfileState>(
         listenWhen: (previous, current) => 
           previous.qrStatus != current.qrStatus &&
           (current.isQrSuccess || current.isQrFailure),
@@ -301,7 +293,6 @@ class _QrScannerSheetState extends State<QrScannerSheet>
             _buildBottomBar(bottomPadding),
           ],
         ),
-      ),
       ),
     );
   }
