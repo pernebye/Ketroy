@@ -4,6 +4,9 @@ class WhatsAppContacts {
   static final astanaWhatsapp =
       Uri.parse('https://wa.me/message/QBERXJVC4QXGB1');
   static final Uri almatyWhatsapp = Uri.parse('https://wa.me/77755390101');
+
+  /// Outlet WhatsApp - единый контакт для всех регионов
+  static final Uri outletWhatsapp = Uri.parse('https://wa.me/77753666517');
 }
 
 class InstaContacts {

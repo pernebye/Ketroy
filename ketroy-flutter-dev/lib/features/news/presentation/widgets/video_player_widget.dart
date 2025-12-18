@@ -66,15 +66,25 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       );
 
       if (mounted) {
+        // ✅ Добавляем слушатель только после успешной инициализации
+        widget.controller.addListener(_videoListener);
+
+        // Логируем реальный aspectRatio видео
+        final actualAspectRatio = widget.controller.value.aspectRatio;
+        debugPrint('Video initialized successfully. Actual aspectRatio: $actualAspectRatio');
+
         setState(() {
           _isInitialized = true;
           _isInitializing = false;
         });
 
-        // ✅ Добавляем слушатель только после успешной инициализации
-        widget.controller.addListener(_videoListener);
-
-        debugPrint('Video initialized successfully');
+        // ✅ Принудительное обновление после получения метаданных видео
+        // чтобы AspectRatio пересчитался с реальными данными
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {});
+          }
+        });
       }
     } catch (e) {
       debugPrint('Error initializing video: $e');

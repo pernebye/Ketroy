@@ -18,9 +18,10 @@ class DeepLinkConstants {
   static const String googlePlayUrl = 
       'https://play.google.com/store/apps/details?id=kz.ketroy.shop';
   
-  /// Ссылка на App Store (замените YOUR_APP_ID на реальный ID)
-  static const String appStoreUrl = 
-      'https://apps.apple.com/app/ketroy-shop/id6743387498';
+  /// Ссылка на App Store с указанием региона Казахстан (kz)
+  /// Это предотвращает ошибку "недоступно в вашем регионе"
+  static const String appStoreUrl =
+      'https://apps.apple.com/kz/app/ketroy-shop/id6743387498';
   
   /// URL схема приложения
   static const String appScheme = 'ketroy';

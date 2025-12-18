@@ -393,6 +393,18 @@ class _BlurLeftNavBarState extends State<BlurLeftNavBar>
                   launchURL(url);
                 },
               ),
+              SizedBox(width: 16.w),
+              _buildSocialButton(
+                icon: Icons.local_offer_rounded,
+                onTap: () {
+                  // Трекинг клика Outlet WhatsApp из навбара
+                  socialAnalytics.trackWhatsAppFromNavBar(
+                    city: widget.city,
+                    url: WhatsAppContacts.outletWhatsapp.toString(),
+                  );
+                  launchURL(WhatsAppContacts.outletWhatsapp);
+                },
+              ),
             ],
           ),
         ],
@@ -401,7 +413,8 @@ class _BlurLeftNavBarState extends State<BlurLeftNavBar>
   }
 
   Widget _buildSocialButton({
-    required String asset,
+    String? asset,
+    IconData? icon,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -421,11 +434,17 @@ class _BlurLeftNavBarState extends State<BlurLeftNavBar>
           ],
         ),
         child: Center(
-          child: SvgPicture.asset(
-            asset,
-            width: 24.w,
-            height: 24.w,
-          ),
+          child: icon != null
+              ? Icon(
+                  icon,
+                  size: 24.w,
+                  color: _primaryGreen,
+                )
+              : SvgPicture.asset(
+                  asset!,
+                  width: 24.w,
+                  height: 24.w,
+                ),
         ),
       ),
     );

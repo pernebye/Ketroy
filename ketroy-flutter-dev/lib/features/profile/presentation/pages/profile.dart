@@ -1143,6 +1143,18 @@ class _ProfilePageState extends State<ProfilePage>
                   launchURL(twoGisUrl!);
                 },
               ),
+              SizedBox(width: 12.w),
+              _buildSocialButton(
+                icon: Icons.local_offer_rounded,
+                label: 'Outlet',
+                onTap: () {
+                  socialAnalytics.trackWhatsAppFromNavBar(
+                    city: userCity,
+                    url: WhatsAppContacts.outletWhatsapp.toString(),
+                  );
+                  launchURL(WhatsAppContacts.outletWhatsapp);
+                },
+              ),
             ],
           ),
         ],
@@ -1151,7 +1163,8 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildSocialButton({
-    required String asset,
+    String? asset,
+    IconData? icon,
     required String label,
     required VoidCallback onTap,
   }) {
@@ -1174,11 +1187,17 @@ class _ProfilePageState extends State<ProfilePage>
               ],
             ),
             child: Center(
-              child: SvgPicture.asset(
-                asset,
-                width: 28.w,
-                height: 28.w,
-              ),
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 28.w,
+                      color: _primaryGreen,
+                    )
+                  : SvgPicture.asset(
+                      asset!,
+                      width: 28.w,
+                      height: 28.w,
+                    ),
             ),
           ),
           SizedBox(height: 8.h),

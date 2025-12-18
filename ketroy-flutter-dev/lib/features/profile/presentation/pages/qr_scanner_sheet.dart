@@ -75,12 +75,13 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
   void _onQRViewCreated(QRViewController controller) {
     qrViewController = controller;
-    _subscription = controller.scannedDataStream.listen((scanData) async {
+    _subscription = controller.scannedDataStream.listen((scanData) {
       if (hasScanend) return;
       hasScanend = true;
 
-      await _subscription?.cancel();
-      await qrViewController?.pauseCamera();
+      // Быстрая очистка подписки (камера освободится в dispose)
+      _subscription?.cancel();
+      _subscription = null;
 
       // Вибрация при сканировании
       HapticFeedback.mediumImpact();
@@ -89,9 +90,9 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
       final code = scanData.code;
       final l10n = AppLocalizations.of(context);
-      
+
       if (code == null || code.isEmpty) {
-        await _cleanupResources();
+        _quickCleanup();
         if (mounted) {
           Navigator.pop(context, false);
           // Показываем TopToast после закрытия sheet
@@ -109,10 +110,10 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         }
         return;
       }
-      
+
       // Валидация URL - проверяем, что это правильный QR-код для скидки
       if (!_isValidDiscountQrCode(code)) {
-        await _cleanupResources();
+        _quickCleanup();
         if (mounted) {
           Navigator.pop(context, false);
           // Показываем TopToast после закрытия sheet
@@ -182,24 +183,20 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     HapticFeedback.lightImpact();
   }
 
-  Future<void> _cleanupResources() async {
-    // Останавливаем анимацию
+  /// Быстрая очистка - только отменяем подписку и останавливаем анимацию
+  /// Камеру не ждём - она освободится в dispose()
+  void _quickCleanup() {
     _pulseController.stop();
-    
-    // Отменяем подписку
-    await _subscription?.cancel();
+    _subscription?.cancel();
     _subscription = null;
-    
-    // Останавливаем камеру
-    await qrViewController?.pauseCamera();
-    qrViewController?.dispose();
-    qrViewController = null;
   }
 
-  Future<void> _closeSheet() async {
-    await _cleanupResources();
-    
-    // Закрываем шторку
+
+  void _closeSheet() {
+    // Быстрая очистка без ожидания камеры
+    _quickCleanup();
+
+    // Закрываем шторку сразу
     if (mounted) {
       Navigator.pop(context);
     }
@@ -211,9 +208,9 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
-          await _cleanupResources();
+          _quickCleanup();
           if (mounted) {
             Navigator.pop(context);
           }
@@ -223,20 +220,21 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         listenWhen: (previous, current) => 
           previous.qrStatus != current.qrStatus &&
           (current.isQrSuccess || current.isQrFailure),
-        listener: (context, state) async {
+        listener: (context, state) {
           if (state.isQrSuccess) {
             // ✅ Сохраняем сообщение для TopToast
             final successMessage = AppLocalizations.of(context)!.qrCodeScannedSuccess;
-            
-            await _cleanupResources();
-            
+
+            // Быстрая очистка без ожидания камеры
+            _quickCleanup();
+
             if (mounted) {
               // ✅ Сбрасываем статус QR перед закрытием
               context.read<ProfileBloc>().add(ResetQrStatus());
-              
-              // ✅ Закрываем sheet
+
+              // ✅ Закрываем sheet сразу
               Navigator.pop(context, true);
-              
+
               // ✅ Показываем TopToast успеха после закрытия
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final overlay = navigatorKey.currentState?.overlay;
@@ -253,16 +251,17 @@ class _QrScannerSheetState extends State<QrScannerSheet>
           } else if (state.isQrFailure) {
             // ✅ Сохраняем сообщение об ошибке (приходит с сервера)
             final errorMessage = state.message ?? 'Ошибка сканирования';
-            
-            await _cleanupResources();
-            
+
+            // Быстрая очистка без ожидания камеры
+            _quickCleanup();
+
             if (mounted) {
               // ✅ Сбрасываем статус QR перед закрытием
               context.read<ProfileBloc>().add(ResetQrStatus());
-              
-              // ✅ Закрываем sheet
+
+              // ✅ Закрываем sheet сразу
               Navigator.pop(context, false);
-              
+
               // ✅ Показываем TopToast ошибки после закрытия
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final overlay = navigatorKey.currentState?.overlay;
