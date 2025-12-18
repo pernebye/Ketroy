@@ -56,9 +56,22 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
 
   @override
   void dispose() {
+    _pulseController.stop();
     controller?.dispose();
     _pulseController.dispose();
     super.dispose();
+  }
+
+  /// Быстрая очистка без ожидания - камера освободится в dispose()
+  void _quickCleanup() {
+    _pulseController.stop();
+  }
+
+  void _closeSheet() {
+    _quickCleanup();
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _initializeCamera() async {
@@ -172,32 +185,43 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
 
     final l10n = AppLocalizations.of(context)!;
     
-    return BlocListener<AiBloc, AiState>(
-      listener: (context, state) {
-        if (state.isSuccess) {
-          Navigator.pop(context, true);
-          _showSnackBar(l10n.imageSentForAnalysis);
-        } else if (state.isFailure) {
-          setState(() => isLoading = false);
-          _showSnackBar(state.message ?? l10n.sendError, isError: true);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _quickCleanup();
+          if (mounted) {
+            Navigator.pop(context);
+          }
         }
       },
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: _darkBg,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28.r),
-            topRight: Radius.circular(28.r),
+      child: BlocListener<AiBloc, AiState>(
+        listener: (context, state) {
+          if (state.isSuccess) {
+            Navigator.pop(context, true);
+            _showSnackBar(l10n.imageSentForAnalysis);
+          } else if (state.isFailure) {
+            setState(() => isLoading = false);
+            _showSnackBar(state.message ?? l10n.sendError, isError: true);
+          }
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: _darkBg,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28.r),
+              topRight: Radius.circular(28.r),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHandle(),
-            _buildHeader(),
-            Expanded(child: _buildCamera()),
-            _buildBottomBar(bottomPadding),
-          ],
+          child: Column(
+            children: [
+              _buildHandle(),
+              _buildHeader(),
+              Expanded(child: _buildCamera()),
+              _buildBottomBar(bottomPadding),
+            ],
+          ),
         ),
       ),
     );
@@ -278,7 +302,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
           ),
           // Кнопка закрытия
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _closeSheet,
             child: Container(
               width: 36.w,
               height: 36.w,

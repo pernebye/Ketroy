@@ -59,19 +59,36 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
 
   @override
   void dispose() {
+    _pulseController.stop();
     _subscription?.cancel();
+    qrViewController?.pauseCamera();
     _pulseController.dispose();
     super.dispose();
   }
 
+  /// Быстрая очистка без ожидания - камера освободится в dispose()
+  void _quickCleanup() {
+    _pulseController.stop();
+    _subscription?.cancel();
+    _subscription = null;
+  }
+
+  void _closeSheet() {
+    _quickCleanup();
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   void _onQRViewCreated(QRViewController controller) {
     qrViewController = controller;
-    _subscription = controller.scannedDataStream.listen((scanData) async {
+    _subscription = controller.scannedDataStream.listen((scanData) {
       if (hasScanned) return;
       hasScanned = true;
 
-      await _subscription?.cancel();
-      await qrViewController?.pauseCamera();
+      // Быстрая очистка подписки (камера освободится в dispose)
+      _subscription?.cancel();
+      _subscription = null;
 
       HapticFeedback.mediumImpact();
 
@@ -80,7 +97,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
       setState(() => isLoading = true);
 
       // Подтверждаем выдачу подарка
-      await _confirmIssuance(scanData.code ?? '');
+      _confirmIssuance(scanData.code ?? '');
     });
   }
 
@@ -302,23 +319,34 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(28.r),
-          topRight: Radius.circular(28.r),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _quickCleanup();
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(28.r),
+            topRight: Radius.circular(28.r),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildHandle(),
-          _buildHeader(),
-          _buildGiftInfo(),
-          Expanded(child: _buildScanner()),
-          _buildBottomBar(bottomPadding),
-        ],
+        child: Column(
+          children: [
+            _buildHandle(),
+            _buildHeader(),
+            _buildGiftInfo(),
+            Expanded(child: _buildScanner()),
+            _buildBottomBar(bottomPadding),
+          ],
+        ),
       ),
     );
   }
@@ -378,7 +406,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
             ),
           ),
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _closeSheet,
             child: Container(
               width: 36.w,
               height: 36.w,
