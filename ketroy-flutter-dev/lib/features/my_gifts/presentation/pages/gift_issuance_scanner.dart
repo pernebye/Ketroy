@@ -44,6 +44,7 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
   bool hasScanned = false;
   bool flashOn = false;
   bool isLoading = false;
+  bool _isClosing = false;
 
   late AnimationController _pulseController;
   final GiftDataSourceImpl _giftDataSource = GiftDataSourceImpl();
@@ -61,7 +62,8 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
   void dispose() {
     _pulseController.stop();
     _subscription?.cancel();
-    qrViewController?.pauseCamera();
+    // Не вызываем pauseCamera/dispose для qrViewController - это вызывает краш на iOS
+    // Камера сама освободится когда QRView будет удалён из дерева
     _pulseController.dispose();
     super.dispose();
   }
@@ -74,10 +76,19 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
   }
 
   void _closeSheet() {
+    if (_isClosing) return;
+    _isClosing = true;
+
     _quickCleanup();
-    if (mounted) {
-      Navigator.pop(context);
-    }
+
+    // Сначала скрываем QRView через setState, затем закрываем sheet
+    setState(() {});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    });
   }
 
   void _onQRViewCreated(QRViewController controller) {
@@ -497,18 +508,22 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              overlay: QrScannerOverlayShape(
-                borderColor: _accentGreen,
-                borderRadius: 20.r,
-                borderLength: 32.w,
-                borderWidth: 4.w,
-                cutOutSize: 200.w,
-                overlayColor: Colors.black.withValues(alpha: 0.8),
-              ),
-            ),
+            // QR View - скрываем при закрытии чтобы камера успела освободиться
+            if (!_isClosing)
+              QRView(
+                key: qrKey,
+                onQRViewCreated: _onQRViewCreated,
+                overlay: QrScannerOverlayShape(
+                  borderColor: _accentGreen,
+                  borderRadius: 20.r,
+                  borderLength: 32.w,
+                  borderWidth: 4.w,
+                  cutOutSize: 200.w,
+                  overlayColor: Colors.black.withValues(alpha: 0.8),
+                ),
+              )
+            else
+              Container(color: Colors.black),
             
             // Анимированная рамка
             Center(

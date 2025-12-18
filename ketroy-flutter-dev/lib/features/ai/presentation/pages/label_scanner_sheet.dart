@@ -41,6 +41,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
   bool isInitialized = false;
   bool flashOn = false;
   bool isLoading = false;
+  bool _isClosing = false;
 
   late AnimationController _pulseController;
 
@@ -57,8 +58,19 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
   @override
   void dispose() {
     _pulseController.stop();
-    controller?.dispose();
     _pulseController.dispose();
+    // Dispose камеры в microtask чтобы не блокировать UI
+    final cam = controller;
+    controller = null;
+    if (cam != null) {
+      Future.microtask(() async {
+        try {
+          await cam.dispose();
+        } catch (e) {
+          debugPrint('Camera dispose error (ignored): $e');
+        }
+      });
+    }
     super.dispose();
   }
 
@@ -68,10 +80,19 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
   }
 
   void _closeSheet() {
+    if (_isClosing) return;
+    _isClosing = true;
+
     _quickCleanup();
-    if (mounted) {
-      Navigator.pop(context);
-    }
+
+    // Сначала скрываем камеру через setState, затем закрываем sheet
+    setState(() {});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    });
   }
 
   Future<void> _initializeCamera() async {
@@ -320,8 +341,8 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // Камера
-            if (isInitialized && controller != null)
+            // Камера - скрываем при закрытии чтобы камера успела освободиться
+            if (!_isClosing && isInitialized && controller != null)
               SizedBox(
                 width: double.infinity,
                 height: double.infinity,
@@ -330,7 +351,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
             else
               Container(
                 color: Colors.black,
-                child: const Center(
+                child: _isClosing ? null : const Center(
                   child: CircularProgressIndicator(
                     color: _accentGreen,
                     strokeWidth: 3,
