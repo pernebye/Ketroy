@@ -194,6 +194,23 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
+  /// Получаем реальный aspectRatio видео из контроллера
+  double get _videoAspectRatio {
+    if (!_isInitialized || !widget.controller.value.isInitialized) {
+      // Fallback на основе resolution, пока видео не загружено
+      return widget.resolution == 'portrait' ? 9 / 16 : 16 / 9;
+    }
+
+    final actualRatio = widget.controller.value.aspectRatio;
+    // Проверяем что aspectRatio валидный (больше 0 и не infinity)
+    if (actualRatio > 0 && actualRatio.isFinite) {
+      return actualRatio;
+    }
+
+    // Fallback если aspectRatio невалидный
+    return widget.resolution == 'portrait' ? 9 / 16 : 16 / 9;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
@@ -204,23 +221,22 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       return _buildLoadingWidget();
     }
 
+    final aspectRatio = _videoAspectRatio;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(21.r),
       child: Container(
-        height: 200.h,
+        // Убираем фиксированную высоту - пусть AspectRatio определяет размер
         width: double.infinity,
         color: Colors.black,
-        child: Stack(
-          children: [
-            // ✅ Видеоплеер с правильным AspectRatio
-            Center(
-              child: AspectRatio(
-                aspectRatio: widget.resolution == 'portrait'
-                    ? 9 / 16
-                    : 16 / 9, // Fallback aspect ratio
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Stack(
+            children: [
+              // ✅ Видеоплеер с реальным AspectRatio из контроллера
+              Center(
                 child: VideoPlayer(widget.controller),
               ),
-            ),
 
             // ✅ Прозрачная область для управления контролами
             Positioned.fill(
@@ -230,9 +246,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
 
-            // Оверлей с контролами
-            if (_showControls) _buildControlsOverlay(),
-          ],
+              // Оверлей с контролами
+              if (_showControls) _buildControlsOverlay(),
+            ],
+          ),
         ),
       ),
     );

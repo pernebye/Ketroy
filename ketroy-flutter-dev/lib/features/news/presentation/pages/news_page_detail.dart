@@ -560,15 +560,14 @@ class _NewsPageDetailState extends State<NewsPageDetail> {
 
     final controller = _videoControllers[videoPath]!;
 
+    // VideoPlayerWidget теперь сам определяет правильный AspectRatio
+    // на основе реальных метаданных видео после инициализации
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.r),
-      child: AspectRatio(
-        aspectRatio: resolution == 'portrait' ? 9 / 16 : 16 / 9,
-        child: VideoPlayerWidget(
-          controller: controller,
-          videoPath: videoPath,
-          resolution: resolution,
-        ),
+      child: VideoPlayerWidget(
+        controller: controller,
+        videoPath: videoPath,
+        resolution: resolution,
       ),
     );
   }
