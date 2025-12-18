@@ -81,14 +81,10 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
 
     _quickCleanup();
 
-    // Сначала скрываем QRView через setState, затем закрываем sheet
-    setState(() {});
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    });
+    // Закрываем sheet НЕМЕДЛЕННО
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _onQRViewCreated(QRViewController controller) {
@@ -508,22 +504,19 @@ class _GiftIssuanceScannerSheetState extends State<GiftIssuanceScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // QR View - скрываем при закрытии чтобы камера успела освободиться
-            if (!_isClosing)
-              QRView(
-                key: qrKey,
-                onQRViewCreated: _onQRViewCreated,
-                overlay: QrScannerOverlayShape(
-                  borderColor: _accentGreen,
-                  borderRadius: 20.r,
-                  borderLength: 32.w,
-                  borderWidth: 4.w,
-                  cutOutSize: 200.w,
-                  overlayColor: Colors.black.withValues(alpha: 0.8),
-                ),
-              )
-            else
-              Container(color: Colors.black),
+            // QR View
+            QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: _accentGreen,
+                borderRadius: 20.r,
+                borderLength: 32.w,
+                borderWidth: 4.w,
+                cutOutSize: 200.w,
+                overlayColor: Colors.black.withValues(alpha: 0.8),
+              ),
+            ),
             
             // Анимированная рамка
             Center(

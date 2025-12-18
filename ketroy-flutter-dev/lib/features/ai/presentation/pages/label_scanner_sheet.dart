@@ -85,14 +85,10 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
 
     _quickCleanup();
 
-    // Сначала скрываем камеру через setState, затем закрываем sheet
-    setState(() {});
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    });
+    // Закрываем sheet НЕМЕДЛЕННО
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _initializeCamera() async {
@@ -126,6 +122,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
       _showPhotoPreview(photo);
     } catch (e) {
       debugPrint('Error taking photo: $e');
+      if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       _showSnackBar(l10n.photoError, isError: true);
     }
@@ -341,8 +338,8 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // Камера - скрываем при закрытии чтобы камера успела освободиться
-            if (!_isClosing && isInitialized && controller != null)
+            // Камера
+            if (isInitialized && controller != null)
               SizedBox(
                 width: double.infinity,
                 height: double.infinity,
@@ -351,7 +348,7 @@ class _LabelScannerSheetState extends State<LabelScannerSheet>
             else
               Container(
                 color: Colors.black,
-                child: _isClosing ? null : const Center(
+                child: const Center(
                   child: CircularProgressIndicator(
                     color: _accentGreen,
                     strokeWidth: 3,

@@ -197,19 +197,15 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     if (_isClosing) return;
     _isClosing = true;
 
-    // Быстрая очистка
+    // Быстрая очистка - отменяем подписку чтобы не было новых событий
     _quickCleanup();
 
-    // Сначала скрываем QRView через setState, затем закрываем sheet
-    // Это позволяет камере освободиться до анимации закрытия
-    setState(() {});
-
-    // Даём один кадр на удаление QRView из дерева
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-    });
+    // Закрываем sheet НЕМЕДЛЕННО
+    // QRView останется в дереве до завершения анимации закрытия,
+    // затем dispose() вызовется автоматически
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -394,22 +390,20 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // QR View - скрываем при закрытии чтобы камера успела освободиться
-            if (!_isClosing)
-              QRView(
-                key: qrKey,
-                onQRViewCreated: _onQRViewCreated,
-                overlay: QrScannerOverlayShape(
-                  borderColor: _accentGreen,
-                  borderRadius: 20.r,
-                  borderLength: 32.w,
-                  borderWidth: 4.w,
-                  cutOutSize: 220.w,
-                  overlayColor: Colors.black.withValues(alpha: 0.8),
-                ),
-              )
-            else
-              Container(color: Colors.black),
+            // QR View - НЕ удаляем из дерева при закрытии,
+            // чтобы dispose не блокировал анимацию закрытия sheet
+            QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: _accentGreen,
+                borderRadius: 20.r,
+                borderLength: 32.w,
+                borderWidth: 4.w,
+                cutOutSize: 220.w,
+                overlayColor: Colors.black.withValues(alpha: 0.8),
+              ),
+            ),
 
             // Анимированная рамка
             Center(
