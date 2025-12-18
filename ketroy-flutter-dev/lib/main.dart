@@ -372,14 +372,14 @@ class _KetroyAppState extends State<KetroyApp> {
           BlocProvider(create: (context) => serviceLocator<NotificationBloc>()),
           BlocProvider(create: (context) => serviceLocator<AiBloc>()),
         ],
-        child: MyApp(),
+        child: const MyApp(),
       ),
     );
   }
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();

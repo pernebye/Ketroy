@@ -313,10 +313,10 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                 _shimmerAnimation.value.clamp(0.0, 1.0),
                 (_shimmerAnimation.value + 1).clamp(0.0, 1.0),
               ],
-              colors: [
-                const Color(0xFFE0E0E0),
-                const Color(0xFFF5F5F5),
-                const Color(0xFFE0E0E0),
+              colors: const [
+                Color(0xFFE0E0E0),
+                Color(0xFFF5F5F5),
+                Color(0xFFE0E0E0),
               ],
             ),
           ),

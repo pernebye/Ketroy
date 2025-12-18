@@ -142,7 +142,7 @@ class _PromoCodeSuccessDialogState extends State<PromoCodeSuccessDialog> {
                   width: 80.w,
                   height: 80.w,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [_accentGreen, _primaryGreen],

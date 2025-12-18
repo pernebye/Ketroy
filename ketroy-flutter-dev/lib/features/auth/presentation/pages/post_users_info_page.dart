@@ -16,7 +16,6 @@ import 'package:ketroy_app/main.dart' show globalDeepLinkManager, navigatorKey;
 import 'package:ketroy_app/services/shared_preferences_service.dart';
 import 'package:ketroy_app/services/local_storage/user_data_manager.dart';
 import 'package:ketroy_app/core/common/widgets/promo_code_success_dialog.dart';
-import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 
 class PostUsersInfoPage extends StatefulWidget {
   final String name;
