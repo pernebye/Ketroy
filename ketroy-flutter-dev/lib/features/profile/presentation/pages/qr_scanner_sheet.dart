@@ -10,10 +10,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Показать QR-сканер как нижнюю шторку
 Future<bool?> showQrScannerSheet(BuildContext context) {
-  // Сохраняем ссылку на ProfileBloc до открытия bottom sheet
   final profileBloc = context.read<ProfileBloc>();
-
-  // Сбрасываем статус QR перед открытием сканера
   profileBloc.add(ResetQrStatus());
 
   return showModalBottomSheet<bool>(
@@ -39,9 +36,7 @@ class QrScannerSheet extends StatefulWidget {
 
 class _QrScannerSheetState extends State<QrScannerSheet>
     with SingleTickerProviderStateMixin {
-  // Цвета
   static const Color _primaryGreen = Color(0xFF3C4B1B);
-  static const Color _lightGreen = Color(0xFF5A6F2B);
   static const Color _accentGreen = Color(0xFF8BC34A);
 
   MobileScannerController? _scannerController;
@@ -57,7 +52,7 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
 
     _scannerController = MobileScannerController(
@@ -90,7 +85,6 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
     final l10n = AppLocalizations.of(context);
 
-    // Валидация URL - проверяем, что это правильный QR-код для скидки
     if (!_isValidDiscountQrCode(code)) {
       _closeSheet();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,42 +105,22 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     context.read<ProfileBloc>().add(ScanQrFetch(scanQrUrl: code));
   }
 
-  /// Проверяет, что URL является валидным QR-кодом для скидки Ketroy
   bool _isValidDiscountQrCode(String code) {
     try {
       final uri = Uri.parse(code);
+      if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) return false;
 
-      // Проверяем, что это URL (а не просто текст)
-      if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
-        debugPrint('QR код не является URL: $code');
-        return false;
-      }
-
-      // Проверяем, что это URL Ketroy API или localhost/ngrok для dev
       final host = uri.host.toLowerCase();
       final isKetroyApi = host.contains('ketroy-shop.kz') ||
                           host.contains('ketroy.kz') ||
                           host.contains('ketroy.ngrok.app');
-      final isLocalDev = host == 'localhost' ||
-                         host == '127.0.0.1' ||
-                         host == '10.0.2.2';
+      final isLocalDev = host == 'localhost' || host == '127.0.0.1' || host == '10.0.2.2';
 
-      if (!isKetroyApi && !isLocalDev) {
-        debugPrint('QR код не от Ketroy: $code');
-        return false;
-      }
+      if (!isKetroyApi && !isLocalDev) return false;
 
-      // Проверяем, что путь содержит scan-discount
       final path = uri.path.toLowerCase();
-      if (!path.contains('scan-discount')) {
-        debugPrint('QR код не для скидки: $code');
-        return false;
-      }
-
-      debugPrint('Валидный QR код для скидки: $code');
-      return true;
+      return path.contains('scan-discount');
     } catch (e) {
-      debugPrint('Ошибка парсинга QR кода: $e');
       return false;
     }
   }
@@ -160,12 +134,8 @@ class _QrScannerSheetState extends State<QrScannerSheet>
   void _closeSheet() {
     if (_isClosing) return;
     _isClosing = true;
-
     _pulseController.stop();
-
-    if (mounted) {
-      Navigator.pop(context);
-    }
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -173,57 +143,45 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return BlocListener<ProfileBloc, ProfileState>(
-        listenWhen: (previous, current) =>
-          previous.qrStatus != current.qrStatus &&
-          (current.isQrSuccess || current.isQrFailure),
-        listener: (context, state) {
-          if (state.isQrSuccess) {
-            final successMessage = AppLocalizations.of(context)!.qrCodeScannedSuccess;
-
-            if (mounted) {
-              context.read<ProfileBloc>().add(ResetQrStatus());
-              Navigator.pop(context, true);
-
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                final overlay = navigatorKey.currentState?.overlay;
-                final ctx = navigatorKey.currentContext;
-                if (overlay != null && ctx != null) {
-                  TopToast.showSuccess(
-                    ctx,
-                    message: successMessage,
-                    overlayState: overlay,
-                  );
-                }
-              });
-            }
-          } else if (state.isQrFailure) {
-            final errorMessage = state.message ?? 'Ошибка сканирования';
-
-            if (mounted) {
-              context.read<ProfileBloc>().add(ResetQrStatus());
-              Navigator.pop(context, false);
-
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                final overlay = navigatorKey.currentState?.overlay;
-                final ctx = navigatorKey.currentContext;
-                if (overlay != null && ctx != null) {
-                  TopToast.showError(
-                    ctx,
-                    message: errorMessage,
-                    overlayState: overlay,
-                  );
-                }
-              });
-            }
+      listenWhen: (previous, current) =>
+        previous.qrStatus != current.qrStatus &&
+        (current.isQrSuccess || current.isQrFailure),
+      listener: (context, state) {
+        if (state.isQrSuccess) {
+          final successMessage = AppLocalizations.of(context)!.qrCodeScannedSuccess;
+          if (mounted) {
+            context.read<ProfileBloc>().add(ResetQrStatus());
+            Navigator.pop(context, true);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final overlay = navigatorKey.currentState?.overlay;
+              final ctx = navigatorKey.currentContext;
+              if (overlay != null && ctx != null) {
+                TopToast.showSuccess(ctx, message: successMessage, overlayState: overlay);
+              }
+            });
           }
-        },
+        } else if (state.isQrFailure) {
+          final errorMessage = state.message ?? 'Ошибка сканирования';
+          if (mounted) {
+            context.read<ProfileBloc>().add(ResetQrStatus());
+            Navigator.pop(context, false);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final overlay = navigatorKey.currentState?.overlay;
+              final ctx = navigatorKey.currentContext;
+              if (overlay != null && ctx != null) {
+                TopToast.showError(ctx, message: errorMessage, overlayState: overlay);
+              }
+            });
+          }
+        }
+      },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28.r),
-            topRight: Radius.circular(28.r),
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
           ),
         ),
         child: Column(
@@ -241,10 +199,10 @@ class _QrScannerSheetState extends State<QrScannerSheet>
   Widget _buildHandle() {
     return Container(
       margin: EdgeInsets.only(top: 12.h),
-      width: 40.w,
+      width: 36.w,
       height: 4.h,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(2.r),
       ),
     );
@@ -252,25 +210,9 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 12.w, 12.h),
       child: Row(
         children: [
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [_lightGreen, _primaryGreen],
-              ),
-            ),
-            child: Icon(
-              Icons.qr_code_scanner_rounded,
-              color: Colors.white,
-              size: 22.w,
-            ),
-          ),
-          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,17 +220,18 @@ class _QrScannerSheetState extends State<QrScannerSheet>
                 Text(
                   AppLocalizations.of(context)!.scanQr,
                   style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                SizedBox(height: 2.h),
+                SizedBox(height: 4.h),
                 Text(
                   AppLocalizations.of(context)!.pointCameraAtQr,
                   style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14.sp,
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -297,16 +240,16 @@ class _QrScannerSheetState extends State<QrScannerSheet>
           GestureDetector(
             onTap: _closeSheet,
             child: Container(
-              width: 36.w,
-              height: 36.w,
+              width: 40.w,
+              height: 40.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.08),
               ),
               child: Icon(
                 Icons.close_rounded,
-                color: Colors.white.withValues(alpha: 0.7),
-                size: 20.w,
+                color: Colors.white.withValues(alpha: 0.6),
+                size: 22.w,
               ),
             ),
           ),
@@ -317,42 +260,21 @@ class _QrScannerSheetState extends State<QrScannerSheet>
 
   Widget _buildScanner() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(20.r),
         child: Stack(
           children: [
-            // MobileScanner
+            // Camera
             MobileScanner(
               controller: _scannerController,
               onDetect: _onDetect,
             ),
 
-            // Overlay с вырезом
+            // Overlay
             _buildScannerOverlay(),
 
-            // Анимированная рамка
-            Center(
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  return Container(
-                    width: 224.w + (_pulseController.value * 8),
-                    height: 224.w + (_pulseController.value * 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(22.r),
-                      border: Border.all(
-                        color: _accentGreen
-                            .withValues(alpha: 0.3 - (_pulseController.value * 0.2)),
-                        width: 2,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Индикатор загрузки
+            // Loading
             if (isLoading)
               Container(
                 color: Colors.black.withValues(alpha: 0.7),
@@ -361,19 +283,19 @@ class _QrScannerSheetState extends State<QrScannerSheet>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        width: 48.w,
-                        height: 48.w,
+                        width: 40.w,
+                        height: 40.w,
                         child: const CircularProgressIndicator(
                           color: _accentGreen,
-                          strokeWidth: 3,
+                          strokeWidth: 2.5,
                         ),
                       ),
                       SizedBox(height: 16.h),
                       Text(
                         'Обработка...',
                         style: TextStyle(
-                          fontSize: 15.sp,
-                          color: Colors.white,
+                          fontSize: 14.sp,
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -382,35 +304,24 @@ class _QrScannerSheetState extends State<QrScannerSheet>
                 ),
               ),
 
-            // Подсказка снизу сканера
+            // Hint
             Positioned(
-              bottom: 20.h,
+              bottom: 16.h,
               left: 0,
               right: 0,
               child: Center(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(20.r),
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.info_outline_rounded,
-                        color: _accentGreen,
-                        size: 16.w,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        AppLocalizations.of(context)!.qrCodeInStore,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    AppLocalizations.of(context)!.qrCodeInStore,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
                 ),
               ),
@@ -421,60 +332,67 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     );
   }
 
-  /// Создаём overlay с вырезом как у QrScannerOverlayShape
   Widget _buildScannerOverlay() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scanAreaSize = 220.w;
-        final overlayColor = Colors.black.withValues(alpha: 0.8);
+        final scanAreaSize = 240.w;
+        final cornerLength = 28.w;
+        final cornerWidth = 4.w;
+        final cornerRadius = 12.r;
+
+        final left = (constraints.maxWidth - scanAreaSize) / 2;
+        final top = (constraints.maxHeight - scanAreaSize) / 2;
 
         return Stack(
           children: [
-            // Затемнение сверху
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: (constraints.maxHeight - scanAreaSize) / 2,
-              child: Container(color: overlayColor),
-            ),
-            // Затемнение снизу
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: (constraints.maxHeight - scanAreaSize) / 2,
-              child: Container(color: overlayColor),
-            ),
-            // Затемнение слева
-            Positioned(
-              top: (constraints.maxHeight - scanAreaSize) / 2,
-              left: 0,
-              width: (constraints.maxWidth - scanAreaSize) / 2,
-              height: scanAreaSize,
-              child: Container(color: overlayColor),
-            ),
-            // Затемнение справа
-            Positioned(
-              top: (constraints.maxHeight - scanAreaSize) / 2,
-              right: 0,
-              width: (constraints.maxWidth - scanAreaSize) / 2,
-              height: scanAreaSize,
-              child: Container(color: overlayColor),
-            ),
-            // Рамка сканирования
-            Center(
-              child: Container(
-                width: scanAreaSize,
-                height: scanAreaSize,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(
-                    color: _accentGreen,
-                    width: 4.w,
-                  ),
-                ),
+            // Dark overlay with cutout
+            CustomPaint(
+              size: Size(constraints.maxWidth, constraints.maxHeight),
+              painter: _OverlayPainter(
+                scanAreaSize: scanAreaSize,
+                borderRadius: cornerRadius,
               ),
+            ),
+
+            // Corner brackets with animation
+            AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                final color = Color.lerp(
+                  _accentGreen,
+                  _accentGreen.withValues(alpha: 0.6),
+                  _pulseController.value,
+                )!;
+
+                return Stack(
+                  children: [
+                    // Top-left corner
+                    Positioned(
+                      left: left,
+                      top: top,
+                      child: _buildCorner(cornerLength, cornerWidth, cornerRadius, color, TopLeft()),
+                    ),
+                    // Top-right corner
+                    Positioned(
+                      right: left,
+                      top: top,
+                      child: _buildCorner(cornerLength, cornerWidth, cornerRadius, color, TopRight()),
+                    ),
+                    // Bottom-left corner
+                    Positioned(
+                      left: left,
+                      bottom: top,
+                      child: _buildCorner(cornerLength, cornerWidth, cornerRadius, color, BottomLeft()),
+                    ),
+                    // Bottom-right corner
+                    Positioned(
+                      right: left,
+                      bottom: top,
+                      child: _buildCorner(cornerLength, cornerWidth, cornerRadius, color, BottomRight()),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         );
@@ -482,63 +400,153 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     );
   }
 
-  Widget _buildBottomBar(double bottomPadding) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + bottomPadding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildActionButton(
-            icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-            label: flashOn ? AppLocalizations.of(context)!.flashOff : AppLocalizations.of(context)!.flashOn,
-            isActive: flashOn,
-            onTap: _toggleFlash,
-          ),
-        ],
+  Widget _buildCorner(double length, double width, double radius, Color color, _CornerPosition position) {
+    return CustomPaint(
+      size: Size(length, length),
+      painter: _CornerPainter(
+        color: color,
+        strokeWidth: width,
+        radius: radius,
+        position: position,
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isActive
-              ? _primaryGreen
-              : Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isActive
-                ? _accentGreen.withValues(alpha: 0.5)
-                : Colors.white.withValues(alpha: 0.1),
+  Widget _buildBottomBar(double bottomPadding) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 12.h + bottomPadding),
+      child: GestureDetector(
+        onTap: _toggleFlash,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: flashOn
+                ? _primaryGreen.withValues(alpha: 0.8)
+                : Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: flashOn
+                  ? _accentGreen.withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isActive ? _accentGreen : Colors.white.withValues(alpha: 0.7),
-              size: 22.w,
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                color: flashOn ? _accentGreen : Colors.white.withValues(alpha: 0.6),
+                size: 20.w,
               ),
-            ),
-          ],
+              SizedBox(width: 8.w),
+              Text(
+                flashOn
+                    ? AppLocalizations.of(context)!.flashOff
+                    : AppLocalizations.of(context)!.flashOn,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                  color: flashOn ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+// Corner position markers
+abstract class _CornerPosition {}
+class TopLeft extends _CornerPosition {}
+class TopRight extends _CornerPosition {}
+class BottomLeft extends _CornerPosition {}
+class BottomRight extends _CornerPosition {}
+
+// Overlay painter with rounded cutout
+class _OverlayPainter extends CustomPainter {
+  final double scanAreaSize;
+  final double borderRadius;
+
+  _OverlayPainter({required this.scanAreaSize, required this.borderRadius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.black.withValues(alpha: 0.7);
+
+    final cutoutRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(size.width / 2, size.height / 2),
+        width: scanAreaSize,
+        height: scanAreaSize,
+      ),
+      Radius.circular(borderRadius),
+    );
+
+    final path = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..addRRect(cutoutRect)
+      ..fillType = PathFillType.evenOdd;
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Corner bracket painter
+class _CornerPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double radius;
+  final _CornerPosition position;
+
+  _CornerPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.radius,
+    required this.position,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+
+    if (position is TopLeft) {
+      path.moveTo(0, size.height);
+      path.lineTo(0, radius);
+      path.quadraticBezierTo(0, 0, radius, 0);
+      path.lineTo(size.width, 0);
+    } else if (position is TopRight) {
+      path.moveTo(0, 0);
+      path.lineTo(size.width - radius, 0);
+      path.quadraticBezierTo(size.width, 0, size.width, radius);
+      path.lineTo(size.width, size.height);
+    } else if (position is BottomLeft) {
+      path.moveTo(0, 0);
+      path.lineTo(0, size.height - radius);
+      path.quadraticBezierTo(0, size.height, radius, size.height);
+      path.lineTo(size.width, size.height);
+    } else if (position is BottomRight) {
+      path.moveTo(size.width, 0);
+      path.lineTo(size.width, size.height - radius);
+      path.quadraticBezierTo(size.width, size.height, size.width - radius, size.height);
+      path.lineTo(0, size.height);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CornerPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
