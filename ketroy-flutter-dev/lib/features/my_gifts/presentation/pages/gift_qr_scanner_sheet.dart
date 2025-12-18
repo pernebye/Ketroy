@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,7 +5,7 @@ import 'package:ketroy_app/core/util/show_snackbar.dart';
 import 'package:ketroy_app/features/my_gifts/data/data_source/gift_data_source.dart';
 import 'package:ketroy_app/features/my_gifts/presentation/pages/gift_selection_page.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
-import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Показать QR-сканер для активации подарков
 Future<bool?> showGiftQrScannerSheet(BuildContext context) {
@@ -35,9 +34,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
   static const Color _lightGreen = Color(0xFF5A6F2B);
   static const Color _accentGreen = Color(0xFF8BC34A);
 
-  final qrKey = GlobalKey(debugLabel: 'GiftQR');
-  QRViewController? qrViewController;
-  StreamSubscription? _subscription;
+  MobileScannerController? _scannerController;
   bool hasScanned = false;
   bool flashOn = false;
   bool isLoading = false;
@@ -53,37 +50,39 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
+
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+      torchEnabled: false,
+    );
   }
 
   @override
   void dispose() {
-    _pulseController.stop();
-    _subscription?.cancel();
-    // Не вызываем dispose() для qrViewController - это вызывает краш на iOS
-    // Камера сама освободится когда QRView будет удалён из дерева
     _pulseController.dispose();
+    _scannerController?.dispose();
     super.dispose();
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    qrViewController = controller;
-    _subscription = controller.scannedDataStream.listen((scanData) {
-      if (hasScanned) return;
-      hasScanned = true;
+  void _onDetect(BarcodeCapture capture) {
+    if (hasScanned || _isClosing) return;
 
-      // Быстрая очистка подписки (камера освободится в dispose)
-      _subscription?.cancel();
-      _subscription = null;
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isEmpty) return;
 
-      HapticFeedback.mediumImpact();
+    final code = barcodes.first.rawValue;
+    if (code == null || code.isEmpty) return;
 
-      if (!mounted) return;
+    hasScanned = true;
+    HapticFeedback.mediumImpact();
 
-      setState(() => isLoading = true);
+    if (!mounted) return;
 
-      // Проверяем подарки для активации
-      _checkPendingGifts();
-    });
+    setState(() => isLoading = true);
+
+    // Проверяем подарки для активации
+    _checkPendingGifts();
   }
 
   Future<void> _checkPendingGifts() async {
@@ -94,7 +93,7 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
 
       if (result.hasPendingGifts && result.gifts.isNotEmpty && result.giftGroupId != null) {
         // Есть подарки для выбора - открываем экран выбора
-        _quickCleanup();
+        _pulseController.stop();
         if (mounted) {
           Navigator.pop(context); // Закрываем scanner
         }
@@ -114,21 +113,21 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
         }
       } else if (result.hasPendingGifts && result.giftGroupId == null) {
         // Ошибка: есть подарки, но нет giftGroupId
-        _quickCleanup();
+        _pulseController.stop();
         if (mounted) {
           Navigator.pop(context, false);
           showSnackBar(context, AppLocalizations.of(context)!.giftDataError);
         }
       } else {
         // Нет подарков для активации
-        _quickCleanup();
+        _pulseController.stop();
         if (mounted) {
           Navigator.pop(context, false);
           showSnackBar(context, result.message);
         }
       }
     } catch (e) {
-      _quickCleanup();
+      _pulseController.stop();
       if (mounted) {
         Navigator.pop(context, false);
         showSnackBar(context, AppLocalizations.of(context)!.giftActivationError);
@@ -137,25 +136,17 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
   }
 
   void _toggleFlash() async {
-    await qrViewController?.toggleFlash();
+    await _scannerController?.toggleTorch();
     setState(() => flashOn = !flashOn);
     HapticFeedback.lightImpact();
-  }
-
-  /// Быстрая очистка без ожидания - камера освободится в dispose()
-  void _quickCleanup() {
-    _pulseController.stop();
-    _subscription?.cancel();
-    _subscription = null;
   }
 
   void _closeSheet() {
     if (_isClosing) return;
     _isClosing = true;
 
-    _quickCleanup();
+    _pulseController.stop();
 
-    // Закрываем sheet НЕМЕДЛЕННО
     if (mounted) {
       Navigator.pop(context);
     }
@@ -165,8 +156,6 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    // Убрали PopScope - пусть sheet закрывается свободно,
-    // камера освободится в dispose()
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
@@ -269,20 +258,15 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // QR View
-            QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              overlay: QrScannerOverlayShape(
-                borderColor: _accentGreen,
-                borderRadius: 20.r,
-                borderLength: 32.w,
-                borderWidth: 4.w,
-                cutOutSize: 220.w,
-                overlayColor: Colors.black.withValues(alpha: 0.8),
-              ),
+            // MobileScanner
+            MobileScanner(
+              controller: _scannerController,
+              onDetect: _onDetect,
             ),
-            
+
+            // Overlay с вырезом
+            _buildScannerOverlay(),
+
             // Анимированная рамка
             Center(
               child: AnimatedBuilder(
@@ -370,6 +354,67 @@ class _GiftQrScannerSheetState extends State<GiftQrScannerSheet>
           ],
         ),
       ),
+    );
+  }
+
+  /// Создаём overlay с вырезом как у QrScannerOverlayShape
+  Widget _buildScannerOverlay() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scanAreaSize = 220.w;
+        final overlayColor = Colors.black.withValues(alpha: 0.8);
+
+        return Stack(
+          children: [
+            // Затемнение сверху
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: (constraints.maxHeight - scanAreaSize) / 2,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение снизу
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: (constraints.maxHeight - scanAreaSize) / 2,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение слева
+            Positioned(
+              top: (constraints.maxHeight - scanAreaSize) / 2,
+              left: 0,
+              width: (constraints.maxWidth - scanAreaSize) / 2,
+              height: scanAreaSize,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение справа
+            Positioned(
+              top: (constraints.maxHeight - scanAreaSize) / 2,
+              right: 0,
+              width: (constraints.maxWidth - scanAreaSize) / 2,
+              height: scanAreaSize,
+              child: Container(color: overlayColor),
+            ),
+            // Рамка сканирования
+            Center(
+              child: Container(
+                width: scanAreaSize,
+                height: scanAreaSize,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: _accentGreen,
+                    width: 4.w,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

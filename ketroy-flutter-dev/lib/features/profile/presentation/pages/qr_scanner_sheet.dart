@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,21 +6,21 @@ import 'package:ketroy_app/core/common/widgets/top_toast.dart';
 import 'package:ketroy_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/main.dart' show navigatorKey;
-import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Показать QR-сканер как нижнюю шторку
 Future<bool?> showQrScannerSheet(BuildContext context) {
-  // ✅ Сохраняем ссылку на ProfileBloc до открытия bottom sheet
+  // Сохраняем ссылку на ProfileBloc до открытия bottom sheet
   final profileBloc = context.read<ProfileBloc>();
-  
-  // ✅ Сбрасываем статус QR перед открытием сканера
+
+  // Сбрасываем статус QR перед открытием сканера
   profileBloc.add(ResetQrStatus());
-  
+
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    useRootNavigator: true, // Открываем поверх навбара
+    useRootNavigator: true,
     isDismissible: true,
     enableDrag: true,
     builder: (sheetContext) => BlocProvider.value(
@@ -45,10 +44,8 @@ class _QrScannerSheetState extends State<QrScannerSheet>
   static const Color _lightGreen = Color(0xFF5A6F2B);
   static const Color _accentGreen = Color(0xFF8BC34A);
 
-  final qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? qrViewController;
-  StreamSubscription? _subscription;
-  bool hasScanend = false;
+  MobileScannerController? _scannerController;
+  bool hasScanned = false;
   bool flashOn = false;
   bool isLoading = false;
   bool _isClosing = false;
@@ -62,147 +59,110 @@ class _QrScannerSheetState extends State<QrScannerSheet>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
+
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+      torchEnabled: false,
+    );
   }
 
   @override
   void dispose() {
-    _pulseController.stop();
-    _subscription?.cancel();
-    // Не вызываем dispose() для qrViewController - это вызывает краш на iOS
-    // Камера сама освободится когда QRView будет удалён из дерева
     _pulseController.dispose();
+    _scannerController?.dispose();
     super.dispose();
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-    qrViewController = controller;
-    _subscription = controller.scannedDataStream.listen((scanData) {
-      if (hasScanend) return;
-      hasScanend = true;
+  void _onDetect(BarcodeCapture capture) {
+    if (hasScanned || _isClosing) return;
 
-      // Быстрая очистка подписки (камера освободится в dispose)
-      _subscription?.cancel();
-      _subscription = null;
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isEmpty) return;
 
-      // Вибрация при сканировании
-      HapticFeedback.mediumImpact();
+    final code = barcodes.first.rawValue;
+    if (code == null || code.isEmpty) return;
 
-      if (!mounted) return;
+    hasScanned = true;
+    HapticFeedback.mediumImpact();
 
-      final code = scanData.code;
-      final l10n = AppLocalizations.of(context);
+    if (!mounted) return;
 
-      if (code == null || code.isEmpty) {
-        _quickCleanup();
-        if (mounted) {
-          Navigator.pop(context, false);
-          // Показываем TopToast после закрытия sheet
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final overlay = navigatorKey.currentState?.overlay;
-            final ctx = navigatorKey.currentContext;
-            if (overlay != null && ctx != null) {
-              TopToast.showError(
-                ctx,
-                message: l10n?.qrCodeEmpty ?? 'QR-код пустой или повреждён',
-                overlayState: overlay,
-              );
-            }
-          });
+    final l10n = AppLocalizations.of(context);
+
+    // Валидация URL - проверяем, что это правильный QR-код для скидки
+    if (!_isValidDiscountQrCode(code)) {
+      _closeSheet();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final overlay = navigatorKey.currentState?.overlay;
+        final ctx = navigatorKey.currentContext;
+        if (overlay != null && ctx != null) {
+          TopToast.showWarning(
+            ctx,
+            message: l10n?.invalidQrCode ?? 'Неверный QR-код. Используйте QR-код из магазина KETROY',
+            overlayState: overlay,
+          );
         }
-        return;
-      }
+      });
+      return;
+    }
 
-      // Валидация URL - проверяем, что это правильный QR-код для скидки
-      if (!_isValidDiscountQrCode(code)) {
-        _quickCleanup();
-        if (mounted) {
-          Navigator.pop(context, false);
-          // Показываем TopToast после закрытия sheet
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final overlay = navigatorKey.currentState?.overlay;
-            final ctx = navigatorKey.currentContext;
-            if (overlay != null && ctx != null) {
-              TopToast.showWarning(
-                ctx,
-                message: l10n?.invalidQrCode ?? 'Неверный QR-код. Используйте QR-код из магазина KETROY',
-                overlayState: overlay,
-              );
-            }
-          });
-        }
-        return;
-      }
-
-      setState(() => isLoading = true);
-      context.read<ProfileBloc>().add(ScanQrFetch(scanQrUrl: code));
-    });
+    setState(() => isLoading = true);
+    context.read<ProfileBloc>().add(ScanQrFetch(scanQrUrl: code));
   }
-  
+
   /// Проверяет, что URL является валидным QR-кодом для скидки Ketroy
   bool _isValidDiscountQrCode(String code) {
     try {
       final uri = Uri.parse(code);
-      
+
       // Проверяем, что это URL (а не просто текст)
       if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
-        debugPrint('❌ QR код не является URL: $code');
+        debugPrint('QR код не является URL: $code');
         return false;
       }
-      
+
       // Проверяем, что это URL Ketroy API или localhost/ngrok для dev
       final host = uri.host.toLowerCase();
-      final isKetroyApi = host.contains('ketroy-shop.kz') || 
+      final isKetroyApi = host.contains('ketroy-shop.kz') ||
                           host.contains('ketroy.kz') ||
                           host.contains('ketroy.ngrok.app');
-      final isLocalDev = host == 'localhost' || 
-                         host == '127.0.0.1' || 
+      final isLocalDev = host == 'localhost' ||
+                         host == '127.0.0.1' ||
                          host == '10.0.2.2';
-      
+
       if (!isKetroyApi && !isLocalDev) {
-        debugPrint('❌ QR код не от Ketroy: $code');
+        debugPrint('QR код не от Ketroy: $code');
         return false;
       }
-      
+
       // Проверяем, что путь содержит scan-discount
       final path = uri.path.toLowerCase();
       if (!path.contains('scan-discount')) {
-        debugPrint('❌ QR код не для скидки: $code');
+        debugPrint('QR код не для скидки: $code');
         return false;
       }
-      
-      debugPrint('✅ Валидный QR код для скидки: $code');
+
+      debugPrint('Валидный QR код для скидки: $code');
       return true;
     } catch (e) {
-      debugPrint('❌ Ошибка парсинга QR кода: $e');
+      debugPrint('Ошибка парсинга QR кода: $e');
       return false;
     }
   }
 
   void _toggleFlash() async {
-    await qrViewController?.toggleFlash();
+    await _scannerController?.toggleTorch();
     setState(() => flashOn = !flashOn);
     HapticFeedback.lightImpact();
   }
-
-  /// Быстрая очистка - только отменяем подписку и останавливаем анимацию
-  /// Камеру не ждём - она освободится в dispose()
-  void _quickCleanup() {
-    _pulseController.stop();
-    _subscription?.cancel();
-    _subscription = null;
-  }
-
 
   void _closeSheet() {
     if (_isClosing) return;
     _isClosing = true;
 
-    // Быстрая очистка - отменяем подписку чтобы не было новых событий
-    _quickCleanup();
+    _pulseController.stop();
 
-    // Закрываем sheet НЕМЕДЛЕННО
-    // QRView останется в дереве до завершения анимации закрытия,
-    // затем dispose() вызовется автоматически
     if (mounted) {
       Navigator.pop(context);
     }
@@ -212,28 +172,18 @@ class _QrScannerSheetState extends State<QrScannerSheet>
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    // Убрали PopScope - пусть sheet закрывается свободно,
-    // камера освободится в dispose()
     return BlocListener<ProfileBloc, ProfileState>(
-        listenWhen: (previous, current) => 
+        listenWhen: (previous, current) =>
           previous.qrStatus != current.qrStatus &&
           (current.isQrSuccess || current.isQrFailure),
         listener: (context, state) {
           if (state.isQrSuccess) {
-            // ✅ Сохраняем сообщение для TopToast
             final successMessage = AppLocalizations.of(context)!.qrCodeScannedSuccess;
 
-            // Быстрая очистка без ожидания камеры
-            _quickCleanup();
-
             if (mounted) {
-              // ✅ Сбрасываем статус QR перед закрытием
               context.read<ProfileBloc>().add(ResetQrStatus());
-
-              // ✅ Закрываем sheet сразу
               Navigator.pop(context, true);
 
-              // ✅ Показываем TopToast успеха после закрытия
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final overlay = navigatorKey.currentState?.overlay;
                 final ctx = navigatorKey.currentContext;
@@ -247,20 +197,12 @@ class _QrScannerSheetState extends State<QrScannerSheet>
               });
             }
           } else if (state.isQrFailure) {
-            // ✅ Сохраняем сообщение об ошибке (приходит с сервера)
             final errorMessage = state.message ?? 'Ошибка сканирования';
 
-            // Быстрая очистка без ожидания камеры
-            _quickCleanup();
-
             if (mounted) {
-              // ✅ Сбрасываем статус QR перед закрытием
               context.read<ProfileBloc>().add(ResetQrStatus());
-
-              // ✅ Закрываем sheet сразу
               Navigator.pop(context, false);
 
-              // ✅ Показываем TopToast ошибки после закрытия
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final overlay = navigatorKey.currentState?.overlay;
                 final ctx = navigatorKey.currentContext;
@@ -286,16 +228,9 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         ),
         child: Column(
           children: [
-            // Хэндл для закрытия
             _buildHandle(),
-
-            // Заголовок
             _buildHeader(),
-
-            // QR-сканер
             Expanded(child: _buildScanner()),
-
-            // Нижняя панель с кнопками
             _buildBottomBar(bottomPadding),
           ],
         ),
@@ -320,7 +255,6 @@ class _QrScannerSheetState extends State<QrScannerSheet>
       padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
       child: Row(
         children: [
-          // Иконка
           Container(
             width: 44.w,
             height: 44.w,
@@ -337,7 +271,6 @@ class _QrScannerSheetState extends State<QrScannerSheet>
             ),
           ),
           SizedBox(width: 14.w),
-          // Текст
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,7 +294,6 @@ class _QrScannerSheetState extends State<QrScannerSheet>
               ],
             ),
           ),
-          // Кнопка закрытия
           GestureDetector(
             onTap: _closeSheet,
             child: Container(
@@ -390,20 +322,14 @@ class _QrScannerSheetState extends State<QrScannerSheet>
         borderRadius: BorderRadius.circular(24.r),
         child: Stack(
           children: [
-            // QR View - НЕ удаляем из дерева при закрытии,
-            // чтобы dispose не блокировал анимацию закрытия sheet
-            QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              overlay: QrScannerOverlayShape(
-                borderColor: _accentGreen,
-                borderRadius: 20.r,
-                borderLength: 32.w,
-                borderWidth: 4.w,
-                cutOutSize: 220.w,
-                overlayColor: Colors.black.withValues(alpha: 0.8),
-              ),
+            // MobileScanner
+            MobileScanner(
+              controller: _scannerController,
+              onDetect: _onDetect,
             ),
+
+            // Overlay с вырезом
+            _buildScannerOverlay(),
 
             // Анимированная рамка
             Center(
@@ -495,13 +421,73 @@ class _QrScannerSheetState extends State<QrScannerSheet>
     );
   }
 
+  /// Создаём overlay с вырезом как у QrScannerOverlayShape
+  Widget _buildScannerOverlay() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scanAreaSize = 220.w;
+        final overlayColor = Colors.black.withValues(alpha: 0.8);
+
+        return Stack(
+          children: [
+            // Затемнение сверху
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: (constraints.maxHeight - scanAreaSize) / 2,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение снизу
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: (constraints.maxHeight - scanAreaSize) / 2,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение слева
+            Positioned(
+              top: (constraints.maxHeight - scanAreaSize) / 2,
+              left: 0,
+              width: (constraints.maxWidth - scanAreaSize) / 2,
+              height: scanAreaSize,
+              child: Container(color: overlayColor),
+            ),
+            // Затемнение справа
+            Positioned(
+              top: (constraints.maxHeight - scanAreaSize) / 2,
+              right: 0,
+              width: (constraints.maxWidth - scanAreaSize) / 2,
+              height: scanAreaSize,
+              child: Container(color: overlayColor),
+            ),
+            // Рамка сканирования
+            Center(
+              child: Container(
+                width: scanAreaSize,
+                height: scanAreaSize,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: _accentGreen,
+                    width: 4.w,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildBottomBar(double bottomPadding) {
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + bottomPadding),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Кнопка вспышки
           _buildActionButton(
             icon: flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
             label: flashOn ? AppLocalizations.of(context)!.flashOff : AppLocalizations.of(context)!.flashOn,
