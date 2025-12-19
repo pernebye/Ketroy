@@ -6,7 +6,9 @@
       "Bash(pod install:*)",
       "Bash(ssh ubuntu@185.22.64.90 \"ls -la /var/www/ 2>/dev/null || ls -la /home/ubuntu/\")",
       "Bash(ssh ubuntu@185.22.64.90 \"cat /var/www/app.ketroy-shop.kz/.well-known/apple-app-site-association\")",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(flutter analyze:*)"
     ]
   }
 }

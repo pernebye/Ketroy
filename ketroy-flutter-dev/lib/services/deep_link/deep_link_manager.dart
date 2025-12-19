@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ketroy_app/main.dart';
 import 'package:ketroy_app/core/navBar/nav_bar.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
@@ -34,6 +35,9 @@ class DeepLinkManager {
     'app.ketroy-shop.kz',      // Новый основной домен
     'ketroy-shop.chottu.link', // Старый домен (для обратной совместимости)
   ];
+
+  // ✅ Префикс для промокода в буфере обмена (deferred deep links)
+  static const String _clipboardPromoPrefix = 'KETROY_REF:';
   
   // ✅ Стрим для уведомления о входящих deep links (для навигации)
   final StreamController<String> _deepLinkController =
@@ -52,13 +56,65 @@ class DeepLinkManager {
   
   void initialize() {
     debugPrint('🔗 Initializing DeepLinkManager...');
-    
+
     _appLinks = AppLinks();
-    
+
     // ✅ Настраиваем обработку Universal Links / Deep Links
     _setupAppLinks();
-    
+
+    // ✅ Проверяем буфер обмена на наличие промокода (deferred deep links)
+    _checkClipboardForPromoCode();
+
     debugPrint('✅ Deep link listener activated for domains: $_supportedDomains');
+  }
+
+  /// Проверяет буфер обмена на наличие промокода (для deferred deep links)
+  /// Когда пользователь скачивает приложение через веб-страницу с реферальной ссылкой,
+  /// промокод копируется в буфер обмена в формате "KETROY_REF:XXXXXX"
+  Future<void> _checkClipboardForPromoCode() async {
+    try {
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      final clipboardText = clipboardData?.text;
+
+      if (clipboardText == null || clipboardText.isEmpty) {
+        debugPrint('📋 Clipboard is empty, no deferred promo code');
+        return;
+      }
+
+      // Проверяем, содержит ли буфер наш префикс
+      if (clipboardText.startsWith(_clipboardPromoPrefix)) {
+        // Извлекаем промокод
+        final promoCode = clipboardText.substring(_clipboardPromoPrefix.length).trim();
+
+        if (promoCode.isNotEmpty) {
+          debugPrint('📋 Found deferred promo code in clipboard: $promoCode');
+
+          // Проверяем, не сохранён ли уже этот промокод
+          final existingPromoCode = await UserDataManager.getPromoCode();
+          if (existingPromoCode == promoCode) {
+            debugPrint('📋 Promo code already saved, skipping');
+            return;
+          }
+
+          // Сохраняем промокод для применения при регистрации/входе
+          await UserDataManager.savePromoCode(promoCode);
+          debugPrint('💾 Deferred promo code saved: $promoCode');
+
+          // Очищаем буфер обмена чтобы не применить повторно
+          await Clipboard.setData(const ClipboardData(text: ''));
+          debugPrint('🧹 Clipboard cleared after extracting promo code');
+
+          // Устанавливаем refParameter для UI
+          refParameter = promoCode;
+          _refParameterController.add(refParameter);
+        }
+      } else {
+        debugPrint('📋 Clipboard does not contain Ketroy promo code');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error checking clipboard for promo code: $e');
+      // Не критичная ошибка - продолжаем работу
+    }
   }
   
   void _setupAppLinks() async {
