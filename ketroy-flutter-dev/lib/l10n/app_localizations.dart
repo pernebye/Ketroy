@@ -2255,6 +2255,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Проанализируй эту этикетку'**
   String get analyzeThisLabel;
+
+  /// No description provided for @phoneAlreadyRegistered.
+  ///
+  /// In ru, this message translates to:
+  /// **'Этот номер уже зарегистрирован. Пожалуйста, войдите в аккаунт.'**
+  String get phoneAlreadyRegistered;
 }
 
 class _AppLocalizationsDelegate

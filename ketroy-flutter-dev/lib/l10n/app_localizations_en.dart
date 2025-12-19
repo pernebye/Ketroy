@@ -1173,4 +1173,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Analyze this label';
+
+  @override
+  String get phoneAlreadyRegistered =>
+      'This phone number is already registered. Please log in.';
 }

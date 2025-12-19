@@ -65,6 +65,7 @@
   "enterPhoneNumber": "Enter phone number",
   "phoneNumberTooShort": "Phone number is too short",
   "accountNotFound": "Account not found. Please register.",
+  "phoneAlreadyRegistered": "This phone number is already registered. Please log in.",
   "codeSendError": "Code sending error",
   
   "unknownError": "Unknown error",

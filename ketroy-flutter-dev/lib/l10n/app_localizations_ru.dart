@@ -1186,4 +1186,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Проанализируй эту этикетку';
+
+  @override
+  String get phoneAlreadyRegistered =>
+      'Этот номер уже зарегистрирован. Пожалуйста, войдите в аккаунт.';
 }

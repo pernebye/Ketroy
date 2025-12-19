@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ketroy_app/core/common/entities/menu.dart';
 import 'package:ketroy_app/core/common/widgets/app_button.dart';
@@ -157,12 +158,18 @@ class _SignUpPageState extends State<SignUpPage> {
               showSnackBar(context, state.message ?? 'Ошибка при отправке кода');
             }
             if (state.isVerifySuccess) {
-              // Галочка будет установлена только после проверки кода на SMS странице
-              // context.read<AuthBloc>().add(AuthSendVerifyCode(
-              //     phone: phoneNumberFormat,
-              //     code: itemsSkud
-              //         .firstWhere((menu) => menu.value == selectedValue)
-              //         .name));
+              // Проверяем, существует ли пользователь с таким номером
+              if (state.userExists == true) {
+                // Пользователь уже существует - показываем сообщение и перенаправляем на вход
+                showSnackBar(context, AppLocalizations.of(context)!.phoneAlreadyRegistered);
+                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  LoginPage.route(),
+                  (route) => route.isFirst,
+                );
+                return;
+              }
+
+              // Пользователь не существует - продолжаем регистрацию
               Navigator.push(
                   context,
                   MaterialPageRoute(

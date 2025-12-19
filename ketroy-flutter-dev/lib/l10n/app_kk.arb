@@ -65,6 +65,7 @@
   "enterPhoneNumber": "Телефон нөмірін енгізіңіз",
   "phoneNumberTooShort": "Телефон нөмірі тым қысқа",
   "accountNotFound": "Аккаунт табылмады. Тіркеліңіз.",
+  "phoneAlreadyRegistered": "Бұл нөмір тіркелген. Аккаунтқа кіріңіз.",
   "codeSendError": "Код жіберу қатесі",
   
   "unknownError": "Белгісіз қате",

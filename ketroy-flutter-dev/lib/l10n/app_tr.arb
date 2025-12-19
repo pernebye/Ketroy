@@ -65,6 +65,7 @@
   "enterPhoneNumber": "Telefon numarasını girin",
   "phoneNumberTooShort": "Telefon numarası çok kısa",
   "accountNotFound": "Hesap bulunamadı. Lütfen kayıt olun.",
+  "phoneAlreadyRegistered": "Bu numara zaten kayıtlı. Lütfen giriş yapın.",
   "codeSendError": "Kod gönderme hatası",
   
   "unknownError": "Bilinmeyen hata",

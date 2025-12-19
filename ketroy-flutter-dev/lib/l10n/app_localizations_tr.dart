@@ -1177,4 +1177,8 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Bu etiketi analiz et';
+
+  @override
+  String get phoneAlreadyRegistered =>
+      'Bu numara zaten kayıtlı. Lütfen giriş yapın.';
 }
