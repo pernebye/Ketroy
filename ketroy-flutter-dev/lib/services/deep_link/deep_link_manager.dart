@@ -356,43 +356,59 @@ class DeepLinkManager {
 
     debugPrint('🔗 Processing referral link with code: $ref');
 
-    // Проверяем авторизацию
+    // Проверяем авторизацию локально
     final isLoggedIn = await UserDataManager.isUserLoggedIn();
-    
+
     if (isLoggedIn) {
-      // Пользователь авторизован - проверяем, был ли уже применен промокод
+      // Пользователь авторизован локально - проверяем, был ли уже применен промокод
       final user = await UserDataManager.getUser();
       final hasUsedPromoCode = user?.userPromoCode != null && user!.userPromoCode! > 0;
-      
+
       if (!hasUsedPromoCode) {
-        // Промокод еще не был применен - применяем автоматически
-        debugPrint('💎 User is logged in, applying promo code automatically: $ref');
-        
+        // Промокод еще не был применен - пробуем применить автоматически
+        debugPrint('💎 User appears logged in, trying to apply promo code: $ref');
+
         try {
           // Получаем репозиторий для применения промокода
           final discountRepository = serviceLocator<DiscountRepository>();
           final result = await discountRepository.postPromoCode(promoCode: ref);
-          
+
           result.fold(
             (failure) {
               debugPrint('⚠️ Failed to apply promo code: ${failure.message}');
-              
-              // Показываем тост с ошибкой
-              _showErrorToast(failure.message ?? 'Не удалось применить промокод');
-              
-              // Навигируем на страницу скидок даже если ошибка
+
+              // Проверяем, не ошибка ли авторизации (401)
+              // Если токен невалиден - сохраняем промокод для применения после авторизации
+              final errorMsg = failure.message;
+              final errorLower = errorMsg.toLowerCase();
+              final isAuthError = errorMsg.contains('401') ||
+                  errorLower.contains('unauthorized') ||
+                  errorLower.contains('token') ||
+                  errorLower.contains('авторизац');
+
+              if (isAuthError) {
+                // Токен истёк или невалиден - сохраняем промокод для позднего применения
+                debugPrint('🔄 Token invalid, saving promo code for later: $ref');
+                UserDataManager.savePromoCode(ref);
+                _showInfoToast(ref);
+              } else {
+                // Другая ошибка - показываем её пользователю
+                _showErrorToast(errorMsg);
+              }
+
+              // Навигируем на страницу скидок
               _navigateToDiscount();
             },
             (success) {
               debugPrint('✅ Promo code applied successfully via deep link');
               // Очищаем сохраненный промокод
               UserDataManager.clearPromoCode();
-              
+
               // Навигируем на главную
               _safeNavigate(() {
                 final navigator = navigatorKey.currentState;
                 if (navigator == null) return;
-                
+
                 navigator.pushAndRemoveUntil(
                   MaterialPageRoute(
                     builder: (context) => const NavScreen(initialTab: 0),
@@ -400,7 +416,7 @@ class DeepLinkManager {
                   (route) => false,
                 );
               });
-              
+
               // Показываем диалог успешного применения
               Future.delayed(const Duration(milliseconds: 500), () {
                 if (navigatorKey.currentContext != null) {
@@ -414,17 +430,31 @@ class DeepLinkManager {
           );
         } catch (e) {
           debugPrint('❌ Error applying promo code: $e');
-          _showErrorToast('Произошла ошибка при применении промокода');
+
+          // При любой ошибке (включая сетевую) сохраняем промокод на всякий случай
+          final errorStr = e.toString().toLowerCase();
+          final isAuthError = errorStr.contains('401') ||
+              errorStr.contains('unauthorized') ||
+              errorStr.contains('token');
+
+          if (isAuthError) {
+            // Токен невалиден - сохраняем промокод для позднего применения
+            debugPrint('🔄 Token error caught, saving promo code for later: $ref');
+            await UserDataManager.savePromoCode(ref);
+            _showInfoToast(ref);
+          } else {
+            _showErrorToast('Произошла ошибка при применении промокода');
+          }
           _navigateToDiscount();
         }
       } else {
         debugPrint('ℹ️ User already has used promo code, navigating to discount page');
         // Очищаем сохраненный промокод
         await UserDataManager.clearPromoCode();
-        
+
         // Показываем тост что промокод уже был использован
         _showWarningToast();
-        
+
         _navigateToDiscount();
       }
     } else {

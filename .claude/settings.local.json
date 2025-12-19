@@ -8,7 +8,8 @@
       "Bash(ssh ubuntu@185.22.64.90 \"cat /var/www/app.ketroy-shop.kz/.well-known/apple-app-site-association\")",
       "Bash(ssh:*)",
       "Bash(scp:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(del \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\temp_index.html\")"
     ]
   }
 }
