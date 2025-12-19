@@ -8,6 +8,25 @@ set -e
 
 echo "=== Starting Flutter CI Setup ==="
 
+# Check if changes are only in ketroy-flutter-dev folder
+# Skip build if no mobile app changes detected
+echo "=== Checking for mobile app changes ==="
+
+cd "$CI_PRIMARY_REPOSITORY_PATH"
+
+# Get changed files in the last commit
+CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "ketroy-flutter-dev/")
+
+# Check if any changes are in ketroy-flutter-dev
+if echo "$CHANGED_FILES" | grep -q "^ketroy-flutter-dev/"; then
+    echo "✅ Mobile app changes detected, proceeding with build..."
+else
+    echo "⏭️ No mobile app changes detected. Skipping build."
+    echo "Changed files: $CHANGED_FILES"
+    # Exit with success to not fail the workflow, but skip actual build
+    exit 0
+fi
+
 # Navigate to the root of the Flutter project
 cd "$CI_PRIMARY_REPOSITORY_PATH/ketroy-flutter-dev"
 
