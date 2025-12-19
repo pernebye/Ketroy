@@ -185,6 +185,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Аккаунт не найден. Пожалуйста, зарегистрируйтесь.';
 
   @override
+  String get phoneAlreadyRegistered =>
+      'Этот номер уже зарегистрирован. Пожалуйста, войдите в аккаунт.';
+
+  @override
   String get codeSendError => 'Ошибка отправки кода';
 
   @override
@@ -1186,8 +1190,4 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Проанализируй эту этикетку';
-
-  @override
-  String get phoneAlreadyRegistered =>
-      'Этот номер уже зарегистрирован. Пожалуйста, войдите в аккаунт.';
 }

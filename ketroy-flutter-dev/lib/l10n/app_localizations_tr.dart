@@ -185,6 +185,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get accountNotFound => 'Hesap bulunamadı. Lütfen kayıt olun.';
 
   @override
+  String get phoneAlreadyRegistered =>
+      'Bu numara zaten kayıtlı. Lütfen giriş yapın.';
+
+  @override
   String get codeSendError => 'Kod gönderme hatası';
 
   @override
@@ -1177,8 +1181,4 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Bu etiketi analiz et';
-
-  @override
-  String get phoneAlreadyRegistered =>
-      'Bu numara zaten kayıtlı. Lütfen giriş yapın.';
 }

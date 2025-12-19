@@ -185,6 +185,10 @@ class AppLocalizationsKk extends AppLocalizations {
   String get accountNotFound => 'Аккаунт табылмады. Тіркеліңіз.';
 
   @override
+  String get phoneAlreadyRegistered =>
+      'Бұл нөмір тіркелген. Аккаунтқа кіріңіз.';
+
+  @override
   String get codeSendError => 'Код жіберу қатесі';
 
   @override
@@ -1176,8 +1180,4 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Бұл бәлі талдаңыз';
-
-  @override
-  String get phoneAlreadyRegistered =>
-      'Бұл нөмір тіркелген. Аккаунтқа кіріңіз.';
 }

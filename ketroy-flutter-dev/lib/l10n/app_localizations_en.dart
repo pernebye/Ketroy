@@ -184,6 +184,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountNotFound => 'Account not found. Please register.';
 
   @override
+  String get phoneAlreadyRegistered =>
+      'This phone number is already registered. Please log in.';
+
+  @override
   String get codeSendError => 'Code sending error';
 
   @override
@@ -1173,8 +1177,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Analyze this label';
-
-  @override
-  String get phoneAlreadyRegistered =>
-      'This phone number is already registered. Please log in.';
 }
