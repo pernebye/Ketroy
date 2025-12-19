@@ -53,6 +53,15 @@ flutter build ios --release --no-codesign
 # Install CocoaPods dependencies
 echo "=== Installing CocoaPods ==="
 cd ios
+
+# Clear any proxy settings that might interfere with pod install
+git config --global --unset http.proxy || true
+git config --global --unset https.proxy || true
+unset http_proxy
+unset https_proxy
+unset HTTP_PROXY
+unset HTTPS_PROXY
+
 pod install
 
 echo "=== Flutter CI Setup Complete ==="
