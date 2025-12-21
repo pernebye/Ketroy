@@ -475,6 +475,32 @@
   
   "analyzingLabel": "Бәлі талдау...",
   "aiProcessingImage": "AI суретті өңдейді",
-  "analyzeThisLabel": "Бұл бәлі талдаңыз"
+  "analyzeThisLabel": "Бұл бәлі талдаңыз",
+
+  "loyaltyLevels": "Адалдық деңгейлері",
+  "loyaltyProgram": "Адалдық бағдарламасы",
+  "yourLevel": "Сіздің деңгейіңіз",
+  "nextLevel": "Келесі деңгей",
+  "levelProgress": "Келесі деңгейге дейін",
+  "purchaseAmount": "Сатып алу сомасы",
+  "levelRewards": "Деңгей сыйлықтары",
+  "discountReward": "{percent}% жеңілдік",
+  "@discountReward": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "bonusReward": "{amount} бонус",
+  "@bonusReward": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "levelAchieved": "Жетті",
+  "levelLocked": "Құлыпталған",
+  "congratulationsNewLevel": "Құттықтаймыз!",
+  "youReachedLevel": "Сіз деңгейге жеттіңіз",
+  "newLevelRewards": "Сіздің жаңа артықшылықтарыңыз:",
+  "continueButton": "Жалғастыру"
 }
 

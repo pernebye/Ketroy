@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:app.ketroy-shop.kz</string>
+		<string>applinks:app.ketroy-shop.kz?mode=developer</string>
 		<string>webcredentials:app.ketroy-shop.kz</string>
 	</array>
 </dict>

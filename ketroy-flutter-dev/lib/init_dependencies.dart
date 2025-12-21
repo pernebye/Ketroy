@@ -78,6 +78,13 @@ import 'package:ketroy_app/features/shop_detail/domain/usecases/get_shop_review.
 import 'package:ketroy_app/features/shop_detail/domain/usecases/send_shop_review.dart';
 import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bloc.dart';
 import 'package:ketroy_app/services/shared_preferences_service.dart';
+import 'package:ketroy_app/features/loyalty/data/data_source/loyalty_data_source.dart';
+import 'package:ketroy_app/features/loyalty/data/repository/loyalty_repository_impl.dart';
+import 'package:ketroy_app/features/loyalty/domain/repository/loyalty_repository.dart';
+import 'package:ketroy_app/features/loyalty/domain/usecases/get_loyalty_info.dart';
+import 'package:ketroy_app/features/loyalty/domain/usecases/get_unviewed_achievements.dart';
+import 'package:ketroy_app/features/loyalty/domain/usecases/mark_levels_viewed.dart';
+import 'package:ketroy_app/features/loyalty/presentation/bloc/loyalty_bloc.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -104,6 +111,7 @@ Future<void> initDependencies() async {
   initPartners();
   initNotification();
   initAi();
+  initLoyalty();
 }
 
 void initAuth() {
@@ -309,6 +317,28 @@ void initAi() {
     ..registerLazySingleton(() => AiBloc(
           getAiResponse: serviceLocator(),
           aiDataSource: serviceLocator(),
+        ));
+}
+
+void initLoyalty() {
+  // DataSource
+  serviceLocator
+    ..registerFactory<LoyaltyDataSource>(() => LoyaltyDataSourceImpl())
+    // Repository
+    ..registerFactory<LoyaltyRepository>(
+        () => LoyaltyRepositoryImpl(loyaltyDataSource: serviceLocator()))
+    // UseCases
+    ..registerFactory(
+        () => GetLoyaltyInfo(loyaltyRepository: serviceLocator()))
+    ..registerFactory(
+        () => GetUnviewedAchievements(loyaltyRepository: serviceLocator()))
+    ..registerFactory(
+        () => MarkLevelsViewed(loyaltyRepository: serviceLocator()))
+    // Bloc
+    ..registerLazySingleton(() => LoyaltyBloc(
+          getLoyaltyInfo: serviceLocator(),
+          getUnviewedAchievements: serviceLocator(),
+          markLevelsViewed: serviceLocator(),
         ));
 }
 

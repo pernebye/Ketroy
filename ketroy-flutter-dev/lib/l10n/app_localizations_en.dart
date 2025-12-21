@@ -1177,4 +1177,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Analyze this label';
+
+  @override
+  String get loyaltyLevels => 'Loyalty Levels';
+
+  @override
+  String get loyaltyProgram => 'Loyalty Program';
+
+  @override
+  String get yourLevel => 'Your Level';
+
+  @override
+  String get nextLevel => 'Next Level';
+
+  @override
+  String get levelProgress => 'To next level';
+
+  @override
+  String get purchaseAmount => 'Purchase amount';
+
+  @override
+  String get levelRewards => 'Level rewards';
+
+  @override
+  String discountReward(int percent) {
+    return '$percent% discount';
+  }
+
+  @override
+  String bonusReward(int amount) {
+    return '$amount bonuses';
+  }
+
+  @override
+  String get levelAchieved => 'Achieved';
+
+  @override
+  String get levelLocked => 'Locked';
+
+  @override
+  String get congratulationsNewLevel => 'Congratulations!';
+
+  @override
+  String get youReachedLevel => 'You reached level';
+
+  @override
+  String get newLevelRewards => 'Your new privileges:';
+
+  @override
+  String get continueButton => 'Continue';
 }

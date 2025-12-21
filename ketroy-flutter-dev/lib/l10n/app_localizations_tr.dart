@@ -1181,4 +1181,53 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Bu etiketi analiz et';
+
+  @override
+  String get loyaltyLevels => 'Sadakat Seviyeleri';
+
+  @override
+  String get loyaltyProgram => 'Sadakat Programı';
+
+  @override
+  String get yourLevel => 'Seviyeniz';
+
+  @override
+  String get nextLevel => 'Sonraki Seviye';
+
+  @override
+  String get levelProgress => 'Sonraki seviyeye';
+
+  @override
+  String get purchaseAmount => 'Satın alma tutarı';
+
+  @override
+  String get levelRewards => 'Seviye ödülleri';
+
+  @override
+  String discountReward(int percent) {
+    return '%$percent indirim';
+  }
+
+  @override
+  String bonusReward(int amount) {
+    return '$amount bonus';
+  }
+
+  @override
+  String get levelAchieved => 'Ulaşıldı';
+
+  @override
+  String get levelLocked => 'Kilitli';
+
+  @override
+  String get congratulationsNewLevel => 'Tebrikler!';
+
+  @override
+  String get youReachedLevel => 'Seviyeye ulaştınız';
+
+  @override
+  String get newLevelRewards => 'Yeni ayrıcalıklarınız:';
+
+  @override
+  String get continueButton => 'Devam';
 }

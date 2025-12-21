@@ -1190,4 +1190,53 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Проанализируй эту этикетку';
+
+  @override
+  String get loyaltyLevels => 'Уровни лояльности';
+
+  @override
+  String get loyaltyProgram => 'Программа лояльности';
+
+  @override
+  String get yourLevel => 'Ваш уровень';
+
+  @override
+  String get nextLevel => 'Следующий уровень';
+
+  @override
+  String get levelProgress => 'До следующего уровня';
+
+  @override
+  String get purchaseAmount => 'Сумма покупок';
+
+  @override
+  String get levelRewards => 'Награды уровня';
+
+  @override
+  String discountReward(int percent) {
+    return 'Скидка $percent%';
+  }
+
+  @override
+  String bonusReward(int amount) {
+    return '$amount бонусов';
+  }
+
+  @override
+  String get levelAchieved => 'Достигнут';
+
+  @override
+  String get levelLocked => 'Заблокирован';
+
+  @override
+  String get congratulationsNewLevel => 'Поздравляем!';
+
+  @override
+  String get youReachedLevel => 'Вы достигли уровня';
+
+  @override
+  String get newLevelRewards => 'Ваши новые привилегии:';
+
+  @override
+  String get continueButton => 'Продолжить';
 }

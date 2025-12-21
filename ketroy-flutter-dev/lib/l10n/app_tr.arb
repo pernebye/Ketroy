@@ -475,6 +475,32 @@
   
   "analyzingLabel": "Etiket analiz ediliyor...",
   "aiProcessingImage": "AI görüntüyü işliyor",
-  "analyzeThisLabel": "Bu etiketi analiz et"
+  "analyzeThisLabel": "Bu etiketi analiz et",
+
+  "loyaltyLevels": "Sadakat Seviyeleri",
+  "loyaltyProgram": "Sadakat Programı",
+  "yourLevel": "Seviyeniz",
+  "nextLevel": "Sonraki Seviye",
+  "levelProgress": "Sonraki seviyeye",
+  "purchaseAmount": "Satın alma tutarı",
+  "levelRewards": "Seviye ödülleri",
+  "discountReward": "%{percent} indirim",
+  "@discountReward": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "bonusReward": "{amount} bonus",
+  "@bonusReward": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "levelAchieved": "Ulaşıldı",
+  "levelLocked": "Kilitli",
+  "congratulationsNewLevel": "Tebrikler!",
+  "youReachedLevel": "Seviyeye ulaştınız",
+  "newLevelRewards": "Yeni ayrıcalıklarınız:",
+  "continueButton": "Devam"
 }
 

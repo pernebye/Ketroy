@@ -1180,4 +1180,53 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get analyzeThisLabel => 'Бұл бәлі талдаңыз';
+
+  @override
+  String get loyaltyLevels => 'Адалдық деңгейлері';
+
+  @override
+  String get loyaltyProgram => 'Адалдық бағдарламасы';
+
+  @override
+  String get yourLevel => 'Сіздің деңгейіңіз';
+
+  @override
+  String get nextLevel => 'Келесі деңгей';
+
+  @override
+  String get levelProgress => 'Келесі деңгейге дейін';
+
+  @override
+  String get purchaseAmount => 'Сатып алу сомасы';
+
+  @override
+  String get levelRewards => 'Деңгей сыйлықтары';
+
+  @override
+  String discountReward(int percent) {
+    return '$percent% жеңілдік';
+  }
+
+  @override
+  String bonusReward(int amount) {
+    return '$amount бонус';
+  }
+
+  @override
+  String get levelAchieved => 'Жетті';
+
+  @override
+  String get levelLocked => 'Құлыпталған';
+
+  @override
+  String get congratulationsNewLevel => 'Құттықтаймыз!';
+
+  @override
+  String get youReachedLevel => 'Сіз деңгейге жеттіңіз';
+
+  @override
+  String get newLevelRewards => 'Сіздің жаңа артықшылықтарыңыз:';
+
+  @override
+  String get continueButton => 'Жалғастыру';
 }

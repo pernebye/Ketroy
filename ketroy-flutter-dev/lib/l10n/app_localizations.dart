@@ -2261,6 +2261,96 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Проанализируй эту этикетку'**
   String get analyzeThisLabel;
+
+  /// No description provided for @loyaltyLevels.
+  ///
+  /// In ru, this message translates to:
+  /// **'Уровни лояльности'**
+  String get loyaltyLevels;
+
+  /// No description provided for @loyaltyProgram.
+  ///
+  /// In ru, this message translates to:
+  /// **'Программа лояльности'**
+  String get loyaltyProgram;
+
+  /// No description provided for @yourLevel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваш уровень'**
+  String get yourLevel;
+
+  /// No description provided for @nextLevel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Следующий уровень'**
+  String get nextLevel;
+
+  /// No description provided for @levelProgress.
+  ///
+  /// In ru, this message translates to:
+  /// **'До следующего уровня'**
+  String get levelProgress;
+
+  /// No description provided for @purchaseAmount.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сумма покупок'**
+  String get purchaseAmount;
+
+  /// No description provided for @levelRewards.
+  ///
+  /// In ru, this message translates to:
+  /// **'Награды уровня'**
+  String get levelRewards;
+
+  /// No description provided for @discountReward.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скидка {percent}%'**
+  String discountReward(int percent);
+
+  /// No description provided for @bonusReward.
+  ///
+  /// In ru, this message translates to:
+  /// **'{amount} бонусов'**
+  String bonusReward(int amount);
+
+  /// No description provided for @levelAchieved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Достигнут'**
+  String get levelAchieved;
+
+  /// No description provided for @levelLocked.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заблокирован'**
+  String get levelLocked;
+
+  /// No description provided for @congratulationsNewLevel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Поздравляем!'**
+  String get congratulationsNewLevel;
+
+  /// No description provided for @youReachedLevel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы достигли уровня'**
+  String get youReachedLevel;
+
+  /// No description provided for @newLevelRewards.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваши новые привилегии:'**
+  String get newLevelRewards;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In ru, this message translates to:
+  /// **'Продолжить'**
+  String get continueButton;
 }
 
 class _AppLocalizationsDelegate

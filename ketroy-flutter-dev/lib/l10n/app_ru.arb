@@ -475,6 +475,32 @@
   
   "analyzingLabel": "Анализирую этикетку...",
   "aiProcessingImage": "AI обрабатывает изображение",
-  "analyzeThisLabel": "Проанализируй эту этикетку"
+  "analyzeThisLabel": "Проанализируй эту этикетку",
+
+  "loyaltyLevels": "Уровни лояльности",
+  "loyaltyProgram": "Программа лояльности",
+  "yourLevel": "Ваш уровень",
+  "nextLevel": "Следующий уровень",
+  "levelProgress": "До следующего уровня",
+  "purchaseAmount": "Сумма покупок",
+  "levelRewards": "Награды уровня",
+  "discountReward": "Скидка {percent}%",
+  "@discountReward": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "bonusReward": "{amount} бонусов",
+  "@bonusReward": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "levelAchieved": "Достигнут",
+  "levelLocked": "Заблокирован",
+  "congratulationsNewLevel": "Поздравляем!",
+  "youReachedLevel": "Вы достигли уровня",
+  "newLevelRewards": "Ваши новые привилегии:",
+  "continueButton": "Продолжить"
 }
 

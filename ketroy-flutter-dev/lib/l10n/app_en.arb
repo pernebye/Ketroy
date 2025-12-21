@@ -475,6 +475,32 @@
   
   "analyzingLabel": "Analyzing label...",
   "aiProcessingImage": "AI is processing the image",
-  "analyzeThisLabel": "Analyze this label"
+  "analyzeThisLabel": "Analyze this label",
+
+  "loyaltyLevels": "Loyalty Levels",
+  "loyaltyProgram": "Loyalty Program",
+  "yourLevel": "Your Level",
+  "nextLevel": "Next Level",
+  "levelProgress": "To next level",
+  "purchaseAmount": "Purchase amount",
+  "levelRewards": "Level rewards",
+  "discountReward": "{percent}% discount",
+  "@discountReward": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "bonusReward": "{amount} bonuses",
+  "@bonusReward": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "levelAchieved": "Achieved",
+  "levelLocked": "Locked",
+  "congratulationsNewLevel": "Congratulations!",
+  "youReachedLevel": "You reached level",
+  "newLevelRewards": "Your new privileges:",
+  "continueButton": "Continue"
 }
 

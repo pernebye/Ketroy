@@ -9,7 +9,15 @@
       "Bash(ssh:*)",
       "Bash(scp:*)",
       "Bash(flutter analyze:*)",
-      "Bash(del \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\temp_index.html\")"
+      "Bash(del \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\temp_index.html\")",
+      "Bash(del \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\temp_GiftService.php\")",
+      "Bash(cmd /c del \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\temp_GiftService.php\")",
+      "Bash(curl:*)",
+      "Bash(dir /s /b \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\ketroy-flutter-dev\\\\lib\\\\features\\\\bonus\\\\*.dart\")",
+      "Bash(dir /s /b \"c:\\\\Users\\\\perne\\\\Desktop\\\\Coding\\\\Ketroy\\\\ketroy-flutter-dev\\\\lib\\\\features\\\\profile\")",
+      "Bash(git checkout:*)",
+      "Bash(awk:*)",
+      "Bash(flutter gen-l10n:*)"
     ]
   }
 }

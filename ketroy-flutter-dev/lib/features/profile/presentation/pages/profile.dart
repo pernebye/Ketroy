@@ -34,6 +34,9 @@ import 'package:ketroy_app/features/shop_detail/presentation/bloc/shop_detail_bl
 import 'package:ketroy_app/features/partners/presentation/pages/partners_page.dart';
 import 'package:ketroy_app/l10n/app_localizations.dart';
 import 'package:ketroy_app/services/notification_services.dart';
+import 'package:ketroy_app/features/loyalty/presentation/widgets/loyalty_level_badge.dart';
+import 'package:ketroy_app/features/loyalty/presentation/bloc/loyalty_bloc.dart';
+import 'package:ketroy_app/features/loyalty/presentation/pages/levels_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool? fromGift;
@@ -150,6 +153,9 @@ class _ProfilePageState extends State<ProfilePage>
       ..add(LoadCityShop()) // Загружаем магазин для соцсетей
       ..add(GetPromotionsFetch()) // Загружаем акции для вкладки бонусов
       ..add(const RefreshBonusFromServer()); // Обновляем бонусы с сервера
+
+    // Загружаем данные лояльности
+    serviceLocator<LoyaltyBloc>().add(const LoadLoyaltyInfo());
     
     // ✅ Загружаем скидку только если её нет или не пропускаем
     if (!skipDiscountIfExists || !hasDiscount) {
@@ -407,7 +413,7 @@ class _ProfilePageState extends State<ProfilePage>
       child: SafeArea(
         bottom: false,
         child: Container(
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
           child: Column(
             children: [
               // Toolbar
@@ -422,7 +428,7 @@ class _ProfilePageState extends State<ProfilePage>
               ] else ...[
                 _buildGuestHeader(),
               ],
-              SizedBox(height: 24.h),
+              SizedBox(height: 8.h),
             ],
           ),
         ),
@@ -693,6 +699,9 @@ class _ProfilePageState extends State<ProfilePage>
             ),
           ],
         ),
+        SizedBox(height: 12.h),
+        // Бейдж уровня лояльности
+        const LoyaltyLevelBadge(),
       ],
     );
   }
@@ -921,6 +930,14 @@ class _ProfilePageState extends State<ProfilePage>
           SlideOverPageRoute(page: const PartnersPage()),
         ),
       ),
+      if (hasUserData)
+        _MenuItem(
+          icon: Icons.emoji_events_rounded,
+          title: l10n.loyaltyLevels,
+          onTap: () => Navigator.of(context, rootNavigator: true).push(
+            SlideOverPageRoute(page: const LevelsScreen()),
+          ),
+        ),
       // Показываем кнопку "Подари скидку другу" только если акция активна
       if (isReferralAvailable)
         _MenuItem(
