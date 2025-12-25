@@ -66,18 +66,6 @@ class AppConfig {
   }
 
   // ============================================
-  // EXTERNAL SERVICES
-  // ============================================
-  static String get chottuLinkApiKey {
-    switch (current) {
-      case Environment.development:
-        return 'dev_api_key';
-      case Environment.production:
-        return 'prod_api_key'; // Замените на реальный ключ
-    }
-  }
-
-  // ============================================
   // STORAGE KEYS
   // ============================================
   static const String tokenKey = 'auth_token';

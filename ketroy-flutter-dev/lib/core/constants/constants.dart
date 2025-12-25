@@ -35,5 +35,4 @@ class Constants {
   ];
 }
 
-const String chottuLinkApiKey = 'c_app_MkQ6Tx5YA3n8itEW7sIhI5sfpwfYhd8o';
 const Duration splashDuration = Duration(seconds: 2);

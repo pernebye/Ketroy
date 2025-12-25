@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:chottu_link/chottu_link.dart';
 import 'package:ketroy_app/core/internet_services/dio_client.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -98,15 +97,6 @@ Future<void> _initializeBasicServices() async {
     } catch (e) {
       debugPrint('⚠️ Firebase initialization skipped (web not configured): $e');
       // Продолжаем работу без Firebase - не критично
-    }
-
-    // ChottuLink инициализация (пропускаем для web)
-    try {
-      await ChottuLink.init(apiKey: chottuLinkApiKey);
-      debugPrint('✅ ChottuLink initialized');
-    } catch (e) {
-      debugPrint(
-          '⚠️ ChottuLink initialization skipped (web not supported): $e');
     }
 
     // Ориентация экрана (может не работать на web)

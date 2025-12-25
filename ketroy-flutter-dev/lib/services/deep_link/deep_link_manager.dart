@@ -32,8 +32,7 @@ class DeepLinkManager {
   
   // ✅ Поддерживаемые домены
   static const List<String> _supportedDomains = [
-    'app.ketroy-shop.kz',      // Новый основной домен
-    'ketroy-shop.chottu.link', // Старый домен (для обратной совместимости)
+    'app.ketroy-shop.kz',
   ];
 
   // ✅ Префикс для промокода в буфере обмена (deferred deep links)
@@ -140,16 +139,6 @@ class DeepLinkManager {
     }
   }
   
-  /// Проверяет, является ли URL deep link'ом для нашего приложения
-  bool _isDeepLink(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return _supportedDomains.contains(uri.host);
-    } catch (e) {
-      return false;
-    }
-  }
-  
   /// Публичный метод для обработки входящих ссылок (можно вызвать извне)
   void handleLink(String link) {
     _handleIncomingLink(link);
@@ -164,7 +153,7 @@ class DeepLinkManager {
     _extractRefParameter(link);
 
     // Сохраняем ссылку
-    if (_isChottuLink(link) || _isKetroyAppLink(link)) {
+    if (_isKetroyAppLink(link)) {
       shortUrl = link;
       debugPrint('💾 Saved deep link: $shortUrl');
     }
@@ -320,29 +309,9 @@ class DeepLinkManager {
   // ✅ Проверка наличия ref параметра
   bool get hasRefParameter => refParameter != null && refParameter!.isNotEmpty;
 
-  /// Проверяет, является ли ссылка от ChottuLink (для обратной совместимости)
-  bool _isChottuLink(String link) {
-    return link.contains('chottu.link') && !link.contains('apps.apple.com');
-  }
-  
-  /// Проверяет, является ли ссылка от Ketroy (новый домен)
+  /// Проверяет, является ли ссылка от Ketroy
   bool _isKetroyAppLink(String link) {
     return link.contains(DeepLinkConstants.domain);
-  }
-
-  /// Проверяет, является ли ссылка на App Store
-  bool _isAppStoreLink(String link) {
-    return link.contains('apps.apple.com');
-  }
-  
-  /// Проверяет, является ли ссылка на Play Store
-  bool _isPlayStoreLink(String link) {
-    return link.contains('play.google.com');
-  }
-  
-  /// Проверяет, является ли ссылка ссылкой на магазин приложений
-  bool _isStoreLink(String link) {
-    return _isAppStoreLink(link) || _isPlayStoreLink(link);
   }
 
   /// Обработка реферальной ссылки
