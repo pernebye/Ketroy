@@ -78,6 +78,7 @@ class _PostUserInfoFirstState extends State<PostUserInfoFirst> {
         'Алматы',
         'Шымкент',
         'Актобе',
+        'Актау',
         'Караганда',
         'Тараз',
         'Атырау',
