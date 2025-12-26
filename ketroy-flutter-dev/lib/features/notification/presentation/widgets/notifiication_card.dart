@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:ketroy_app/core/transitions/slide_over_page_route.dart';
 import 'package:ketroy_app/features/certificates/presentation/pages/certificate_page.dart';
 import 'package:ketroy_app/features/discount/presentation/pages/discount_page.dart';
@@ -11,6 +10,7 @@ import 'package:ketroy_app/features/notification/domain/entities/notification_en
 import 'package:ketroy_app/features/notification/presentation/bloc/notification_bloc.dart';
 import 'package:ketroy_app/features/profile/presentation/pages/profile.dart';
 import 'package:ketroy_app/services/notification_services.dart';
+import 'package:ketroy_app/l10n/app_localizations.dart';
 
 enum NotificationLabelType {
   news,
@@ -94,9 +94,9 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
 
             SizedBox(width: 8.w),
 
-            // === Время ===
+            // === Время (относительное) ===
             Text(
-              _formatTimeOnly(notification.createdAt),
+              _formatRelativeTime(context, notification.createdAt),
               style: TextStyle(
                 fontFamily: 'Gilroy',
                 fontSize: 12.sp,
@@ -229,9 +229,81 @@ class NotificationCardWithAutoRefresh extends StatelessWidget {
     );
   }
 
-  /// Форматирование времени (только часы:минуты)
-  String _formatTimeOnly(DateTime time) {
-    return DateFormat('HH:mm').format(time);
+  /// Форматирование относительного времени
+  /// Показывает: "Сейчас", "5 минут назад", "2 часа назад", "Вчера",
+  /// "Понедельник" (для текущей недели), "2 недели назад", "1 месяц назад", "1 год назад"
+  String _formatRelativeTime(BuildContext context, DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    // Сейчас (меньше минуты)
+    if (difference.inMinutes < 1) {
+      return l10n.timeNow;
+    }
+
+    // Минуты назад (до 60 минут)
+    if (difference.inMinutes < 60) {
+      return l10n.timeMinutesAgo(difference.inMinutes);
+    }
+
+    // Часы назад (до 24 часов, но только сегодня)
+    if (difference.inHours < 24 && time.day == now.day) {
+      return l10n.timeHoursAgo(difference.inHours);
+    }
+
+    // Вчера
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    if (time.year == yesterday.year &&
+        time.month == yesterday.month &&
+        time.day == yesterday.day) {
+      return l10n.timeYesterday;
+    }
+
+    // В течение последней недели - показываем день недели
+    if (difference.inDays < 7) {
+      final weekdayName = _getWeekdayName(context, time.weekday);
+      return l10n.timeWeekday(weekdayName);
+    }
+
+    // Недели назад (до 4 недель)
+    if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return l10n.timeWeeksAgo(weeks);
+    }
+
+    // Месяцы назад (до 12 месяцев)
+    if (difference.inDays < 365) {
+      final months = (difference.inDays / 30).floor();
+      return l10n.timeMonthsAgo(months);
+    }
+
+    // Годы назад
+    final years = (difference.inDays / 365).floor();
+    return l10n.timeYearsAgo(years);
+  }
+
+  /// Получить локализованное название дня недели
+  String _getWeekdayName(BuildContext context, int weekday) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (weekday) {
+      case DateTime.monday:
+        return l10n.weekdayMonday;
+      case DateTime.tuesday:
+        return l10n.weekdayTuesday;
+      case DateTime.wednesday:
+        return l10n.weekdayWednesday;
+      case DateTime.thursday:
+        return l10n.weekdayThursday;
+      case DateTime.friday:
+        return l10n.weekdayFriday;
+      case DateTime.saturday:
+        return l10n.weekdaySaturday;
+      case DateTime.sunday:
+        return l10n.weekdaySunday;
+      default:
+        return '';
+    }
   }
 
   void _handleNotificationTap(BuildContext context) async {
